@@ -12,10 +12,10 @@ public class Percolation {
             throw new java.lang.IllegalArgumentException("n must be greater than 0");
         }
 
-        structure = new WeightedQuickUnionUF(n*n);
+        structure = new WeightedQuickUnionUF(n*n + 1);
 
         // set false automatically
-        grid = new boolean[n][n];
+        grid = new boolean[n+1][n+1];
     }
 
     // open site (row, col) if it is not open already
@@ -25,27 +25,27 @@ public class Percolation {
         }
 
         // the north
-        if(row >= 1 && row <= n-1 && isOpen(row-1, col)
-                && !structure.connected(n * row + col, n * (row - 1) + col)){
-            structure.union(n * row + col, n * (row - 1) + col);
+        if(row >= 2 && row <= n && isOpen(row-1, col)
+                && !structure.connected(n * (row-1) + col, n * (row-2) + col)){
+            structure.union(n * (row-1) + col, n * (row-2) + col);
         }
 
         // the earth
-        if(col >= 0 && col <= n-2 && isOpen(row, col+1)
-                && !structure.connected(n * row + col, n * row + col + 1)){
-            structure.union(n * row + col, n * row + col + 1);
+        if(col >= 1 && col <= n-1 && isOpen(row, col+1)
+                && !structure.connected(n * (row-1) + col, n * (row-1) + col + 1)){
+            structure.union(n * (row-1) + col, n * (row-1) + col + 1);
         }
 
         // the south
-        if(row >= 0 && row <= n-2 && isOpen(row+1, col)
-                && !structure.connected(n * row + col, n * (row+1) + col)){
-            structure.union(n * row + col, n * (row+1) + col);
+        if(row >= 1 && row <= n-1 && isOpen(row+1, col)
+                && !structure.connected(n * (row-1) + col, n * row + col)){
+            structure.union(n * (row-1) + col, (n-1) * (row+1) + col);
         }
 
         // the west
-        if(col >= 1 && col <= n-1 && isOpen(row, col-1)
-                && !structure.connected(n * row + col, n * row + col - 1)){
-            structure.union(n * row + col, n * row + col - 1);
+        if(col >= 2 && col <= n && isOpen(row, col-1)
+                && !structure.connected(n * (row-1) + col, n * (row-1) + col - 1)){
+            structure.union(n * (row-1) + col, n * (row-1) + col - 1);
         }
     }
 
@@ -56,8 +56,8 @@ public class Percolation {
 
     // is site (row, col) full? N + (something) time?
     public boolean isFull(int row, int col){
-        for (int i = 0; i < n; i++) {
-            if (isOpen(0, i) && structure.connected(n * row + col, i)){
+        for (int i = 1; i <= n; i++) {
+            if (isOpen(1, i) && structure.connected((n-1) * row + col-1, i)){
                 return true;
             }
         }
@@ -66,12 +66,9 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates(){
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (isOpen(0, i) && isOpen(0, j) &&
-                        structure.connected(i, n * (n-1) + j)){
-                    return true;
-                }
+        for (int i = 1; i <= n; i++) {
+            if(isFull(n, i)){
+                return true;
             }
         }
         return false;
@@ -81,20 +78,17 @@ public class Percolation {
     public static void main(String[] args){
         int N = StdIn.readInt();
         Percolation per = new Percolation(N);
+        int x = 1;
         while (!StdIn.isEmpty())
         {
             int p = StdIn.readInt();
             int q = StdIn.readInt();
             per.open(p, q);
             //StdOut.println(p + " " + q);
+            /*x++;
+            if(x == 17) break;*/
         }
+        System.out.println(per.isFull(7, 5));
         System.out.println(per.percolates());
-
-        /*Percolation pObj = new Percolation(3);
-        pObj.open(1, 1);
-        pObj.open(0, 1);
-        pObj.open(2, 1);
-        System.out.println(pObj.isFull(2, 1));
-        System.out.println(pObj.percolates());*/
     }
 }
