@@ -39,7 +39,7 @@ public class Percolation {
         // the south
         if(row >= 1 && row <= n-1 && isOpen(row+1, col)
                 && !structure.connected(n * (row-1) + col, n * row + col)){
-            structure.union(n * (row-1) + col, (n-1) * (row+1) + col);
+            structure.union(n * (row-1) + col, n * row + col);
         }
 
         // the west
@@ -56,8 +56,8 @@ public class Percolation {
 
     // is site (row, col) full? N + (something) time?
     public boolean isFull(int row, int col){
-        for (int i = 1; i <= n; i++) {
-            if (isOpen(1, i) && structure.connected((n-1) * row + col-1, i)){
+        for (int j = 1; j <= n; j++) {
+            if (isOpen(1, j) && structure.connected(j, n * (row-1) + col)){
                 return true;
             }
         }
@@ -85,10 +85,9 @@ public class Percolation {
             int q = StdIn.readInt();
             per.open(p, q);
             //StdOut.println(p + " " + q);
-            /*x++;
-            if(x == 17) break;*/
+            x++;
+            if(x == 1413) break;
         }
-        System.out.println(per.isFull(7, 5));
         System.out.println(per.percolates());
     }
 }
