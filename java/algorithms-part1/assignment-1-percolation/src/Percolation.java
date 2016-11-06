@@ -8,7 +8,7 @@ public class Percolation {
     public Percolation(int n){
         this.n = n;
 
-        if(n<=0) {
+        if(n <= 0) {
             throw new java.lang.IllegalArgumentException("n must be greater than 0");
         }
 
@@ -25,25 +25,25 @@ public class Percolation {
         }
 
         // the north
-        if(row >= 1 && row <= n-1 && grid[row-1][col]
+        if(row >= 1 && row <= n-1 && isOpen(row-1, col)
                 && !structure.connected(n * row + col, n * (row - 1) + col)){
             structure.union(n * row + col, n * (row - 1) + col);
         }
 
         // the earth
-        if(col >= 0 && col <= n-2 && grid[row][col+1]
+        if(col >= 0 && col <= n-2 && isOpen(row, col+1)
                 && !structure.connected(n * row + col, n * row + col + 1)){
             structure.union(n * row + col, n * row + col + 1);
         }
 
         // the south
-        if(row >= 0 && row <= n-2 && grid[row+1][col]
+        if(row >= 0 && row <= n-2 && isOpen(row+1, col)
                 && !structure.connected(n * row + col, n * (row+1) + col)){
             structure.union(n * row + col, n * (row+1) + col);
         }
 
         // the west
-        if(col >= 1 && col <= n-1 && grid[row][col-1]
+        if(col >= 1 && col <= n-1 && isOpen(row, col-1)
                 && !structure.connected(n * row + col, n * row + col - 1)){
             structure.union(n * row + col, n * row + col - 1);
         }
