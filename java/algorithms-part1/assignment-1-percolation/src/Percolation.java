@@ -63,6 +63,12 @@ public class Percolation {
      * @param col column index the of current element (second)
      */
     public void open(int row, int col) {
+        if (row < 1 || col < 1 || row > n || col > n) {
+            throw new java.lang.IndexOutOfBoundsException("Each of the " +
+                    "argument values must be greater than or equal to 1" +
+                    "and must be less than or equal to n.");
+        }
+
         if (!grid[row][col]) {
             grid[row][col] = true;
         }
@@ -107,6 +113,12 @@ public class Percolation {
      * @return     true if site is open and return false otherwise
      */
     public boolean isOpen(int row, int col) {
+        if (row < 1 || col < 1 || row > n || col > n) {
+            throw new java.lang.IndexOutOfBoundsException("Each of the " +
+                    "argument values must be greater than or equal to 1" +
+                    "and must be less than or equal to n.");
+        }
+
         return grid[row][col];
     }
 
@@ -118,6 +130,12 @@ public class Percolation {
      * @return     true if site is full and return false otherwise
      */
     public boolean isFull(int row, int col) {
+        if (row < 1 || col < 1 || row > n || col > n) {
+            throw new java.lang.IndexOutOfBoundsException("Each of the " +
+                    "argument values must be greater than or equal to 1" +
+                    "and must be less than or equal to n.");
+        }
+
         for (int j = 1; j <= n; j++) {
             if (isOpen(1, j) && structure.connected(j, n * (row - 1) + col)) {
                 return true;
