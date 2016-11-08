@@ -11,8 +11,10 @@
  *  Created in IntelliJ IDEA
  *
  *----------------------------------------------------------------*/
-
-import edu.princeton.cs.algs4.*;
+import edu.princeton.cs.algs4.StdIn;
+import edu.princeton.cs.algs4.StdRandom;
+import edu.princeton.cs.algs4.StdStats;
+import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
     // Grid stores open / blocked state for sites
@@ -25,6 +27,9 @@ public class Percolation {
     // Row (or column) size of matrix
     private int n;
 
+    private int virtualTopSite;
+
+    private int virtualBottomSite;
     /**
      * Constructor creates n-by-n grid, with all sites blocked.
      * Also initialize WeightedQuickUnionUF structure.
@@ -44,7 +49,7 @@ public class Percolation {
          *  Create object for UnionFind structure with +1 element to avoid n
          *  in the beginning
          *-----------------------------------------------------------------*/
-        structure = new WeightedQuickUnionUF(n * n + 1);
+        structure = new WeightedQuickUnionUF(n * n + 2);
 
         /*-----------------------------------------------------------------
          * Create grid with +1 row and +1 col - to avoid 0 row and 0 col in the
@@ -52,9 +57,11 @@ public class Percolation {
          * Also set false automatically (Not necessary to initialize)
          *-----------------------------------------------------------------*/
         grid = new boolean[n + 1][n + 1];
-    }
 
-    //
+        virtualTopSite = 0;
+
+        virtualBottomSite = n * n + 1;
+    }
 
     /**
      * Open current site (row, col) if it is not open already.
@@ -70,38 +77,44 @@ public class Percolation {
         }
 
         if (!grid[row][col]) {
+            // check the north neighbor and union with it if it is open and there
+            // is no connection between them
+            if (row == 1) {
+                structure.union(virtualTopSite, n * (row - 1) + col);
+            } else if (row == n) {
+                structure.union(virtualBottomSite, n * (row - 1) + col);
+            }
+
+            if (row >= 2 && row <= n && isOpen(row - 1, col)
+                    && !structure.connected(n * (row - 1) + col, n * (row - 2)
+                    + col)) {
+                structure.union(n * (row - 1) + col, n * (row - 2) + col);
+            }
+
+            // check the earth neighbor and union with it if it is open and there
+            // is no connection between them
+            if (col >= 1 && col <= n - 1 && isOpen(row, col + 1)
+                    && !structure.connected(n * (row - 1) + col, n * (row - 1)
+                    + col + 1)) {
+                structure.union(n * (row - 1) + col, n * (row - 1) + col + 1);
+            }
+
+            // check the south neighbor and union with it if it is open and there
+            // is no connection between them
+            if (row >= 1 && row <= n - 1 && isOpen(row + 1, col)
+                    && !structure.connected(n * (row - 1) + col, n * row + col)) {
+                structure.union(n * (row - 1) + col, n * row + col);
+            }
+
+            // check the west neighbor and union with it if it is open and there
+            // is no connection between them
+            if (col >= 2 && col <= n && isOpen(row, col - 1)
+                    && !structure.connected(n * (row - 1) + col, n * (row - 1)
+                    + col - 1)) {
+                structure.union(n * (row - 1) + col, n * (row - 1) + col - 1);
+            }
+
             grid[row][col] = true;
-        }
-
-        // check the north neighbor and union with it if it is open and there
-        // is no connection between them
-        if (row >= 2 && row <= n && isOpen(row - 1, col)
-                && !structure.connected(n * (row - 1) + col, n * (row - 2)
-                + col)) {
-            structure.union(n * (row - 1) + col, n * (row - 2) + col);
-        }
-
-        // check the earth neighbor and union with it if it is open and there
-        // is no connection between them
-        if (col >= 1 && col <= n - 1 && isOpen(row, col + 1)
-                && !structure.connected(n * (row - 1) + col, n * (row - 1)
-                + col + 1)) {
-            structure.union(n * (row - 1) + col, n * (row - 1) + col + 1);
-        }
-
-        // check the south neighbor and union with it if it is open and there
-        // is no connection between them
-        if (row >= 1 && row <= n - 1 && isOpen(row + 1, col)
-                && !structure.connected(n * (row - 1) + col, n * row + col)) {
-            structure.union(n * (row - 1) + col, n * row + col);
-        }
-
-        // check the west neighbor and union with it if it is open and there
-        // is no connection between them
-        if (col >= 2 && col <= n && isOpen(row, col - 1)
-                && !structure.connected(n * (row - 1) + col, n * (row - 1)
-                + col - 1)) {
-            structure.union(n * (row - 1) + col, n * (row - 1) + col - 1);
         }
     }
 
@@ -136,11 +149,10 @@ public class Percolation {
                     "and must be less than or equal to n.");
         }
 
-        for (int j = 1; j <= n; j++) {
-            if (isOpen(1, j) && structure.connected(j, n * (row - 1) + col)) {
-                return true;
-            }
+        if (isOpen(row, col)) {
+            return structure.connected(n * (row - 1) + col, virtualTopSite);
         }
+
         return false;
     }
 
@@ -150,12 +162,7 @@ public class Percolation {
      * @return  true if system percolates and return false otherwise
      */
     public boolean percolates() {
-        for (int i = 1; i <= n; i++) {
-            if (isFull(n, i)) {
-                return true;
-            }
-        }
-        return false;
+        return structure.connected(virtualBottomSite, virtualTopSite);
     }
 
     /**
@@ -165,12 +172,17 @@ public class Percolation {
      * @param args  arguments from command prompt
      */
     public static void main(String[] args) {
-        int N = StdIn.readInt();
-        Percolation per = new Percolation(N);
+        int n = StdIn.readInt();
+        Percolation per = new Percolation(n);
+        int x = 1;
         while (!StdIn.isEmpty()) {
             int p = StdIn.readInt();
             int q = StdIn.readInt();
             per.open(p, q);
+            x++;
+            if(x == 353){
+                break;
+            }
         }
         System.out.println(per.percolates());
     }
