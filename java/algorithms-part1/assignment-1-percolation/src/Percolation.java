@@ -77,32 +77,34 @@ public class Percolation {
         }
 
         if (!grid[row][col]) {
-            // check the north neighbor and union with it if it is open and there
-            // is no connection between them
+            // connect item with virtual site
             if (row == 1) {
                 structure.union(virtualTopSite, n * (row - 1) + col);
             } else if (row == n) {
                 structure.union(virtualBottomSite, n * (row - 1) + col);
             }
 
+            // check the north neighbor and union with it if it is open and
+            // there is no connection between them
             if (row >= 2 && row <= n && isOpen(row - 1, col)
                     && !structure.connected(n * (row - 1) + col, n * (row - 2)
                     + col)) {
                 structure.union(n * (row - 1) + col, n * (row - 2) + col);
             }
 
-            // check the earth neighbor and union with it if it is open and there
-            // is no connection between them
+            // check the earth neighbor and union with it if it is open and
+            // there is no connection between them
             if (col >= 1 && col <= n - 1 && isOpen(row, col + 1)
                     && !structure.connected(n * (row - 1) + col, n * (row - 1)
                     + col + 1)) {
                 structure.union(n * (row - 1) + col, n * (row - 1) + col + 1);
             }
 
-            // check the south neighbor and union with it if it is open and there
-            // is no connection between them
+            // check the south neighbor and union with it if it is open and
+            // there is no connection between them
             if (row >= 1 && row <= n - 1 && isOpen(row + 1, col)
-                    && !structure.connected(n * (row - 1) + col, n * row + col)) {
+                    && !structure.connected(n * (row - 1) + col, n * row
+                    + col)) {
                 structure.union(n * (row - 1) + col, n * row + col);
             }
 
@@ -174,15 +176,10 @@ public class Percolation {
     public static void main(String[] args) {
         int n = StdIn.readInt();
         Percolation per = new Percolation(n);
-        int x = 1;
         while (!StdIn.isEmpty()) {
             int p = StdIn.readInt();
             int q = StdIn.readInt();
             per.open(p, q);
-            x++;
-            if(x == 353){
-                break;
-            }
         }
         System.out.println(per.percolates());
     }
