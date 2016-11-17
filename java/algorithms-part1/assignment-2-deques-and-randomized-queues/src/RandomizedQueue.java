@@ -85,7 +85,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             next = 0;
         }
 
-        @Override
+        @Override //!!!!
         public boolean hasNext() {
             return next < randomizedQueue.length;
         }
