@@ -135,19 +135,19 @@ public class Deque<Item> implements Iterable<Item> {
     // unit testing
     public static void main(String[] args) {
         Deque<String> dq = new Deque<>();
-        /*while (!StdIn.isEmpty())
+        while (!StdIn.isEmpty())
         {
             String s = StdIn.readString();
             if (s.equals("0")) break;
             else if(s.equals("-")) StdOut.print(dq.removeFirst());
             else dq.addFirst(s);
-        }*/
+        }
         dq.addFirst("1");
         dq.addFirst("2");
         dq.addLast("3");
-        /*dq.removeFirst();
+        dq.removeFirst();
         dq.removeLast();
-        dq.removeFirst();*/
+        dq.removeFirst();
 
         for (String s: dq) {
             System.out.print(s + " ");
