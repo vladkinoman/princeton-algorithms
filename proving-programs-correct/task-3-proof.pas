@@ -3,9 +3,9 @@
 {inv P: 0 <= i <= N & x = (N_j: 0 <= j < i: even(i) & odd(a[j]))}
 {bound t: N - i}
 
-	do i < N --> if even(i) & odd(a[i])  --> x, i := x + 1, i + 1
-				   |!((even) & odd(a[i)) --> i := i + 1
-				 fi
+	do i < N -> if even(i) & odd(a[i])   -> x, i := x + 1, i + 1
+		       |!((even) & odd(a[i)) -> i := i + 1
+		    fi
 	od
 	
 {R: x = (N_j: 0 <= j < i: even(i) & odd(a[j]))}
