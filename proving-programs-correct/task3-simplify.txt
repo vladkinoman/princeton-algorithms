@@ -1,0 +1,11 @@
+(IMPLIES
+;Q:
+	(>= N 0)
+;WP(IF, R):
+	(AND
+		(<= 0 0)
+		(<= N 0)
+		(FORALL (a i x)
+|        (EQ (len (store a i x)) (len a)))	
+	)
+)
