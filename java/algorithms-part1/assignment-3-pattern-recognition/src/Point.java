@@ -9,12 +9,16 @@
  ******************************************************************************/
 
 import java.util.Comparator;
+
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.StdOut;
 
 public class Point implements Comparable<Point> {
 
     private final int x;     // x-coordinate of this point
     private final int y;     // y-coordinate of this point
+    public final Comparator<Point> POLAR_ORDER = new PolarOrder();
 
     /**
      * Initializes a new point.
@@ -59,7 +63,7 @@ public class Point implements Comparable<Point> {
      * @return the slope between this point and the specified point
      */
     public double slopeTo(Point that) {
-        /* YOUR CODE HERE */
+
     }
 
     /**
@@ -105,6 +109,56 @@ public class Point implements Comparable<Point> {
      * Unit tests the Point data type.
      */
     public static void main(String[] args) {
-        /* YOUR CODE HERE */
+        // read the n points from a file
+        In in = new In(args[0]);
+        int n = in.readInt();
+        Point[] points = new Point[n];
+        for (int i = 0; i < n; i++) {
+            int x = in.readInt();
+            int y = in.readInt();
+            points[i] = new Point(x, y);
+        }
+
+        // draw the points
+        StdDraw.enableDoubleBuffering();
+        StdDraw.setXscale(0, 32768);
+        StdDraw.setYscale(0, 32768);
+        for (Point p : points) {
+            p.draw();
+        }
+        StdDraw.show();
+
+        // print and draw the line segments
+        BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        for (LineSegment segment : collinear.segments()) {
+            StdOut.println(segment);
+            segment.draw();
+        }
+        StdDraw.show();
+    }
+
+    private class PolarOrder implements Comparator<Point> {
+
+        @Override
+        public int compare(Point q1, Point q2) {
+            double dy1 = q1.y - y;
+            double dy2 = q2.y - y;
+
+            if (dy1 == 0 && dy2 == 0) {
+                // p, q1, q2 horizontal
+
+            } else if (dy1 >= 0 && dy2 <= 0) return -1;
+            else if (dy1 >= 0 && dy2 < 0) return +1;
+            else return -ccw(Point.this, q1, q2);
+            return 0;
+        }
+    }
+
+    private int ccw(Point a, Point b, Point c) {
+        double area2 = (b.x - a.x) * (c.y - a.y) -
+                (b.y - a.y) * (c.x - a.x);
+        if      (area2 < 0) return - 1; // clockwise
+        else if (area2 > 0) return +1; // counter-clockwise!
+        else                return 0; // collinear
     }
 }
