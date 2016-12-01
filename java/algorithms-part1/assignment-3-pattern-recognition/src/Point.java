@@ -63,7 +63,17 @@ public class Point implements Comparable<Point> {
      * @return the slope between this point and the specified point
      */
     public double slopeTo(Point that) {
-
+        if (x == that.x && y == that.y) {
+            return Double.NEGATIVE_INFINITY;
+        } else if (x != that.x && y == that.y) {
+            // horizontal segment
+            return +0.0;
+        } else if (x == that.x && y != that.y) {
+            // vertical segment
+            return Double.POSITIVE_INFINITY;
+        } else {
+            return (that.y - y) / (that.x - x);
+        }
     }
 
     /**
@@ -79,7 +89,9 @@ public class Point implements Comparable<Point> {
      *         argument point
      */
     public int compareTo(Point that) {
-        /* YOUR CODE HERE */
+        if      (y < that.y || y == that.y && x < that.x) return -1;
+        else if (y == that.y && x == that.x)              return 0;
+        else                                              return 1;
     }
 
     /**
@@ -90,8 +102,34 @@ public class Point implements Comparable<Point> {
      */
     public Comparator<Point> slopeOrder() {
         /* YOUR CODE HERE */
+        return null;
     }
 
+    private class PolarOrder implements Comparator<Point> {
+
+        @Override
+        public int compare(Point q1, Point q2) {
+            double dy1 = q1.y - y;
+            double dy2 = q2.y - y;
+
+            if (dy1 == 0 && dy2 == 0) {
+                // p, q1, q2 horizontal
+
+            } else if (dy1 >= 0 && dy2 <= 0) return -1;
+            else if (dy1 >= 0 && dy2 < 0) return +1;
+            else return -ccw(Point.this, q1, q2);
+
+            return 0;
+        }
+    }
+
+    private int ccw(Point a, Point b, Point c) {
+        double area2 = (b.x - a.x) * (c.y - a.y) -
+                (b.y - a.y) * (c.x - a.x);
+        if      (area2 < 0) return - 1; // clockwise
+        else if (area2 > 0) return +1; // counter-clockwise!
+        else                return 0; // collinear
+    }
 
     /**
      * Returns a string representation of this point.
@@ -137,28 +175,5 @@ public class Point implements Comparable<Point> {
         StdDraw.show();
     }
 
-    private class PolarOrder implements Comparator<Point> {
 
-        @Override
-        public int compare(Point q1, Point q2) {
-            double dy1 = q1.y - y;
-            double dy2 = q2.y - y;
-
-            if (dy1 == 0 && dy2 == 0) {
-                // p, q1, q2 horizontal
-
-            } else if (dy1 >= 0 && dy2 <= 0) return -1;
-            else if (dy1 >= 0 && dy2 < 0) return +1;
-            else return -ccw(Point.this, q1, q2);
-            return 0;
-        }
-    }
-
-    private int ccw(Point a, Point b, Point c) {
-        double area2 = (b.x - a.x) * (c.y - a.y) -
-                (b.y - a.y) * (c.x - a.x);
-        if      (area2 < 0) return - 1; // clockwise
-        else if (area2 > 0) return +1; // counter-clockwise!
-        else                return 0; // collinear
-    }
 }
