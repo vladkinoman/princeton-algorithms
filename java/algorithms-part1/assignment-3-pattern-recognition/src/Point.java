@@ -12,6 +12,7 @@ import java.util.Comparator;
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 public class Point implements Comparable<Point> {
@@ -71,7 +72,7 @@ public class Point implements Comparable<Point> {
             // vertical segment
             return Double.POSITIVE_INFINITY;
         } else {
-            return (that.y - y) / (that.x - x);
+            return (double)(that.y - y) / (double)(that.x - x);
         }
     }
 
@@ -129,12 +130,12 @@ public class Point implements Comparable<Point> {
      */
     public static void main(String[] args) {
         // read the n points from a file
-        In in = new In(args[0]);
-        int n = in.readInt();
+        //In in = new In(args[0]);
+        int n = StdIn.readInt();
         Point[] points = new Point[n];
         for (int i = 0; i < n; i++) {
-            int x = in.readInt();
-            int y = in.readInt();
+            int x = StdIn.readInt();
+            int y = StdIn.readInt();
             points[i] = new Point(x, y);
         }
 

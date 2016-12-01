@@ -7,10 +7,12 @@ public class FastCollinearPoints {
 
     public int numberOfSegments() {
 
+        return 0;
     }
 
     // the line segments
     public LineSegment[] segments() {
 
+        return new LineSegment[0];
     }
 }
