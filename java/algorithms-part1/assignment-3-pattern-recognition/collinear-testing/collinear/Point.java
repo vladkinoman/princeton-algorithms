@@ -9,11 +9,7 @@
  ******************************************************************************/
 
 import java.util.Comparator;
-
-import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
-import edu.princeton.cs.algs4.StdIn;
-import edu.princeton.cs.algs4.StdOut;
 
 public class Point implements Comparable<Point> {
 
@@ -28,10 +24,6 @@ public class Point implements Comparable<Point> {
      */
     public Point(int x, int y) {
         /* DO NOT MODIFY */
-        if (x < 0 || x > 32767 || y < 0 || y > 32767) {
-            throw new IllegalArgumentException();
-        }
-
         this.x = x;
         this.y = y;
     }
@@ -67,17 +59,7 @@ public class Point implements Comparable<Point> {
      * @return the slope between this point and the specified point
      */
     public double slopeTo(Point that) {
-        if (x == that.x && y == that.y) {
-            return Double.NEGATIVE_INFINITY;
-        } else if (x != that.x && y == that.y) {
-            // horizontal segment
-            return +0.0;
-        } else if (x == that.x && y != that.y) {
-            // vertical segment
-            return Double.POSITIVE_INFINITY;
-        } else {
-            return (double)(that.y - y) / (double)(that.x - x);
-        }
+        /* YOUR CODE HERE */
     }
 
     /**
@@ -93,9 +75,7 @@ public class Point implements Comparable<Point> {
      *         argument point
      */
     public int compareTo(Point that) {
-        if      (y < that.y || y == that.y && x < that.x) return -1;
-        else if (y == that.y && x == that.x)              return 0;
-        else                                              return 1;
+        /* YOUR CODE HERE */
     }
 
     /**
@@ -105,17 +85,9 @@ public class Point implements Comparable<Point> {
      * @return the Comparator that defines this ordering on points
      */
     public Comparator<Point> slopeOrder() {
-        return new SlopeOrder();
+        /* YOUR CODE HERE */
     }
 
-    private class SlopeOrder implements Comparator<Point> {
-        @Override
-        public int compare(Point first, Point second) {
-            if      (slopeTo(first) < slopeTo(second))  return -1;
-            else if (slopeTo(first) > slopeTo(second))  return 1;
-            else                                        return 0;
-        }
-    }
 
     /**
      * Returns a string representation of this point.
@@ -133,31 +105,6 @@ public class Point implements Comparable<Point> {
      * Unit tests the Point data type.
      */
     public static void main(String[] args) {
-        // read the n points from a file
-        //In in = new In(args[0]);
-        int n = StdIn.readInt();
-        Point[] points = new Point[n];
-        for (int i = 0; i < n; i++) {
-            int x = StdIn.readInt();
-            int y = StdIn.readInt();
-            points[i] = new Point(x, y);
-        }
-
-        // draw the points
-        StdDraw.enableDoubleBuffering();
-        StdDraw.setXscale(0, 32768);
-        StdDraw.setYscale(0, 32768);
-        for (Point p : points) {
-            p.draw();
-        }
-        StdDraw.show();
-
-        // print and draw the line segments
-        BruteCollinearPoints collinear = new BruteCollinearPoints(points);
-        for (LineSegment segment : collinear.segments()) {
-            StdOut.println(segment);
-            segment.draw();
-        }
-        StdDraw.show();
+        /* YOUR CODE HERE */
     }
 }
