@@ -32,33 +32,31 @@ public class FastCollinearPoints {
         Point origin = null;
         Point[] newPoints = new Point[points.length];
         Point[] setOfCollinears = null;
+        Point[] adjacences = new Point[points.length];
+
         for (int i = 0; i < points.length; i++) {
             newPoints[i] = points[i];
         }
-
-        for (int i = 0, k = 0; i < points.length; i++, k = 0) {
+        int adj = 0;
+        for (int i = 0, k = 0; i < newPoints.length; i++, k = 0) {
             origin = points[i];
             // create new array
-            setOfCollinears = new Point[points.length];
+            setOfCollinears = new Point[newPoints.length*2];
             // merge sort
             Arrays.sort(newPoints, origin.slopeOrder());
-            for (int j = 0; j < points.length - 1; j++) {
-                if (origin.compareTo(points[j]) != 0 &&
-                        origin.compareTo(points[j+1]) != 0 &&
-                        isEqual(origin.slopeOrder(), points[j], points[j+1])) {
-                    setOfCollinears[k++] = points[j];
-                    setOfCollinears[k++] = points[j+1];
+            for (int j = 0; j < newPoints.length - 1; j++) {
+                if (origin.compareTo(newPoints[j]) != 0 &&
+                        origin.compareTo(newPoints[j+1]) != 0 &&
+                        isEqual(origin.slopeOrder(), newPoints[j],
+                                newPoints[j+1])) {
+                    setOfCollinears[k++] = newPoints[j];
+                    setOfCollinears[k++] = newPoints[j+1];
                 }
             }
-            // including origin:
+
             if (k >= 3) {
 
-                if (countOfSegments == countOfAllocatedSegments) {
-                    segments = realloc(segments);
-                    countOfAllocatedSegments = countOfSegments * 2;
-                }
-
-                Point min = origin, max = setOfCollinears[k-1];
+                Point min = origin, max = setOfCollinears[0];
                 for (int j = 0; j < k; j++) {
                     if (min.compareTo(setOfCollinears[j]) > 0) {
                         min = setOfCollinears[j];
@@ -67,13 +65,31 @@ public class FastCollinearPoints {
                         max = setOfCollinears[j];
                     }
                 }
+
                 if (origin.compareTo(max) > 0) {
                     max = origin;
                 }
 
-                segments[countOfSegments++]
-                        = new LineSegment(min, max);
+                if (!isExist(adjacences, adj, min)
+                        && !isExist(adjacences, adj, max)
+                        && !isEqualsSlope(adjacences, adj, min, max)) {
+                    if (adj + 2 > adjacences.length) {
+                        adjacences = realloc(adjacences);
+                    }
+                    adjacences[adj++] = min;
+                    adjacences[adj++] = max;
+                }
             }
+        }
+
+        for (int i = 0; i < adj; i+=2) {
+            if (countOfSegments == countOfAllocatedSegments) {
+                segments = realloc(segments);
+                countOfAllocatedSegments = countOfSegments * 2;
+            }
+
+            segments[countOfSegments++]
+                    = new LineSegment(adjacences[i], adjacences[i+1]);
         }
 
         if (countOfSegments < countOfAllocatedSegments) {
@@ -81,9 +97,19 @@ public class FastCollinearPoints {
         }
     }
 
-    private boolean isExistBySlope(Point[] setOfCollinears, Point origin) {
-        for (int i = 0; i < setOfCollinears.length; i++) {
-            if (origin.compareTo(setOfCollinears[i]) == 0) {
+    private boolean isExist(Point[] adjacences, int iteration, Point p) {
+        for (int j = 0; j < iteration; j++) {
+            if (adjacences[j].compareTo(p) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isEqualsSlope(Point[] adjacences, int iteration, Point p,
+                                  Point q) {
+        for (int j = 0; j < iteration; j++) {
+            if (adjacences[j].slopeTo(p) == adjacences[j].slopeTo(q)) {
                 return true;
             }
         }
@@ -110,6 +136,14 @@ public class FastCollinearPoints {
         return newSegments;
     }
 
+    private Point[] realloc(Point[] segments) {
+        Point[] newSegments = new Point[segments.length * 2];
+        for (int i = 0; i < segments.length; i++) {
+            newSegments[i] = segments[i];
+        }
+        return newSegments;
+    }
+
     public int numberOfSegments() {
         return countOfSegments;
     }
@@ -119,34 +153,6 @@ public class FastCollinearPoints {
      * @return maximal line segment containing 4 (or more) points exactly once
      */
     public LineSegment[] segments() {
-        LineSegment[] newSegments = new LineSegment[countOfSegments];
-        for (int i = 0; i < newSegments.length; i++) {
-            newSegments[i] = segments[i];
-        }
-
-        // delete duplicates
-        for (int i = 0; i < countOfSegments; i++) {
-            for (int j = i + 1; j < countOfSegments; j++) {
-                // oh.. my eyes
-                if (segments[j].toString().equals(segments[i].toString())) {
-                    newSegments[i] = null;
-                }
-            }
-        }
-
-        int j = 0;
-        segments = new LineSegment[countOfSegments];
-        for (int i = 0; i < segments.length; i++) {
-            if (newSegments[i] != null) {
-                segments[j] = newSegments[i];
-                j++;
-            }
-        }
-
-        LineSegment[] sToReturn = new LineSegment[j];
-        for (int i = 0; i < j; i++) {
-            sToReturn[i] = segments[i];
-        }
-        return sToReturn;
+        return segments;
     }
 }
