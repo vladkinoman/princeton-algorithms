@@ -47,19 +47,19 @@ public class FastCollinearPoints {
                         origin.compareTo(points[j+1]) != 0 &&
                         isEqual(origin.slopeOrder(), points[j], points[j+1])) {
                     setOfCollinears[k++] = points[j];
-                    setOfCollinears[k]   = points[j+1];
+                    setOfCollinears[k++] = points[j+1];
                 }
             }
             // including origin:
-            if (k >= 2) {
+            if (k >= 3) {
 
                 if (countOfSegments == countOfAllocatedSegments) {
                     segments = realloc(segments);
                     countOfAllocatedSegments = countOfSegments * 2;
                 }
 
-                Point min = origin, max = setOfCollinears[k];
-                for (int j = 0; j <= k; j++) {
+                Point min = origin, max = setOfCollinears[k-1];
+                for (int j = 0; j < k; j++) {
                     if (min.compareTo(setOfCollinears[j]) > 0) {
                         min = setOfCollinears[j];
                     }
@@ -119,6 +119,34 @@ public class FastCollinearPoints {
      * @return maximal line segment containing 4 (or more) points exactly once
      */
     public LineSegment[] segments() {
-        return segments;
+        LineSegment[] newSegments = new LineSegment[countOfSegments];
+        for (int i = 0; i < newSegments.length; i++) {
+            newSegments[i] = segments[i];
+        }
+
+        // delete duplicates
+        for (int i = 0; i < countOfSegments; i++) {
+            for (int j = i + 1; j < countOfSegments; j++) {
+                // oh.. my eyes
+                if (segments[j].toString().equals(segments[i].toString())) {
+                    newSegments[i] = null;
+                }
+            }
+        }
+
+        int j = 0;
+        segments = new LineSegment[countOfSegments];
+        for (int i = 0; i < segments.length; i++) {
+            if (newSegments[i] != null) {
+                segments[j] = newSegments[i];
+                j++;
+            }
+        }
+
+        LineSegment[] sToReturn = new LineSegment[j];
+        for (int i = 0; i < j; i++) {
+            sToReturn[i] = segments[i];
+        }
+        return sToReturn;
     }
 }
