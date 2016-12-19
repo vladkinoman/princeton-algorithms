@@ -3,68 +3,62 @@
 #include <string.h>
 
 /*@
-    axiomatic CountAxiomatic
+    axiomatic count_axioms
     {
-        logic int Count{L} (int* a, integer N)
+        logic integer count{L} (int* a, integer N)
             reads a[0..N-1];
         
-        axiom CountEmpty:
+        axiom count_empty{L}:
             \forall int* a, integer N;
-                N <= 0 ==> Count(a, N) == 0;
+                N <= 0 ==> count(a, N) == 0;
 
-        axiom CountOneHit:
+        axiom count_add{L}:
             \forall int* a, integer N;
-               N % 2 == 0 && a[N] % 2 != 0 ==> Count(a, N + 1) == Count(a, N) + 1;
+               N % 2 == 0 && a[N] % 2 != 0 
+               ==> count(a, N + 1) == count(a, N) + 1;
         
-        axiom CountOneMiss:
+        axiom count_pass{L}:
             \forall int* a, integer N;
-               !(N % 2 == 0 && a[N] % 2 != 0) ==> Count(a, N + 1) == Count(a, N);
+               !(N % 2 == 0 && a[N] % 2 != 0) 
+               ==> count(a, N + 1) == count(a, N);
     }
 */
 
 
-/*@ requires N >= 0 && \valid_read(a + (0..N-1));
+/*@ 
+    requires N >= 0 && \valid(a + (0..N-1));
     
     assigns \nothing;
     
     ensures 0 <= \result <= N;
-    ensures \result == Count(a, N);
+    ensures \result == count(a, N);
 */
 int count(int* a, int N)
 { 
-    int countArr = 0;
+    int x = 0;
     int i;
     /*@ loop invariant 0 <= i <= N;
-        loop invariant 0 <= countArr <= i;
-        loop invariant countArr == Count(a, i);
-        loop assigns i, countArr;
+        loop invariant 0 <= x <= i;
+        loop invariant x == count(a, i);
+        loop assigns i, x;
         loop variant N - i;
     */
-    for (i = 0; i < N; ++i)
+    for (i = 0; i < N; i++)
     {
         if (i % 2 == 0 && a[i] % 2 != 0)
         {
-            countArr++;
+            x = x + 1;
         }
     }
 
-    return countArr;
+    return x;
 }
 
 int main() {
-    // count numbers
-    int N = 6;
-    int* a;
-    a = (int*) malloc(N*sizeof(int));
-    //int a[N];
-    //memcpy(a, (int[]) {23, 50, 61, 124, 562, 1000}, sizeof a);
-    //a = {23, 50, 61, 124, 562, 1000};
-    a[0] = 23;
-    a[1] = 50;
-    a[2] = 61;
-    a[3] = 124;
-    a[4] = 562;
-    a[5] = 1000;
+
+    int N = 10;
+    int a[N];
+    memcpy(a, (int []) {11, 20, 33, 40, 55, 60, 77, 80, 99, 100}, sizeof a);
     int count_number = count(a, N);
     printf("count = %i\n", count_number);
     
