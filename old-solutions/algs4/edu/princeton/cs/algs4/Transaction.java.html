@@ -1,0 +1,293 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>Transaction.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="Transaction code in Java">
+<meta NAME="TITLE" CONTENT="Transaction code in Java">
+<meta NAME="KEYWORDS" CONTENT="Transaction,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>Transaction.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "Transaction.java">Transaction.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac Transaction.java</span>
+<span class="comment"> *  Execution:    java Transaction</span>
+<span class="comment"> *  Dependencies: StdOut.java</span>
+<span class="comment"> *  </span>
+<span class="comment"> *  Data type for commercial transactions.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">Arrays</span><span class="symbol">;</span>
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">Comparator</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> Transaction} class is an immutable data type to encapsulate a</span>
+<span class="comment"> *  commercial transaction with a customer name, date, and amount.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, </span>
+<span class="comment"> *  see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/12oop"</span><span class="keyword">&gt;</span><span class="comment">Section 1.2</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of </span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne. </span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Transaction</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Comparable</span><span class="symbol">&lt;</span><span class="normal">Transaction</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">String</span><span class="normal">  who</span><span class="symbol">;</span><span class="normal">      </span><span class="comment">// customer</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Date</span><span class="normal">    when</span><span class="symbol">;</span><span class="normal">     </span><span class="comment">// date</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal">  amount</span><span class="symbol">;</span><span class="normal">   </span><span class="comment">// amount</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a new transaction from the given arguments.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  who the person involved in this transaction</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  when the date of this transaction</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  amount the amount of this transaction</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> amount} </span>
+<span class="comment">     *         is {</span><span class="type">@code</span><span class="comment"> Double.NaN}, {</span><span class="type">@code</span><span class="comment"> Double.POSITIVE_INFINITY},</span>
+<span class="comment">     *         or {</span><span class="type">@code</span><span class="comment"> Double.NEGATIVE_INFINITY}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">Transaction</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> who</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Date</span><span class="normal"> when</span><span class="symbol">,</span><span class="normal"> </span><span class="type">double</span><span class="normal"> amount</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Double</span><span class="symbol">.</span><span class="function">isNaN</span><span class="symbol">(</span><span class="normal">amount</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> Double</span><span class="symbol">.</span><span class="function">isInfinite</span><span class="symbol">(</span><span class="normal">amount</span><span class="symbol">))</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Amount cannot be NaN or infinite"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">who    </span><span class="symbol">=</span><span class="normal"> who</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">when   </span><span class="symbol">=</span><span class="normal"> when</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">amount </span><span class="symbol">=</span><span class="normal"> amount</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a new transaction by parsing a string of the form NAME DATE AMOUNT.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  transaction the string to parse</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> amount} </span>
+<span class="comment">     *         is {</span><span class="type">@code</span><span class="comment"> Double.NaN}, {</span><span class="type">@code</span><span class="comment"> Double.POSITIVE_INFINITY},</span>
+<span class="comment">     *         or {</span><span class="type">@code</span><span class="comment"> Double.NEGATIVE_INFINITY}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">Transaction</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> transaction</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        String</span><span class="symbol">[]</span><span class="normal"> a </span><span class="symbol">=</span><span class="normal"> transaction</span><span class="symbol">.</span><span class="function">split</span><span class="symbol">(</span><span class="string">"</span><span class="specialchar">\\</span><span class="string">s+"</span><span class="symbol">);</span>
+<span class="normal">        who    </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">];</span>
+<span class="normal">        when   </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Date</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        amount </span><span class="symbol">=</span><span class="normal"> Double</span><span class="symbol">.</span><span class="function">parseDouble</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Double</span><span class="symbol">.</span><span class="function">isNaN</span><span class="symbol">(</span><span class="normal">amount</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> Double</span><span class="symbol">.</span><span class="function">isInfinite</span><span class="symbol">(</span><span class="normal">amount</span><span class="symbol">))</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Amount cannot be NaN or infinite"</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the name of the customer involved in this transaction.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the name of the customer involved in this transaction</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">who</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> who</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal"> </span>
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the date of this transaction.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the date of this transaction</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Date</span><span class="normal"> </span><span class="function">when</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> when</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal"> </span>
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the amount of this transaction.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the amount of this transaction</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">amount</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> amount</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a string representation of this transaction.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a string representation of this transaction</span>
+<span class="comment">     */</span>
+<span class="normal">    @Override</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">toString</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> String</span><span class="symbol">.</span><span class="function">format</span><span class="symbol">(</span><span class="string">"%-10s %10s %8.2f"</span><span class="symbol">,</span><span class="normal"> who</span><span class="symbol">,</span><span class="normal"> when</span><span class="symbol">,</span><span class="normal"> amount</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Compares two transactions by amount.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the other transaction</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> { a negative integer, zero, a positive integer}, depending</span>
+<span class="comment">     *         on whether the amount of this transaction is { less than,</span>
+<span class="comment">     *         equal to, or greater than } the amount of that transaction</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">compareTo</span><span class="symbol">(</span><span class="usertype">Transaction</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> Double</span><span class="symbol">.</span><span class="function">compare</span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">amount</span><span class="symbol">,</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">amount</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal">    </span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Compares this transaction to the specified object.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  other the other transaction</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> true if this transaction is equal to {</span><span class="type">@code</span><span class="comment"> other}; false otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    @Override</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">equals</span><span class="symbol">(</span><span class="usertype">Object</span><span class="normal"> other</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">other </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">other </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">other</span><span class="symbol">.</span><span class="function">getClass</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="function">getClass</span><span class="symbol">())</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">Transaction</span><span class="normal"> that </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Transaction</span><span class="symbol">)</span><span class="normal"> other</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">amount </span><span class="symbol">==</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">amount</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">who</span><span class="symbol">.</span><span class="function">equals</span><span class="symbol">(</span><span class="normal">that</span><span class="symbol">.</span><span class="normal">who</span><span class="symbol">))</span>
+<span class="normal">                                            </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">when</span><span class="symbol">.</span><span class="function">equals</span><span class="symbol">(</span><span class="normal">that</span><span class="symbol">.</span><span class="normal">when</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a hash code for this transaction.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a hash code for this transaction</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">hashCode</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> hash </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        hash </span><span class="symbol">=</span><span class="normal"> </span><span class="number">31</span><span class="symbol">*</span><span class="normal">hash </span><span class="symbol">+</span><span class="normal"> who</span><span class="symbol">.</span><span class="function">hashCode</span><span class="symbol">();</span>
+<span class="normal">        hash </span><span class="symbol">=</span><span class="normal"> </span><span class="number">31</span><span class="symbol">*</span><span class="normal">hash </span><span class="symbol">+</span><span class="normal"> when</span><span class="symbol">.</span><span class="function">hashCode</span><span class="symbol">();</span>
+<span class="normal">        hash </span><span class="symbol">=</span><span class="normal"> </span><span class="number">31</span><span class="symbol">*</span><span class="normal">hash </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">Double</span><span class="symbol">)</span><span class="normal"> amount</span><span class="symbol">).</span><span class="function">hashCode</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> hash</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="comment">// return Objects.hash(who, when, amount);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Compares two transactions by customer name.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">WhoOrder</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Comparator</span><span class="symbol">&lt;</span><span class="normal">Transaction</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        @Override</span>
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">compare</span><span class="symbol">(</span><span class="usertype">Transaction</span><span class="normal"> v</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Transaction</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> v</span><span class="symbol">.</span><span class="normal">who</span><span class="symbol">.</span><span class="function">compareTo</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">.</span><span class="normal">who</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Compares two transactions by date.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">WhenOrder</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Comparator</span><span class="symbol">&lt;</span><span class="normal">Transaction</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        @Override</span>
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">compare</span><span class="symbol">(</span><span class="usertype">Transaction</span><span class="normal"> v</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Transaction</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> v</span><span class="symbol">.</span><span class="normal">when</span><span class="symbol">.</span><span class="function">compareTo</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">.</span><span class="normal">when</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Compares two transactions by amount.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">HowMuchOrder</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Comparator</span><span class="symbol">&lt;</span><span class="normal">Transaction</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        @Override</span>
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">compare</span><span class="symbol">(</span><span class="usertype">Transaction</span><span class="normal"> v</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Transaction</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> Double</span><span class="symbol">.</span><span class="function">compare</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">.</span><span class="normal">amount</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">.</span><span class="normal">amount</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> Transaction} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        Transaction</span><span class="symbol">[]</span><span class="normal"> a </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Transaction</span><span class="symbol">[</span><span class="number">4</span><span class="symbol">];</span>
+<span class="normal">        a</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Transaction</span><span class="symbol">(</span><span class="string">"Turing   6/17/1990  644.08"</span><span class="symbol">);</span>
+<span class="normal">        a</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Transaction</span><span class="symbol">(</span><span class="string">"Tarjan   3/26/2002 4121.85"</span><span class="symbol">);</span>
+<span class="normal">        a</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Transaction</span><span class="symbol">(</span><span class="string">"Knuth    6/14/1999  288.34"</span><span class="symbol">);</span>
+<span class="normal">        a</span><span class="symbol">[</span><span class="number">3</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Transaction</span><span class="symbol">(</span><span class="string">"Dijkstra 8/22/2007 2678.40"</span><span class="symbol">);</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Unsorted"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+<span class="normal">        </span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Sort by date"</span><span class="symbol">);</span>
+<span class="normal">        Arrays</span><span class="symbol">.</span><span class="function">sort</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Transaction</span><span class="symbol">.</span><span class="function">WhenOrder</span><span class="symbol">());</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Sort by customer"</span><span class="symbol">);</span>
+<span class="normal">        Arrays</span><span class="symbol">.</span><span class="function">sort</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Transaction</span><span class="symbol">.</span><span class="function">WhoOrder</span><span class="symbol">());</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Sort by amount"</span><span class="symbol">);</span>
+<span class="normal">        Arrays</span><span class="symbol">.</span><span class="function">sort</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Transaction</span><span class="symbol">.</span><span class="function">HowMuchOrder</span><span class="symbol">());</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="cbracket">}</span>
+
+
+
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

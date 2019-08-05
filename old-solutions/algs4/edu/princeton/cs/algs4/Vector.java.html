@@ -1,0 +1,324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>Vector.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="Vector code in Java">
+<meta NAME="TITLE" CONTENT="Vector code in Java">
+<meta NAME="KEYWORDS" CONTENT="Vector,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>Vector.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "Vector.java">Vector.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac Vector.java</span>
+<span class="comment"> *  Execution:    java Vector</span>
+<span class="comment"> *  Dependencies: StdOut.java</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Implementation of a vector of real numbers.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This class is implemented to be immutable: once the client program</span>
+<span class="comment"> *  initialize a Vector, it cannot change any of its fields</span>
+<span class="comment"> *  (d or data[i]) either directly or indirectly. Immutability is a</span>
+<span class="comment"> *  very desirable feature of a data type.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  % java Vector</span>
+<span class="comment"> *     x     = [ 1.0 2.0 3.0 4.0 ]</span>
+<span class="comment"> *     y     = [ 5.0 2.0 4.0 1.0 ]</span>
+<span class="comment"> *     z     = [ 6.0 4.0 7.0 5.0 ]</span>
+<span class="comment"> *   10z     = [ 60.0 40.0 70.0 50.0 ]</span>
+<span class="comment"> *    |x|    = 5.477225575051661</span>
+<span class="comment"> *   </span><span class="keyword">&lt;x</span><span class="normal">, </span><span class="type">y</span><span class="keyword">&gt;</span><span class="comment">  = 25.0</span>
+<span class="comment"> * </span>
+<span class="comment"> *</span>
+<span class="comment"> *  Note that Vector is also the name of an unrelated Java library class</span>
+<span class="comment"> *  in the package java.util.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> Vector} class represents a </span><span class="keyword">&lt;em&gt;</span><span class="comment">d</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-dimensional Euclidean vector.</span>
+<span class="comment"> *  Vectors are immutable: their values cannot be changed after they are created.</span>
+<span class="comment"> *  It includes methods for addition, subtraction,</span>
+<span class="comment"> *  dot product, scalar product, unit vector, Euclidean norm, and the Euclidean</span>
+<span class="comment"> *  distance between two vectors.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, </span>
+<span class="comment"> *  see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/12oop"</span><span class="keyword">&gt;</span><span class="comment">Section 1.2</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of </span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne. </span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Vector</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> d</span><span class="symbol">;</span><span class="normal">               </span><span class="comment">// dimension of the vector</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[]</span><span class="normal"> data</span><span class="symbol">;</span><span class="normal">       </span><span class="comment">// array of vector's components</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a d-dimensional zero vector.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> d the dimension of the vector</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">Vector</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> d</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">d </span><span class="symbol">=</span><span class="normal"> d</span><span class="symbol">;</span>
+<span class="normal">        data </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[</span><span class="normal">d</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a vector from either an array or a vararg list.</span>
+<span class="comment">     * The vararg syntax supports a constructor that takes a variable number of</span>
+<span class="comment">     * arugments such as Vector x = new Vector(1.0, 2.0, 3.0, 4.0).</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> a  the array or vararg list</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">Vector</span><span class="symbol">(</span><span class="type">double</span><span class="symbol">...</span><span class="normal"> a</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        d </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// defensive copy so that client can't alter our copy of data[]</span>
+<span class="normal">        data </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[</span><span class="normal">d</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> d</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the length of this vector.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the dimension of this vector</span>
+<span class="comment">     * </span><span class="type">@deprecated</span><span class="comment"> Replaced by {</span><span class="type">@link</span><span class="comment"> #dimension()}.</span>
+<span class="comment">     */</span>
+<span class="normal">    @Deprecated</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">length</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> d</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the dimension of this vector.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the dimension of this vector</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">dimension</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> d</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the do product of this vector with the specified vector.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the other vector</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the dot product of this vector and that vector</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if the dimensions of the two vectors are not equal</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">dot</span><span class="symbol">(</span><span class="usertype">Vector</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">d </span><span class="symbol">!=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">d</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Dimensions don't agree"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> sum </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> d</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            sum </span><span class="symbol">=</span><span class="normal"> sum </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> sum</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the magnitude of this vector.</span>
+<span class="comment">     * This is also known as the L2 norm or the Euclidean norm.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the magnitude of this vector</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">magnitude</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">sqrt</span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="function">dot</span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the Euclidean distance between this vector and the specified vector.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the other vector </span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the Euclidean distance between this vector and that vector</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if the dimensions of the two vectors are not equal</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">distanceTo</span><span class="symbol">(</span><span class="usertype">Vector</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">d </span><span class="symbol">!=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">d</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Dimensions don't agree"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="function">minus</span><span class="symbol">(</span><span class="normal">that</span><span class="symbol">).</span><span class="function">magnitude</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the sum of this vector and the specified vector.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the vector to add to this vector</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the vector whose value is {</span><span class="type">@code</span><span class="comment"> (this + that)}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if the dimensions of the two vectors are not equal</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Vector</span><span class="normal"> </span><span class="function">plus</span><span class="symbol">(</span><span class="usertype">Vector</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">d </span><span class="symbol">!=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">d</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Dimensions don't agree"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Vector</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Vector</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> d</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            c</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> c</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the difference between this vector and the specified vector.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the vector to subtract from this vector</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the vector whose value is {</span><span class="type">@code</span><span class="comment"> (this - that)}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if the dimensions of the two vectors are not equal</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Vector</span><span class="normal"> </span><span class="function">minus</span><span class="symbol">(</span><span class="usertype">Vector</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">d </span><span class="symbol">!=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">d</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Dimensions don't agree"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Vector</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Vector</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> d</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            c</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> c</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the ith cartesian coordinate.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i the coordinate index</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the ith cartesian coordinate</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">cartesian</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the scalar-vector product of this vector and the specified scalar</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  alpha the scalar</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the vector whose value is {</span><span class="type">@code</span><span class="comment"> (alpha * this)}</span>
+<span class="comment">     * </span><span class="type">@deprecated</span><span class="comment"> Replaced by {</span><span class="type">@link</span><span class="comment"> #scale(double)}.</span>
+<span class="comment">     */</span>
+<span class="normal">    @Deprecated</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Vector</span><span class="normal"> </span><span class="function">times</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> alpha</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Vector</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Vector</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> d</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            c</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> alpha </span><span class="symbol">*</span><span class="normal"> data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> c</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the scalar-vector product of this vector and the specified scalar</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  alpha the scalar</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the vector whose value is {</span><span class="type">@code</span><span class="comment"> (alpha * this)}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Vector</span><span class="normal"> </span><span class="function">scale</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> alpha</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Vector</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Vector</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> d</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            c</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> alpha </span><span class="symbol">*</span><span class="normal"> data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> c</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a unit vector in the direction of this vector.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a unit vector in the direction of this vector</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> ArithmeticException if this vector is the zero vector</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Vector</span><span class="normal"> </span><span class="function">direction</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="function">magnitude</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">ArithmeticException</span><span class="symbol">(</span><span class="string">"Zero-vector has no direction"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="function">times</span><span class="symbol">(</span><span class="number">1.0</span><span class="normal"> </span><span class="symbol">/</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="function">magnitude</span><span class="symbol">());</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a string representation of this vector.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a string representation of this vector, which consists of the </span>
+<span class="comment">     *         the vector entries, separates by single spaces</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">toString</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">StringBuilder</span><span class="normal"> s </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">StringBuilder</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> d</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            s</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">data</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> s</span><span class="symbol">.</span><span class="function">toString</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> Vector} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">double</span><span class="symbol">[]</span><span class="normal"> xdata </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">2.0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">3.0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">4.0</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">double</span><span class="symbol">[]</span><span class="normal"> ydata </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="number">5.0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">2.0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">4.0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1.0</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">Vector</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Vector</span><span class="symbol">(</span><span class="normal">xdata</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Vector</span><span class="normal"> y </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Vector</span><span class="symbol">(</span><span class="normal">ydata</span><span class="symbol">);</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"   x       = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> x</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"   y       = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> y</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="usertype">Vector</span><span class="normal"> z </span><span class="symbol">=</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">plus</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"   z       = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> z</span><span class="symbol">);</span>
+
+<span class="normal">        z </span><span class="symbol">=</span><span class="normal"> z</span><span class="symbol">.</span><span class="function">times</span><span class="symbol">(</span><span class="number">10.0</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">" 10z       = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> z</span><span class="symbol">);</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"  |x|      = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">magnitude</span><span class="symbol">());</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">" &lt;x, y&gt;    = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">dot</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"dist(x, y) = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">distanceTo</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"dir(x)     = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">direction</span><span class="symbol">());</span>
+
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

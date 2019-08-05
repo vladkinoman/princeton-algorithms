@@ -1,0 +1,247 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>Cycle.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="Cycle code in Java">
+<meta NAME="TITLE" CONTENT="Cycle code in Java">
+<meta NAME="KEYWORDS" CONTENT="Cycle,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>Cycle.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "Cycle.java">Cycle.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac Cycle.java</span>
+<span class="comment"> *  Execution:    java  Cycle filename.txt</span>
+<span class="comment"> *  Dependencies: Graph.java Stack.java In.java StdOut.java</span>
+<span class="comment"> *  Data files:   </span><span class="url">http://algs4.cs.princeton.edu/41graph/tinyG.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/41graph/mediumG.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/41graph/largeG.txt</span><span class="comment">  </span>
+<span class="comment"> *</span>
+<span class="comment"> *  Identifies a cycle.</span>
+<span class="comment"> *  Runs in O(E + V) time.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  % java Cycle tinyG.txt</span>
+<span class="comment"> *  3 4 5 3 </span>
+<span class="comment"> * </span>
+<span class="comment"> *  % java Cycle mediumG.txt </span>
+<span class="comment"> *  15 0 225 15 </span>
+<span class="comment"> * </span>
+<span class="comment"> *  % java Cycle largeG.txt </span>
+<span class="comment"> *  996673 762 840164 4619 785187 194717 996673 </span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> Cycle} class represents a data type for </span>
+<span class="comment"> *  determining whether an undirected graph has a cycle.</span>
+<span class="comment"> *  The </span><span class="keyword">&lt;em&gt;</span><span class="comment">hasCycle</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operation determines whether the graph has</span>
+<span class="comment"> *  a cycle and, if so, the </span><span class="keyword">&lt;em&gt;</span><span class="comment">cycle</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operation returns one.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses depth-first search.</span>
+<span class="comment"> *  The constructor takes time proportional to </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> + </span><span class="keyword">&lt;em&gt;</span><span class="comment">E</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment"> *  (in the worst case),</span>
+<span class="comment"> *  where </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the number of vertices and </span><span class="keyword">&lt;em&gt;</span><span class="comment">E</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the number of edges.</span>
+<span class="comment"> *  Afterwards, the </span><span class="keyword">&lt;em&gt;</span><span class="comment">hasCycle</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operation takes constant time;</span>
+<span class="comment"> *  the </span><span class="keyword">&lt;em&gt;</span><span class="comment">cycle</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operation takes time proportional</span>
+<span class="comment"> *  to the length of the cycle.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/41graph"</span><span class="keyword">&gt;</span><span class="comment">Section 4.1</span><span class="keyword">&lt;/a&gt;</span><span class="comment">   </span>
+<span class="comment"> *  of </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Cycle</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[]</span><span class="normal"> marked</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> edgeTo</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Stack&lt;Integer&gt;</span><span class="normal"> cycle</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Determines whether the undirected graph {</span><span class="type">@code</span><span class="comment"> G} has a cycle and,</span>
+<span class="comment">     * if so, finds such a cycle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> G the undirected graph</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">Cycle</span><span class="symbol">(</span><span class="usertype">Graph</span><span class="normal"> G</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">hasSelfLoop</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">return</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">hasParallelEdges</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">return</span><span class="symbol">;</span>
+<span class="normal">        marked </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[</span><span class="normal">G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">()];</span>
+<span class="normal">        edgeTo </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">()];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">marked</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">])</span>
+<span class="normal">                </span><span class="function">dfs</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> v</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">// does this graph have a self loop?</span>
+<span class="normal">    </span><span class="comment">// side effect: initialize cycle to be self loop</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">hasSelfLoop</span><span class="symbol">(</span><span class="usertype">Graph</span><span class="normal"> G</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> w </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">==</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    cycle </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Stack</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;();</span>
+<span class="normal">                    cycle</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">                    cycle</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">                    </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// does this graph have two parallel edges?</span>
+<span class="normal">    </span><span class="comment">// side effect: initialize cycle to be two parallel edges</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">hasParallelEdges</span><span class="symbol">(</span><span class="usertype">Graph</span><span class="normal"> G</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        marked </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[</span><span class="normal">G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">()];</span>
+
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">            </span><span class="comment">// check for parallel edges incident to v</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> w </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">marked</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">])</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    cycle </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Stack</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;();</span>
+<span class="normal">                    cycle</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">                    cycle</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">);</span>
+<span class="normal">                    cycle</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">                    </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">                marked</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            </span><span class="comment">// reset so marked[v] = false for all v</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> w </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                marked</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns true if the graph {</span><span class="type">@code</span><span class="comment"> G} has a cycle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if the graph has a cycle; {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">hasCycle</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> cycle </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">     </span><span class="comment">/**</span>
+<span class="comment">     * Returns a cycle in the graph {</span><span class="type">@code</span><span class="comment"> G}.</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a cycle if the graph {</span><span class="type">@code</span><span class="comment"> G} has a cycle,</span>
+<span class="comment">     *         and {</span><span class="type">@code</span><span class="comment"> null} otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Iterable&lt;Integer&gt;</span><span class="normal"> </span><span class="function">cycle</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> cycle</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">dfs</span><span class="symbol">(</span><span class="usertype">Graph</span><span class="normal"> G</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> u</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        marked</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> w </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">            </span><span class="comment">// short circuit if cycle already found</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cycle </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="symbol">;</span>
+
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">marked</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">])</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                edgeTo</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> v</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="function">dfs</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> v</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            </span><span class="comment">// check for cycle (but disregard reverse of edge leading to v)</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">w </span><span class="symbol">!=</span><span class="normal"> u</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                cycle </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Stack</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;();</span>
+<span class="normal">                </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> v</span><span class="symbol">;</span><span class="normal"> x </span><span class="symbol">!=</span><span class="normal"> w</span><span class="symbol">;</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> edgeTo</span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">])</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    cycle</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">                cycle</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">);</span>
+<span class="normal">                cycle</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> Cycle} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">In</span><span class="normal"> in </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">In</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">in</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Cycle</span><span class="normal"> finder </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Cycle</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">finder</span><span class="symbol">.</span><span class="function">hasCycle</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">:</span><span class="normal"> finder</span><span class="symbol">.</span><span class="function">cycle</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">print</span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Graph is acyclic"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="cbracket">}</span>
+
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>Complex.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="Complex code in Java">
+<meta NAME="TITLE" CONTENT="Complex code in Java">
+<meta NAME="KEYWORDS" CONTENT="Complex,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>Complex.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "Complex.java">Complex.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac Complex.java</span>
+<span class="comment"> *  Execution:    java Complex</span>
+<span class="comment"> *  Dependencies: StdOut.java</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Data type for complex numbers.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  The data type is "immutable" so once you create and initialize</span>
+<span class="comment"> *  a Complex object, you cannot change it. The "final" keyword</span>
+<span class="comment"> *  when declaring re and im enforces this rule, making it a</span>
+<span class="comment"> *  compile-time error to change the .re or .im fields after</span>
+<span class="comment"> *  they've been initialized.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  % java Complex</span>
+<span class="comment"> *  a            = 5.0 + 6.0i</span>
+<span class="comment"> *  b            = -3.0 + 4.0i</span>
+<span class="comment"> *  Re(a)        = 5.0</span>
+<span class="comment"> *  Im(a)        = 6.0</span>
+<span class="comment"> *  b + a        = 2.0 + 10.0i</span>
+<span class="comment"> *  a - b        = 8.0 + 2.0i</span>
+<span class="comment"> *  a * b        = -39.0 + 2.0i</span>
+<span class="comment"> *  b * a        = -39.0 + 2.0i</span>
+<span class="comment"> *  a / b        = 0.36 - 1.52i</span>
+<span class="comment"> *  (a / b) * b  = 5.0 + 6.0i</span>
+<span class="comment"> *  conj(a)      = 5.0 - 6.0i</span>
+<span class="comment"> *  |a|          = 7.810249675906654</span>
+<span class="comment"> *  tan(a)       = -6.685231390246571E-6 + 1.0000103108981198i</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> Complex} class represents a complex number.</span>
+<span class="comment"> *  Complex numbers are immutable: their values cannot be changed after they</span>
+<span class="comment"> *  are created.</span>
+<span class="comment"> *  It includes methods for addition, subtraction, multiplication, division,</span>
+<span class="comment"> *  conjugation, and other common functions on complex numbers.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/99scientific"</span><span class="keyword">&gt;</span><span class="comment">Section 9.9</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Complex</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> re</span><span class="symbol">;</span><span class="normal">   </span><span class="comment">// the real part</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> im</span><span class="symbol">;</span><span class="normal">   </span><span class="comment">// the imaginary part</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a complex number from the specified real and imaginary parts.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> real the real part</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> imag the imaginary part</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> real</span><span class="symbol">,</span><span class="normal"> </span><span class="type">double</span><span class="normal"> imag</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        re </span><span class="symbol">=</span><span class="normal"> real</span><span class="symbol">;</span>
+<span class="normal">        im </span><span class="symbol">=</span><span class="normal"> imag</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a string representation of this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a string representation of this complex number,</span>
+<span class="comment">     *         of the form 34 - 56i.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">toString</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">im </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> re </span><span class="symbol">+</span><span class="normal"> </span><span class="string">""</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">re </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> im </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"i"</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">im </span><span class="symbol">&lt;</span><span class="normal">  </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> re </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" - "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(-</span><span class="normal">im</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"i"</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> re </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" + "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> im </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"i"</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the absolute value of this complex number.</span>
+<span class="comment">     * This quantity is also known as the </span><span class="keyword">&lt;em&gt;</span><span class="comment">modulus</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> or </span><span class="keyword">&lt;em&gt;</span><span class="comment">magnitude</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the absolute value of this complex number</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">abs</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">hypot</span><span class="symbol">(</span><span class="normal">re</span><span class="symbol">,</span><span class="normal"> im</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the phase of this complex number.</span>
+<span class="comment">     * This quantity is also known as the </span><span class="keyword">&lt;em&gt;</span><span class="comment">angle</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> or </span><span class="keyword">&lt;em&gt;</span><span class="comment">argument</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the phase of this complex number, a real number between -pi and pi</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">phase</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">atan2</span><span class="symbol">(</span><span class="normal">im</span><span class="symbol">,</span><span class="normal"> re</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the sum of this complex number and the specified complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the other complex number</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex number whose value is {</span><span class="type">@code</span><span class="comment"> (this + that)}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">plus</span><span class="symbol">(</span><span class="usertype">Complex</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> real </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">re </span><span class="symbol">+</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">re</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> imag </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">im </span><span class="symbol">+</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">im</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">real</span><span class="symbol">,</span><span class="normal"> imag</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the result of subtracting the specified complex number from</span>
+<span class="comment">     * this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the other complex number</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex number whose value is {</span><span class="type">@code</span><span class="comment"> (this - that)}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">minus</span><span class="symbol">(</span><span class="usertype">Complex</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> real </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">re </span><span class="symbol">-</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">re</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> imag </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">im </span><span class="symbol">-</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">im</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">real</span><span class="symbol">,</span><span class="normal"> imag</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the product of this complex number and the specified complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the other complex number</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex number whose value is {</span><span class="type">@code</span><span class="comment"> (this * that)}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">times</span><span class="symbol">(</span><span class="usertype">Complex</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> real </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">re </span><span class="symbol">*</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">re </span><span class="symbol">-</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">im </span><span class="symbol">*</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">im</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> imag </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">re </span><span class="symbol">*</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">im </span><span class="symbol">+</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">im </span><span class="symbol">*</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">re</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">real</span><span class="symbol">,</span><span class="normal"> imag</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the product of this complex number and the specified scalar.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  alpha the scalar</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex number whose value is {</span><span class="type">@code</span><span class="comment"> (alpha * this)}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">scale</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> alpha</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">alpha </span><span class="symbol">*</span><span class="normal"> re</span><span class="symbol">,</span><span class="normal"> alpha </span><span class="symbol">*</span><span class="normal"> im</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the product of this complex number and the specified scalar.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  alpha the scalar</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex number whose value is {</span><span class="type">@code</span><span class="comment"> (alpha * this)}</span>
+<span class="comment">     * </span><span class="type">@deprecated</span><span class="comment"> Replaced by {</span><span class="type">@link</span><span class="comment"> #scale(double)}.</span>
+<span class="comment">     */</span>
+<span class="normal">    @Deprecated</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">times</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> alpha</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">alpha </span><span class="symbol">*</span><span class="normal"> re</span><span class="symbol">,</span><span class="normal"> alpha </span><span class="symbol">*</span><span class="normal"> im</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the complex conjugate of this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex conjugate of this complex number</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">conjugate</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">re</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">im</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the reciprocal of this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex number whose value is {</span><span class="type">@code</span><span class="comment"> (1 / this)}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">reciprocal</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> scale </span><span class="symbol">=</span><span class="normal"> re</span><span class="symbol">*</span><span class="normal">re </span><span class="symbol">+</span><span class="normal"> im</span><span class="symbol">*</span><span class="normal">im</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">re </span><span class="symbol">/</span><span class="normal"> scale</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">im </span><span class="symbol">/</span><span class="normal"> scale</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the real part of this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the real part of this complex number</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">re</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> re</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the imaginary part of this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the imaginary part of this complex number</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">im</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> im</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the result of dividing the specified complex number into</span>
+<span class="comment">     * this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the other complex number</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex number whose value is {</span><span class="type">@code</span><span class="comment"> (this / that)}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">divides</span><span class="symbol">(</span><span class="usertype">Complex</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="function">times</span><span class="symbol">(</span><span class="normal">that</span><span class="symbol">.</span><span class="function">reciprocal</span><span class="symbol">());</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the complex exponential of this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex exponential of this complex number</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">exp</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">exp</span><span class="symbol">(</span><span class="normal">re</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">cos</span><span class="symbol">(</span><span class="normal">im</span><span class="symbol">),</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">exp</span><span class="symbol">(</span><span class="normal">re</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">sin</span><span class="symbol">(</span><span class="normal">im</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the complex sine of this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex sine of this complex number</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">sin</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">sin</span><span class="symbol">(</span><span class="normal">re</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">cosh</span><span class="symbol">(</span><span class="normal">im</span><span class="symbol">),</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">cos</span><span class="symbol">(</span><span class="normal">re</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">sinh</span><span class="symbol">(</span><span class="normal">im</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the complex cosine of this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex cosine of this complex number</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">cos</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">cos</span><span class="symbol">(</span><span class="normal">re</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">cosh</span><span class="symbol">(</span><span class="normal">im</span><span class="symbol">),</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">sin</span><span class="symbol">(</span><span class="normal">re</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">sinh</span><span class="symbol">(</span><span class="normal">im</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the complex tangent of this complex number.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complex tangent of this complex number</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Complex</span><span class="normal"> </span><span class="function">tan</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">sin</span><span class="symbol">().</span><span class="function">divides</span><span class="symbol">(</span><span class="function">cos</span><span class="symbol">());</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> Complex} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Complex</span><span class="normal"> a </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(</span><span class="number">5.0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">6.0</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Complex</span><span class="normal"> b </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Complex</span><span class="symbol">(-</span><span class="number">3.0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">4.0</span><span class="symbol">);</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"a            = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"b            = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> b</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Re(a)        = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">re</span><span class="symbol">());</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Im(a)        = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">im</span><span class="symbol">());</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"b + a        = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> b</span><span class="symbol">.</span><span class="function">plus</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"a - b        = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">minus</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"a * b        = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">times</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"b * a        = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> b</span><span class="symbol">.</span><span class="function">times</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"a / b        = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">divides</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"(a / b) * b  = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">divides</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">).</span><span class="function">times</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"conj(a)      = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">conjugate</span><span class="symbol">());</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"|a|          = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">());</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"tan(a)       = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">tan</span><span class="symbol">());</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>HopcroftKarp.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="HopcroftKarp code in Java">
+<meta NAME="TITLE" CONTENT="HopcroftKarp code in Java">
+<meta NAME="KEYWORDS" CONTENT="HopcroftKarp,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>HopcroftKarp.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "HopcroftKarp.java">HopcroftKarp.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac HopcroftKarp.java</span>
+<span class="comment"> *  Execution:    java HopcroftKarp V1 V2 E</span>
+<span class="comment"> *  Dependencies: FordFulkerson.java FlowNetwork.java FlowEdge.java</span>
+<span class="comment"> *                BipartiteX.java</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Find a maximum cardinality matching (and minimum cardinality vertex cover)</span>
+<span class="comment"> *  in a bipartite graph using Hopcroft-Karp algorithm.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">Iterator</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> HopcroftKarp} class represents a data type for computing a</span>
+<span class="comment"> *  </span><span class="keyword">&lt;em&gt;</span><span class="comment">maximum (cardinality) matching</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> and a</span>
+<span class="comment"> *  </span><span class="keyword">&lt;em&gt;</span><span class="comment">minimum (cardinality) vertex cover</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> in a bipartite graph.</span>
+<span class="comment"> *  A </span><span class="keyword">&lt;em&gt;</span><span class="comment">bipartite graph</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> in a graph whose vertices can be partitioned</span>
+<span class="comment"> *  into two disjoint sets such that every edge has one endpoint in either set.</span>
+<span class="comment"> *  A </span><span class="keyword">&lt;em&gt;</span><span class="comment">matching</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> in a graph is a subset of its edges with no common</span>
+<span class="comment"> *  vertices. A </span><span class="keyword">&lt;em&gt;</span><span class="comment">maximum matching</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is a matching with the maximum number</span>
+<span class="comment"> *  of edges.</span>
+<span class="comment"> *  A </span><span class="keyword">&lt;em&gt;</span><span class="comment">perfect matching</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is a matching which matches all vertices in the graph.</span>
+<span class="comment"> *  A </span><span class="keyword">&lt;em&gt;</span><span class="comment">vertex cover</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> in a graph is a subset of its vertices such that</span>
+<span class="comment"> *  every edge is incident to at least one vertex. A </span><span class="keyword">&lt;em&gt;</span><span class="comment">minimum vertex cover</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment"> *  is a vertex cover with the minimum number of vertices.</span>
+<span class="comment"> *  By Konig's theorem, in any biparite</span>
+<span class="comment"> *  graph, the maximum number of edges in matching equals the minimum number</span>
+<span class="comment"> *  of vertices in a vertex cover.</span>
+<span class="comment"> *  The maximum matching problem in </span><span class="keyword">&lt;em&gt;</span><span class="comment">nonbipartite</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> graphs is</span>
+<span class="comment"> *  also important, but all known algorithms for this more general problem</span>
+<span class="comment"> *  are substantially more complicated.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses the </span><span class="keyword">&lt;em&gt;</span><span class="comment">Hopcroft-Karp algorithm</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment"> *  The order of growth of the running time in the worst case is</span>
+<span class="comment"> *  (</span><span class="keyword">&lt;em&gt;</span><span class="comment">E</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> + </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment">) sqrt(</span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment">),</span>
+<span class="comment"> *  where </span><span class="keyword">&lt;em&gt;</span><span class="comment">E</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the number of edges and </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the number</span>
+<span class="comment"> *  of vertices in the graph. It uses extra space (not including the graph)</span>
+<span class="comment"> *  proportional to </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  See also {</span><span class="type">@link</span><span class="comment"> BipartiteMatching}, which solves the problem in</span>
+<span class="comment"> *  O(</span><span class="keyword">&lt;em&gt;</span><span class="comment">E V</span><span class="keyword">&lt;/em&gt;</span><span class="comment">) time using the </span><span class="keyword">&lt;em&gt;</span><span class="comment">alternating path algorithm</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment"> *  and </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="normal"> </span><span class="symbol">=</span><span class="string"> "http://algs4.cs.princeton.edu/65reductions/BipartiteMatchingToMaxflow.java.html"</span><span class="keyword">&gt;</span><span class="comment">BipartiteMatchingToMaxflow</span><span class="keyword">&lt;/a&gt;</span><span class="comment">,</span>
+<span class="comment"> *  which solves the problem in O(</span><span class="keyword">&lt;em&gt;</span><span class="comment">E V</span><span class="keyword">&lt;/em&gt;</span><span class="comment">) time via a reduction</span>
+<span class="comment"> *  to the maxflow problem.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see</span>
+<span class="comment"> *  </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/65reductions"</span><span class="keyword">&gt;</span><span class="comment">Section 6.5</span><span class="keyword">&lt;/a&gt;</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">HopcroftKarp</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> UNMATCHED </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal">                 </span><span class="comment">// number of vertices in the graph</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">BipartiteX</span><span class="normal"> bipartition</span><span class="symbol">;</span><span class="normal">      </span><span class="comment">// the bipartition</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> cardinality</span><span class="symbol">;</span><span class="normal">             </span><span class="comment">// cardinality of current matching</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> mate</span><span class="symbol">;</span><span class="normal">                  </span><span class="comment">// mate[v] =  w if v-w is an edge in current matching</span>
+<span class="normal">                                         </span><span class="comment">//         = -1 if v is not in current matching</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[]</span><span class="normal"> inMinVertexCover</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">// inMinVertexCover[v] = true iff v is in min vertex cover</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[]</span><span class="normal"> marked</span><span class="symbol">;</span><span class="normal">            </span><span class="comment">// marked[v] = true iff v is reachable via alternating path</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> distTo</span><span class="symbol">;</span><span class="normal">                </span><span class="comment">// distTo[v] = number of edges on shortest path to v</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Determines a maximum matching (and a minimum vertex cover)</span>
+<span class="comment">     * in a bipartite graph.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  G the bipartite graph</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> G} is not bipartite</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">HopcroftKarp</span><span class="symbol">(</span><span class="usertype">Graph</span><span class="normal"> G</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        bipartition </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">BipartiteX</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">bipartition</span><span class="symbol">.</span><span class="function">isBipartite</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"graph is not bipartite"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// initialize empty matching</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">V </span><span class="symbol">=</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span>
+<span class="normal">        mate </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">            mate</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> UNMATCHED</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// the call to hasAugmentingPath() provides enough info to reconstruct level graph</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="function">hasAugmentingPath</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">            </span><span class="comment">// to be able to iterate over each adjacency list, keeping track of which</span>
+<span class="normal">            </span><span class="comment">// vertex in each adjacency list needs to be explored next</span>
+<span class="normal">            Iterator</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;[]</span><span class="normal"> adj </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Iterator</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;[])</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Iterator</span><span class="symbol">[</span><span class="normal">G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">()];</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">                adj</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">).</span><span class="function">iterator</span><span class="symbol">();</span>
+
+<span class="normal">            </span><span class="comment">// for each unmatched vertex s on one side of bipartition</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> s </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> s </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> s</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">isMatched</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">bipartition</span><span class="symbol">.</span><span class="function">color</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">continue</span><span class="symbol">;</span><span class="normal">   </span><span class="comment">// or use distTo[s] == 0</span>
+
+<span class="normal">                </span><span class="comment">// find augmenting path from s using nonrecursive DFS</span>
+<span class="normal">                </span><span class="usertype">Stack&lt;Integer&gt;</span><span class="normal"> path </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Stack</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;();</span>
+<span class="normal">                path</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">path</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    </span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> path</span><span class="symbol">.</span><span class="function">peek</span><span class="symbol">();</span>
+
+<span class="normal">                    </span><span class="comment">// retreat, no more edges in level graph leaving v</span>
+<span class="normal">                    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">adj</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">].</span><span class="function">hasNext</span><span class="symbol">())</span>
+<span class="normal">                        path</span><span class="symbol">.</span><span class="function">pop</span><span class="symbol">();</span>
+
+<span class="normal">                    </span><span class="comment">// advance</span>
+<span class="normal">                    </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        </span><span class="comment">// process edge v-w only if it is an edge in level graph</span>
+<span class="normal">                        </span><span class="type">int</span><span class="normal"> w </span><span class="symbol">=</span><span class="normal"> adj</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">].</span><span class="function">next</span><span class="symbol">();</span>
+<span class="normal">                        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">isLevelGraphEdge</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">continue</span><span class="symbol">;</span>
+
+<span class="normal">                        </span><span class="comment">// add w to augmenting path</span>
+<span class="normal">                        path</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">);</span>
+
+<span class="normal">                        </span><span class="comment">// augmenting path found: update the matching</span>
+<span class="normal">                        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">isMatched</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                            </span><span class="comment">// StdOut.println("augmenting path: " + toString(path));</span>
+
+<span class="normal">                            </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">path</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                                </span><span class="type">int</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> path</span><span class="symbol">.</span><span class="function">pop</span><span class="symbol">();</span>
+<span class="normal">                                </span><span class="type">int</span><span class="normal"> y </span><span class="symbol">=</span><span class="normal"> path</span><span class="symbol">.</span><span class="function">pop</span><span class="symbol">();</span>
+<span class="normal">                                mate</span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> y</span><span class="symbol">;</span>
+<span class="normal">                                mate</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">                            </span><span class="cbracket">}</span>
+<span class="normal">                            cardinality</span><span class="symbol">++;</span>
+<span class="normal">                        </span><span class="cbracket">}</span>
+<span class="normal">                    </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// also find a min vertex cover</span>
+<span class="normal">        inMinVertexCover </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">bipartition</span><span class="symbol">.</span><span class="function">color</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">marked</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">])</span><span class="normal"> inMinVertexCover</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">bipartition</span><span class="symbol">.</span><span class="function">color</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> marked</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">])</span><span class="normal"> inMinVertexCover</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> </span><span class="function">certifySolution</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// string representation of augmenting path (chop off last vertex)</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">toString</span><span class="symbol">(</span><span class="usertype">Iterable&lt;Integer&gt;</span><span class="normal"> path</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">StringBuilder</span><span class="normal"> sb </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">StringBuilder</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">:</span><span class="normal"> path</span><span class="symbol">)</span>
+<span class="normal">            sb</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"-"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">String</span><span class="normal"> s </span><span class="symbol">=</span><span class="normal"> sb</span><span class="symbol">.</span><span class="function">toString</span><span class="symbol">();</span>
+<span class="normal">        s </span><span class="symbol">=</span><span class="normal"> s</span><span class="symbol">.</span><span class="function">substring</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">.</span><span class="function">lastIndexOf</span><span class="symbol">(</span><span class="string">'-'</span><span class="symbol">));</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> s</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">// is the edge v-w in the level graph?</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isLevelGraphEdge</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">distTo</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> distTo</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="function">isResidualGraphEdge</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">// is the edge v-w a forward edge not in the matching or a reverse edge in the matching?</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isResidualGraphEdge</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">mate</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal">  bipartition</span><span class="symbol">.</span><span class="function">color</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">mate</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">bipartition</span><span class="symbol">.</span><span class="function">color</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/*</span>
+<span class="comment">     * is there an augmenting path?</span>
+<span class="comment">     *   - if so, upon termination adj[] contains the level graph;</span>
+<span class="comment">     *   - if not, upon termination marked[] specifies those vertices reachable via an alternating</span>
+<span class="comment">     *     path from one side of the bipartition</span>
+<span class="comment">     *</span>
+<span class="comment">     * an alternating path is a path whose edges belong alternately to the matching and not</span>
+<span class="comment">     * to the matching</span>
+<span class="comment">     *</span>
+<span class="comment">     * an augmenting path is an alternating path that starts and ends at unmatched vertices</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">hasAugmentingPath</span><span class="symbol">(</span><span class="usertype">Graph</span><span class="normal"> G</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// shortest path distances</span>
+<span class="normal">        marked </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        distTo </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">            distTo</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="normal">MAX_VALUE</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// breadth-first search (starting from all unmatched vertices on one side of bipartition)</span>
+<span class="normal">        </span><span class="usertype">Queue&lt;Integer&gt;</span><span class="normal"> queue </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Queue</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;();</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">bipartition</span><span class="symbol">.</span><span class="function">color</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="function">isMatched</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                queue</span><span class="symbol">.</span><span class="function">enqueue</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">                marked</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                distTo</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// run BFS until an augmenting path is found</span>
+<span class="normal">        </span><span class="comment">// (and keep going until all vertices at that distance are explored)</span>
+<span class="normal">        </span><span class="type">boolean</span><span class="normal"> hasAugmentingPath </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">queue</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> queue</span><span class="symbol">.</span><span class="function">dequeue</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> w </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">                </span><span class="comment">// forward edge not in matching or backwards edge in matching</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">isResidualGraphEdge</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">marked</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">])</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        distTo</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> distTo</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">                        marked</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">isMatched</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">))</span>
+<span class="normal">                            hasAugmentingPath </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+
+<span class="normal">                        </span><span class="comment">// stop enqueuing vertices once an alternating path has been discovered</span>
+<span class="normal">                        </span><span class="comment">// (no vertex on same side will be marked if its shortest path distance longer)</span>
+<span class="normal">                        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">hasAugmentingPath</span><span class="symbol">)</span><span class="normal"> queue</span><span class="symbol">.</span><span class="function">enqueue</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">);</span>
+<span class="normal">                    </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> hasAugmentingPath</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the vertex to which the specified vertex is matched in</span>
+<span class="comment">     * the maximum matching computed by the algorithm.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  v the vertex</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the vertex to which vertex {</span><span class="type">@code</span><span class="comment"> v} is matched in the</span>
+<span class="comment">     *         maximum matching; {</span><span class="type">@code</span><span class="comment"> -1} if the vertex is not matched</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= v &lt; V}</span>
+<span class="comment">     *</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">mate</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">validate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> mate</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns true if the specified vertex is matched in the maximum matching</span>
+<span class="comment">     * computed by the algorithm.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  v the vertex</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if vertex {</span><span class="type">@code</span><span class="comment"> v} is matched in maximum matching;</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= v &lt; V}</span>
+<span class="comment">     *</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isMatched</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">validate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> mate</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> UNMATCHED</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the number of edges in any maximum matching.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the number of edges in any maximum matching</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">size</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> cardinality</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns true if the graph contains a perfect matching.</span>
+<span class="comment">     * That is, the number of edges in a maximum matching is equal to one half</span>
+<span class="comment">     * of the number of vertices in the graph (so that every vertex is matched).</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if the graph contains a perfect matching;</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isPerfect</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> cardinality </span><span class="symbol">*</span><span class="normal"> </span><span class="number">2</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> V</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns true if the specified vertex is in the minimum vertex cover</span>
+<span class="comment">     * computed by the algorithm.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  v the vertex</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if vertex {</span><span class="type">@code</span><span class="comment"> v} is in the minimum vertex cover;</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= v &lt; V}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">inMinVertexCover</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">validate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inMinVertexCover</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// throw an exception if vertex is invalid</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">validate</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> v </span><span class="symbol">&gt;=</span><span class="normal"> V</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"vertex "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> v </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" is not between 0 and "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**************************************************************************</span>
+<span class="comment">     *   </span>
+<span class="comment">     *  The code below is solely for testing correctness of the data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     **************************************************************************/</span>
+
+<span class="normal">    </span><span class="comment">// check that mate[] and inVertexCover[] define a max matching and min vertex cover, respectively</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">certifySolution</span><span class="symbol">(</span><span class="usertype">Graph</span><span class="normal"> G</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// check that mate(v) = w iff mate(w) = v</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">mate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">mate</span><span class="symbol">(</span><span class="function">mate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// check that size() is consistent with mate()</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> matchedVertices </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">mate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> matchedVertices</span><span class="symbol">++;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="number">2</span><span class="symbol">*</span><span class="function">size</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> matchedVertices</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// check that size() is consistent with minVertexCover()</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> sizeOfMinVertexCover </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">inMinVertexCover</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> sizeOfMinVertexCover</span><span class="symbol">++;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">size</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> sizeOfMinVertexCover</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// check that mate() uses each vertex at most once</span>
+<span class="normal">        </span><span class="type">boolean</span><span class="symbol">[]</span><span class="normal"> isMatched </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> w </span><span class="symbol">=</span><span class="normal"> mate</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">w </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">==</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">&gt;=</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">isMatched</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> isMatched</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">])</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            isMatched</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">            isMatched</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// check that mate() uses only edges that appear in the graph</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">mate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="type">boolean</span><span class="normal"> isEdge </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> w </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">mate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> isEdge </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">isEdge</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// check that inMinVertexCover() is a vertex cover</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> w </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">inMinVertexCover</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="function">inMinVertexCover</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/** </span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> HopcroftKarp} data type.   </span>
+<span class="comment">     * Takes three command-line arguments {</span><span class="type">@code</span><span class="comment"> V1}, {</span><span class="type">@code</span><span class="comment"> V2}, and {</span><span class="type">@code</span><span class="comment"> E};</span>
+<span class="comment">     * creates a random bipartite graph with {</span><span class="type">@code</span><span class="comment"> V1} + {</span><span class="type">@code</span><span class="comment"> V2} vertices</span>
+<span class="comment">     * and {</span><span class="type">@code</span><span class="comment"> E} edges; computes a maximum matching and minimum vertex cover;</span>
+<span class="comment">     * and prints the results.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="type">int</span><span class="normal"> V1 </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> V2 </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> E  </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> GraphGenerator</span><span class="symbol">.</span><span class="function">bipartite</span><span class="symbol">(</span><span class="normal">V1</span><span class="symbol">,</span><span class="normal"> V2</span><span class="symbol">,</span><span class="normal"> E</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">1000</span><span class="symbol">)</span><span class="normal"> StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="usertype">HopcroftKarp</span><span class="normal"> matching </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">HopcroftKarp</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// print maximum matching</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">printf</span><span class="symbol">(</span><span class="string">"Number of edges in max matching        = %d</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> matching</span><span class="symbol">.</span><span class="function">size</span><span class="symbol">());</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">printf</span><span class="symbol">(</span><span class="string">"Number of vertices in min vertex cover = %d</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> matching</span><span class="symbol">.</span><span class="function">size</span><span class="symbol">());</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">printf</span><span class="symbol">(</span><span class="string">"Graph has a perfect matching           = %b</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> matching</span><span class="symbol">.</span><span class="function">isPerfect</span><span class="symbol">());</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&gt;=</span><span class="normal"> </span><span class="number">1000</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="symbol">;</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">print</span><span class="symbol">(</span><span class="string">"Max matching: "</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> w </span><span class="symbol">=</span><span class="normal"> matching</span><span class="symbol">.</span><span class="function">mate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">matching</span><span class="symbol">.</span><span class="function">isMatched</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal">  </span><span class="comment">// print each edge only once</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">print</span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"-"</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> w </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        </span><span class="comment">// print minimum vertex cover</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">print</span><span class="symbol">(</span><span class="string">"Min vertex cover: "</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">matching</span><span class="symbol">.</span><span class="function">inMinVertexCover</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">print</span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

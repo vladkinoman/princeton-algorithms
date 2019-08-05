@@ -1,0 +1,543 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>GraphGenerator.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="GraphGenerator code in Java">
+<meta NAME="TITLE" CONTENT="GraphGenerator code in Java">
+<meta NAME="KEYWORDS" CONTENT="GraphGenerator,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>GraphGenerator.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "GraphGenerator.java">GraphGenerator.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac GraphGenerator.java</span>
+<span class="comment"> *  Execution:    java GraphGenerator V E</span>
+<span class="comment"> *  Dependencies: Graph.java</span>
+<span class="comment"> *</span>
+<span class="comment"> *  A graph generator.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  For many more graph generators, see</span>
+<span class="comment"> *  </span><span class="url">http://networkx.github.io/documentation/latest/reference/generators.html</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> GraphGenerator} class provides static methods for creating</span>
+<span class="comment"> *  various graphs, including Erdos-Renyi random graphs, random bipartite</span>
+<span class="comment"> *  graphs, random k-regular graphs, and random rooted trees.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/41graph"</span><span class="keyword">&gt;</span><span class="comment">Section 4.1</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">GraphGenerator</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Edge</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Comparable</span><span class="symbol">&lt;</span><span class="normal">Edge</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> v</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> w</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="function">Edge</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">&lt;</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">v </span><span class="symbol">=</span><span class="normal"> v</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">w </span><span class="symbol">=</span><span class="normal"> w</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">v </span><span class="symbol">=</span><span class="normal"> w</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">w </span><span class="symbol">=</span><span class="normal"> v</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">compareTo</span><span class="symbol">(</span><span class="usertype">Edge</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">v </span><span class="symbol">&lt;</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">v </span><span class="symbol">&gt;</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">v</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">w </span><span class="symbol">&lt;</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">w</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">w </span><span class="symbol">&gt;</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">w</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// this class cannot be instantiated</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="function">GraphGenerator</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a random simple graph containing {</span><span class="type">@code</span><span class="comment"> V} vertices and {</span><span class="type">@code</span><span class="comment"> E} edges.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> E the number of vertices</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a random simple graph on {</span><span class="type">@code</span><span class="comment"> V} vertices, containing a total</span>
+<span class="comment">     *     of {</span><span class="type">@code</span><span class="comment"> E} edges</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if no such simple graph exists</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">simple</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> E</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">E </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="type">long</span><span class="symbol">)</span><span class="normal"> V</span><span class="symbol">*(</span><span class="normal">V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)/</span><span class="number">2</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Too many edges"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">E </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal">                </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Too few edges"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">SET&lt;Edge&gt;</span><span class="normal"> set </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> SET</span><span class="symbol">&lt;</span><span class="normal">Edge</span><span class="symbol">&gt;();</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">.</span><span class="function">E</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> E</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> StdRandom</span><span class="symbol">.</span><span class="function">uniform</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> w </span><span class="symbol">=</span><span class="normal"> StdRandom</span><span class="symbol">.</span><span class="function">uniform</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="usertype">Edge</span><span class="normal"> e </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Edge</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">v </span><span class="symbol">!=</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">set</span><span class="symbol">.</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                set</span><span class="symbol">.</span><span class="function">add</span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">);</span>
+<span class="normal">                G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a random simple graph on {</span><span class="type">@code</span><span class="comment"> V} vertices, with an </span>
+<span class="comment">     * edge between any two vertices with probability {</span><span class="type">@code</span><span class="comment"> p}. This is sometimes</span>
+<span class="comment">     * referred to as the Erdos-Renyi random graph model.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> p the probability of choosing an edge</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a random simple graph on {</span><span class="type">@code</span><span class="comment"> V} vertices, with an edge between</span>
+<span class="comment">     *     any two vertices with probability {</span><span class="type">@code</span><span class="comment"> p}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if probability is not between 0 and 1</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">simple</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">,</span><span class="normal"> </span><span class="type">double</span><span class="normal"> p</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0.0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> p </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Probability must be between 0 and 1"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> w </span><span class="symbol">=</span><span class="normal"> v</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> w </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> w</span><span class="symbol">++)</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">StdRandom</span><span class="symbol">.</span><span class="function">bernoulli</span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">))</span>
+<span class="normal">                    G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the complete graph on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the complete graph on {</span><span class="type">@code</span><span class="comment"> V} vertices</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">complete</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">simple</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a complete bipartite graph on {</span><span class="type">@code</span><span class="comment"> V1} and {</span><span class="type">@code</span><span class="comment"> V2} vertices.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V1 the number of vertices in one partition</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V2 the number of vertices in the other partition</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a complete bipartite graph on {</span><span class="type">@code</span><span class="comment"> V1} and {</span><span class="type">@code</span><span class="comment"> V2} vertices</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if probability is not between 0 and 1</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">completeBipartite</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V1</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> V2</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">bipartite</span><span class="symbol">(</span><span class="normal">V1</span><span class="symbol">,</span><span class="normal"> V2</span><span class="symbol">,</span><span class="normal"> V1</span><span class="symbol">*</span><span class="normal">V2</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a random simple bipartite graph on {</span><span class="type">@code</span><span class="comment"> V1} and {</span><span class="type">@code</span><span class="comment"> V2} vertices</span>
+<span class="comment">     * with {</span><span class="type">@code</span><span class="comment"> E} edges.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V1 the number of vertices in one partition</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V2 the number of vertices in the other partition</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> E the number of edges</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a random simple bipartite graph on {</span><span class="type">@code</span><span class="comment"> V1} and {</span><span class="type">@code</span><span class="comment"> V2} vertices,</span>
+<span class="comment">     *    containing a total of {</span><span class="type">@code</span><span class="comment"> E} edges</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if no such simple bipartite graph exists</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">bipartite</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V1</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> V2</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> E</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">E </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="type">long</span><span class="symbol">)</span><span class="normal"> V1</span><span class="symbol">*</span><span class="normal">V2</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Too many edges"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">E </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Too few edges"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V1 </span><span class="symbol">+</span><span class="normal"> V2</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V1 </span><span class="symbol">+</span><span class="normal"> V2</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V1 </span><span class="symbol">+</span><span class="normal"> V2</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        StdRandom</span><span class="symbol">.</span><span class="function">shuffle</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="usertype">SET&lt;Edge&gt;</span><span class="normal"> set </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> SET</span><span class="symbol">&lt;</span><span class="normal">Edge</span><span class="symbol">&gt;();</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">.</span><span class="function">E</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> E</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> StdRandom</span><span class="symbol">.</span><span class="function">uniform</span><span class="symbol">(</span><span class="normal">V1</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> V1 </span><span class="symbol">+</span><span class="normal"> StdRandom</span><span class="symbol">.</span><span class="function">uniform</span><span class="symbol">(</span><span class="normal">V2</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="usertype">Edge</span><span class="normal"> e </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Edge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]);</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">set</span><span class="symbol">.</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                set</span><span class="symbol">.</span><span class="function">add</span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">);</span>
+<span class="normal">                G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a random simple bipartite graph on {</span><span class="type">@code</span><span class="comment"> V1} and {</span><span class="type">@code</span><span class="comment"> V2} vertices,</span>
+<span class="comment">     * containing each possible edge with probability {</span><span class="type">@code</span><span class="comment"> p}.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V1 the number of vertices in one partition</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V2 the number of vertices in the other partition</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> p the probability that the graph contains an edge with one endpoint in either side</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a random simple bipartite graph on {</span><span class="type">@code</span><span class="comment"> V1} and {</span><span class="type">@code</span><span class="comment"> V2} vertices,</span>
+<span class="comment">     *    containing each possible edge with probability {</span><span class="type">@code</span><span class="comment"> p}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if probability is not between 0 and 1</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">bipartite</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V1</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> V2</span><span class="symbol">,</span><span class="normal"> </span><span class="type">double</span><span class="normal"> p</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0.0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> p </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Probability must be between 0 and 1"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V1 </span><span class="symbol">+</span><span class="normal"> V2</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V1 </span><span class="symbol">+</span><span class="normal"> V2</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        StdRandom</span><span class="symbol">.</span><span class="function">shuffle</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V1 </span><span class="symbol">+</span><span class="normal"> V2</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> V2</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">StdRandom</span><span class="symbol">.</span><span class="function">bernoulli</span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">))</span>
+<span class="normal">                    G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">V1</span><span class="symbol">+</span><span class="normal">j</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a path graph on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices in the path</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a path graph on {</span><span class="type">@code</span><span class="comment"> V} vertices</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">path</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        StdRandom</span><span class="symbol">.</span><span class="function">shuffle</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a complete binary tree graph on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices in the binary tree</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a complete binary tree graph on {</span><span class="type">@code</span><span class="comment"> V} vertices</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">binaryTree</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        StdRandom</span><span class="symbol">.</span><span class="function">shuffle</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[(</span><span class="normal">i</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)/</span><span class="number">2</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a cycle graph on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices in the cycle</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a cycle graph on {</span><span class="type">@code</span><span class="comment"> V} vertices</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">cycle</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        StdRandom</span><span class="symbol">.</span><span class="function">shuffle</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns an Eulerian cycle graph on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  V the number of vertices in the cycle</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  E the number of edges in the cycle</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a graph that is an Eulerian cycle on {</span><span class="type">@code</span><span class="comment"> V} vertices</span>
+<span class="comment">     *         and {</span><span class="type">@code</span><span class="comment"> E} edges</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if either {</span><span class="type">@code</span><span class="comment"> V &lt;= 0} or {</span><span class="type">@code</span><span class="comment"> E &lt;= 0}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">eulerianCycle</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> E</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">E </span><span class="symbol">&lt;=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"An Eulerian cycle must have at least one edge"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V </span><span class="symbol">&lt;=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"An Eulerian cycle must have at least one vertex"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">E</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> E</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> StdRandom</span><span class="symbol">.</span><span class="function">uniform</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> E</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">E</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns an Eulerian path graph on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  V the number of vertices in the path</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  E the number of edges in the path</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a graph that is an Eulerian path on {</span><span class="type">@code</span><span class="comment"> V} vertices</span>
+<span class="comment">     *         and {</span><span class="type">@code</span><span class="comment"> E} edges</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if either {</span><span class="type">@code</span><span class="comment"> V &lt;= 0} or {</span><span class="type">@code</span><span class="comment"> E &lt; 0}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">eulerianPath</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> E</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">E </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"negative number of edges"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V </span><span class="symbol">&lt;=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"An Eulerian path must have at least one vertex"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">E</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> E</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> StdRandom</span><span class="symbol">.</span><span class="function">uniform</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> E</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a wheel graph on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices in the wheel</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a wheel graph on {</span><span class="type">@code</span><span class="comment"> V} vertices: a single vertex connected to</span>
+<span class="comment">     *     every vertex in a cycle on {</span><span class="type">@code</span><span class="comment"> V-1} vertices</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">wheel</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V </span><span class="symbol">&lt;=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Number of vertices must be at least 2"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        StdRandom</span><span class="symbol">.</span><span class="function">shuffle</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// simple cycle on V-1 vertices</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]);</span>
+
+<span class="normal">        </span><span class="comment">// connect vertices[0] to every vertex on cycle</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a star graph on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices in the star</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a star graph on {</span><span class="type">@code</span><span class="comment"> V} vertices: a single vertex connected to</span>
+<span class="comment">     *     every other vertex</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">star</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V </span><span class="symbol">&lt;=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Number of vertices must be at least 1"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        StdRandom</span><span class="symbol">.</span><span class="function">shuffle</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// connect vertices[0] to every other vertex</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a uniformly random {</span><span class="type">@code</span><span class="comment"> k}-regular graph on {</span><span class="type">@code</span><span class="comment"> V} vertices</span>
+<span class="comment">     * (not necessarily simple). The graph is simple with probability only about e^(-k^2/4),</span>
+<span class="comment">     * which is tiny when k = 14.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices in the graph</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> k degree of each vertex</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a uniformly random {</span><span class="type">@code</span><span class="comment"> k}-regular graph on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">regular</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> k</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">*</span><span class="normal">k </span><span class="symbol">%</span><span class="normal"> </span><span class="number">2</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Number of vertices * k must be even"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// create k copies of each vertex</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> vertices </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">*</span><span class="normal">k</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> k</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                vertices</span><span class="symbol">[</span><span class="normal">v </span><span class="symbol">+</span><span class="normal"> V</span><span class="symbol">*</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> v</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// pick a random perfect matching</span>
+<span class="normal">        StdRandom</span><span class="symbol">.</span><span class="function">shuffle</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">*</span><span class="normal">k</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">vertices</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> vertices</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">i </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// http://www.proofwiki.org/wiki/Labeled_Tree_from_Prüfer_Sequence</span>
+<span class="normal">    </span><span class="comment">// http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.36.6484&amp;rep=rep1&amp;type=pdf</span>
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a uniformly random tree on {</span><span class="type">@code</span><span class="comment"> V} vertices.</span>
+<span class="comment">     * This algorithm uses a Prufer sequence and takes time proportional to </span><span class="keyword">&lt;em&gt;</span><span class="comment">V log V</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> V the number of vertices in the tree</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a uniformly random tree on {</span><span class="type">@code</span><span class="comment"> V} vertices</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">tree</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> V</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// special case</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V </span><span class="symbol">==</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// Cayley's theorem: there are V^(V-2) labeled trees on V vertices</span>
+<span class="normal">        </span><span class="comment">// Prufer sequence: sequence of V-2 values between 0 and V-1</span>
+<span class="normal">        </span><span class="comment">// Prufer's proof of Cayley's theorem: Prufer sequences are in 1-1</span>
+<span class="normal">        </span><span class="comment">// with labeled trees on V vertices</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> prufer </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">-</span><span class="number">2</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">-</span><span class="number">2</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            prufer</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> StdRandom</span><span class="symbol">.</span><span class="function">uniform</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// degree of vertex v = 1 + number of times it appers in Prufer sequence</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> degree </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">V</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">            degree</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">-</span><span class="number">2</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            degree</span><span class="symbol">[</span><span class="normal">prufer</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]]++;</span>
+
+<span class="normal">        </span><span class="comment">// pq contains all vertices of degree 1</span>
+<span class="normal">        </span><span class="usertype">MinPQ&lt;Integer&gt;</span><span class="normal"> pq </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> MinPQ</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;();</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal"> v</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">degree</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> pq</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// repeatedly delMin() degree 1 vertex that has the minimum index</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> V</span><span class="symbol">-</span><span class="number">2</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> pq</span><span class="symbol">.</span><span class="function">delMin</span><span class="symbol">();</span>
+<span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">,</span><span class="normal"> prufer</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">            degree</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">]--;</span>
+<span class="normal">            degree</span><span class="symbol">[</span><span class="normal">prufer</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]]--;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">degree</span><span class="symbol">[</span><span class="normal">prufer</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> pq</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="normal">prufer</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">pq</span><span class="symbol">.</span><span class="function">delMin</span><span class="symbol">(),</span><span class="normal"> pq</span><span class="symbol">.</span><span class="function">delMin</span><span class="symbol">());</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> G</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> GraphGenerator} library.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> V </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> E </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> V1 </span><span class="symbol">=</span><span class="normal"> V</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> V2 </span><span class="symbol">=</span><span class="normal"> V </span><span class="symbol">-</span><span class="normal"> V1</span><span class="symbol">;</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"complete graph"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">complete</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"simple"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">simple</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">,</span><span class="normal"> E</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Erdos-Renyi"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> p </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="type">double</span><span class="symbol">)</span><span class="normal"> E </span><span class="symbol">/</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">*(</span><span class="normal">V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)/</span><span class="number">2.0</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">simple</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">,</span><span class="normal"> p</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"complete bipartite"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">completeBipartite</span><span class="symbol">(</span><span class="normal">V1</span><span class="symbol">,</span><span class="normal"> V2</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"bipartite"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">bipartite</span><span class="symbol">(</span><span class="normal">V1</span><span class="symbol">,</span><span class="normal"> V2</span><span class="symbol">,</span><span class="normal"> E</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Erdos Renyi bipartite"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> q </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="type">double</span><span class="symbol">)</span><span class="normal"> E </span><span class="symbol">/</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V1</span><span class="symbol">*</span><span class="normal">V2</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">bipartite</span><span class="symbol">(</span><span class="normal">V1</span><span class="symbol">,</span><span class="normal"> V2</span><span class="symbol">,</span><span class="normal"> q</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"path"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">path</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"cycle"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">cycle</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"binary tree"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">binaryTree</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"tree"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">tree</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"4-regular"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">regular</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">,</span><span class="normal"> </span><span class="number">4</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"star"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">star</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"wheel"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="function">wheel</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>TrieST.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="TrieST code in Java">
+<meta NAME="TITLE" CONTENT="TrieST code in Java">
+<meta NAME="KEYWORDS" CONTENT="TrieST,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>TrieST.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "TrieST.java">TrieST.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac TrieST.java</span>
+<span class="comment"> *  Execution:    java TrieST &lt; words.txt</span>
+<span class="comment"> *  Dependencies: StdIn.java</span>
+<span class="comment"> *  Data files:   </span><span class="url">http://algs4.cs.princeton.edu/52trie/shellsST.txt</span>
+<span class="comment"> *</span>
+<span class="comment"> *  A string symbol table for extended ASCII strings, implemented</span>
+<span class="comment"> *  using a 256-way trie.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  % java TrieST &lt; shellsST.txt </span>
+<span class="comment"> *  by 4</span>
+<span class="comment"> *  sea 6</span>
+<span class="comment"> *  sells 1</span>
+<span class="comment"> *  she 0</span>
+<span class="comment"> *  shells 3</span>
+<span class="comment"> *  shore 7</span>
+<span class="comment"> *  the 5</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> TrieST} class represents an symbol table of key-value</span>
+<span class="comment"> *  pairs, with string keys and generic values.</span>
+<span class="comment"> *  It supports the usual </span><span class="keyword">&lt;em&gt;</span><span class="comment">put</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">get</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">contains</span><span class="keyword">&lt;/em&gt;</span><span class="comment">,</span>
+<span class="comment"> *  </span><span class="keyword">&lt;em&gt;</span><span class="comment">delete</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">size</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, and </span><span class="keyword">&lt;em&gt;</span><span class="comment">is-empty</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> methods.</span>
+<span class="comment"> *  It also provides character-based methods for finding the string</span>
+<span class="comment"> *  in the symbol table that is the </span><span class="keyword">&lt;em&gt;</span><span class="comment">longest prefix</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> of a given prefix,</span>
+<span class="comment"> *  finding all strings in the symbol table that </span><span class="keyword">&lt;em&gt;</span><span class="comment">start with</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> a given prefix,</span>
+<span class="comment"> *  and finding all strings in the symbol table that </span><span class="keyword">&lt;em&gt;</span><span class="comment">match</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> a given pattern.</span>
+<span class="comment"> *  A symbol table implements the </span><span class="keyword">&lt;em&gt;</span><span class="comment">associative array</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> abstraction:</span>
+<span class="comment"> *  when associating a value with a key that is already in the symbol table,</span>
+<span class="comment"> *  the convention is to replace the old value with the new value.</span>
+<span class="comment"> *  Unlike {</span><span class="type">@link</span><span class="comment"> java.util.Map}, this class uses the convention that</span>
+<span class="comment"> *  values cannot be {</span><span class="type">@code</span><span class="comment"> null}—setting the</span>
+<span class="comment"> *  value associated with a key to {</span><span class="type">@code</span><span class="comment"> null} is equivalent to deleting the key</span>
+<span class="comment"> *  from the symbol table.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses a 256-way trie.</span>
+<span class="comment"> *  The </span><span class="keyword">&lt;em&gt;</span><span class="comment">put</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">contains</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">delete</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, and</span>
+<span class="comment"> *  </span><span class="keyword">&lt;em&gt;</span><span class="comment">longest prefix</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operations take time proportional to the length</span>
+<span class="comment"> *  of the key (in the worst case). Construction takes constant time.</span>
+<span class="comment"> *  The </span><span class="keyword">&lt;em&gt;</span><span class="comment">size</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, and </span><span class="keyword">&lt;em&gt;</span><span class="comment">is-empty</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operations take constant time.</span>
+<span class="comment"> *  Construction takes constant time.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/52trie"</span><span class="keyword">&gt;</span><span class="comment">Section 5.2</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">TrieST</span><span class="symbol">&lt;</span><span class="normal">Value</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> R </span><span class="symbol">=</span><span class="normal"> </span><span class="number">256</span><span class="symbol">;</span><span class="normal">        </span><span class="comment">// extended ASCII</span>
+
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Node</span><span class="normal"> root</span><span class="symbol">;</span><span class="normal">      </span><span class="comment">// root of trie</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal">          </span><span class="comment">// number of keys in trie</span>
+
+<span class="normal">    </span><span class="comment">// R-way trie node</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Node</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Object</span><span class="normal"> val</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> Node</span><span class="symbol">[]</span><span class="normal"> next </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Node</span><span class="symbol">[</span><span class="normal">R</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Initializes an empty string symbol table.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">TrieST</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the value associated with the given key.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> key the key</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the value associated with the given key if the key is in the symbol table</span>
+<span class="comment">     *     and {</span><span class="type">@code</span><span class="comment"> null} if the key is not in the symbol table</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> key} is {</span><span class="type">@code</span><span class="comment"> null}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Value</span><span class="normal"> </span><span class="function">get</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> key</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">key </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"argument to get() is null"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Node</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> </span><span class="function">get</span><span class="symbol">(</span><span class="normal">root</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Value</span><span class="symbol">)</span><span class="normal"> x</span><span class="symbol">.</span><span class="normal">val</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Does this symbol table contain the given key?</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> key the key</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if this symbol table contains {</span><span class="type">@code</span><span class="comment"> key} and</span>
+<span class="comment">     *     {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> key} is {</span><span class="type">@code</span><span class="comment"> null}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">contains</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> key</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">key </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"argument to contains() is null"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">get</span><span class="symbol">(</span><span class="normal">key</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Node</span><span class="normal"> </span><span class="function">get</span><span class="symbol">(</span><span class="usertype">Node</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> d</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">d </span><span class="symbol">==</span><span class="normal"> key</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">())</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">char</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> key</span><span class="symbol">.</span><span class="function">charAt</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">get</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">],</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> d</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Inserts the key-value pair into the symbol table, overwriting the old value</span>
+<span class="comment">     * with the new value if the key is already in the symbol table.</span>
+<span class="comment">     * If the value is {</span><span class="type">@code</span><span class="comment"> null}, this effectively deletes the key from the symbol table.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> key the key</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> val the value</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> key} is {</span><span class="type">@code</span><span class="comment"> null}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">put</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Value</span><span class="normal"> val</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">key </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"first argument to put() is null"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">val </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="function">delete</span><span class="symbol">(</span><span class="normal">key</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> root </span><span class="symbol">=</span><span class="normal"> </span><span class="function">put</span><span class="symbol">(</span><span class="normal">root</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> val</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Node</span><span class="normal"> </span><span class="function">put</span><span class="symbol">(</span><span class="usertype">Node</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Value</span><span class="normal"> val</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> d</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Node</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">d </span><span class="symbol">==</span><span class="normal"> key</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">val </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> n</span><span class="symbol">++;</span>
+<span class="normal">            x</span><span class="symbol">.</span><span class="normal">val </span><span class="symbol">=</span><span class="normal"> val</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="type">char</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> key</span><span class="symbol">.</span><span class="function">charAt</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">);</span>
+<span class="normal">        x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="function">put</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">],</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> val</span><span class="symbol">,</span><span class="normal"> d</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the number of key-value pairs in this symbol table.</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the number of key-value pairs in this symbol table</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">size</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> n</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Is this symbol table empty?</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if this symbol table is empty and {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isEmpty</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">size</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns all keys in the symbol table as an {</span><span class="type">@code</span><span class="comment"> Iterable}.</span>
+<span class="comment">     * To iterate over all of the keys in the symbol table named {</span><span class="type">@code</span><span class="comment"> st},</span>
+<span class="comment">     * use the foreach notation: {</span><span class="type">@code</span><span class="comment"> for (Key key : st.keys())}.</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> all keys in the symbol table as an {</span><span class="type">@code</span><span class="comment"> Iterable}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Iterable&lt;String&gt;</span><span class="normal"> </span><span class="function">keys</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">keysWithPrefix</span><span class="symbol">(</span><span class="string">""</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns all of the keys in the set that start with {</span><span class="type">@code</span><span class="comment"> prefix}.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> prefix the prefix</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> all of the keys in the set that start with {</span><span class="type">@code</span><span class="comment"> prefix},</span>
+<span class="comment">     *     as an iterable</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Iterable&lt;String&gt;</span><span class="normal"> </span><span class="function">keysWithPrefix</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> prefix</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Queue&lt;String&gt;</span><span class="normal"> results </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Queue</span><span class="symbol">&lt;</span><span class="normal">String</span><span class="symbol">&gt;();</span>
+<span class="normal">        </span><span class="usertype">Node</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> </span><span class="function">get</span><span class="symbol">(</span><span class="normal">root</span><span class="symbol">,</span><span class="normal"> prefix</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function">collect</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">StringBuilder</span><span class="symbol">(</span><span class="normal">prefix</span><span class="symbol">),</span><span class="normal"> results</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> results</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">collect</span><span class="symbol">(</span><span class="usertype">Node</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">StringBuilder</span><span class="normal"> prefix</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Queue&lt;String&gt;</span><span class="normal"> results</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">val </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> results</span><span class="symbol">.</span><span class="function">enqueue</span><span class="symbol">(</span><span class="normal">prefix</span><span class="symbol">.</span><span class="function">toString</span><span class="symbol">());</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">char</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> c </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal"> c</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            prefix</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">c</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="function">collect</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">],</span><span class="normal"> prefix</span><span class="symbol">,</span><span class="normal"> results</span><span class="symbol">);</span>
+<span class="normal">            prefix</span><span class="symbol">.</span><span class="function">deleteCharAt</span><span class="symbol">(</span><span class="normal">prefix</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns all of the keys in the symbol table that match {</span><span class="type">@code</span><span class="comment"> pattern},</span>
+<span class="comment">     * where . symbol is treated as a wildcard character.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> pattern the pattern</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> all of the keys in the symbol table that match {</span><span class="type">@code</span><span class="comment"> pattern},</span>
+<span class="comment">     *     as an iterable, where . is treated as a wildcard character.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Iterable&lt;String&gt;</span><span class="normal"> </span><span class="function">keysThatMatch</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> pattern</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Queue&lt;String&gt;</span><span class="normal"> results </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Queue</span><span class="symbol">&lt;</span><span class="normal">String</span><span class="symbol">&gt;();</span>
+<span class="normal">        </span><span class="function">collect</span><span class="symbol">(</span><span class="normal">root</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">StringBuilder</span><span class="symbol">(),</span><span class="normal"> pattern</span><span class="symbol">,</span><span class="normal"> results</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> results</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">collect</span><span class="symbol">(</span><span class="usertype">Node</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">StringBuilder</span><span class="normal"> prefix</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> pattern</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Queue&lt;String&gt;</span><span class="normal"> results</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> d </span><span class="symbol">=</span><span class="normal"> prefix</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">d </span><span class="symbol">==</span><span class="normal"> pattern</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> x</span><span class="symbol">.</span><span class="normal">val </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span>
+<span class="normal">            results</span><span class="symbol">.</span><span class="function">enqueue</span><span class="symbol">(</span><span class="normal">prefix</span><span class="symbol">.</span><span class="function">toString</span><span class="symbol">());</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">d </span><span class="symbol">==</span><span class="normal"> pattern</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">())</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">char</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> pattern</span><span class="symbol">.</span><span class="function">charAt</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">c </span><span class="symbol">==</span><span class="normal"> </span><span class="string">'.'</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">char</span><span class="normal"> ch </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> ch </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal"> ch</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                prefix</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">ch</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="function">collect</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">ch</span><span class="symbol">],</span><span class="normal"> prefix</span><span class="symbol">,</span><span class="normal"> pattern</span><span class="symbol">,</span><span class="normal"> results</span><span class="symbol">);</span>
+<span class="normal">                prefix</span><span class="symbol">.</span><span class="function">deleteCharAt</span><span class="symbol">(</span><span class="normal">prefix</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            prefix</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">c</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="function">collect</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">],</span><span class="normal"> prefix</span><span class="symbol">,</span><span class="normal"> pattern</span><span class="symbol">,</span><span class="normal"> results</span><span class="symbol">);</span>
+<span class="normal">            prefix</span><span class="symbol">.</span><span class="function">deleteCharAt</span><span class="symbol">(</span><span class="normal">prefix</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the string in the symbol table that is the longest prefix of {</span><span class="type">@code</span><span class="comment"> query},</span>
+<span class="comment">     * or {</span><span class="type">@code</span><span class="comment"> null}, if no such string.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> query the query string</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the string in the symbol table that is the longest prefix of {</span><span class="type">@code</span><span class="comment"> query},</span>
+<span class="comment">     *     or {</span><span class="type">@code</span><span class="comment"> null} if no such string</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> query} is {</span><span class="type">@code</span><span class="comment"> null}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">longestPrefixOf</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> query</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">query </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"argument to longestPrefixOf() is null"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> length </span><span class="symbol">=</span><span class="normal"> </span><span class="function">longestPrefixOf</span><span class="symbol">(</span><span class="normal">root</span><span class="symbol">,</span><span class="normal"> query</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">length </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> query</span><span class="symbol">.</span><span class="function">substring</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> length</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// returns the length of the longest string key in the subtrie</span>
+<span class="normal">    </span><span class="comment">// rooted at x that is a prefix of the query string,</span>
+<span class="normal">    </span><span class="comment">// assuming the first d character match and we have already</span>
+<span class="normal">    </span><span class="comment">// found a prefix match of given length (-1 if no such match)</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">longestPrefixOf</span><span class="symbol">(</span><span class="usertype">Node</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> query</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> d</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> length</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> length</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">val </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> length </span><span class="symbol">=</span><span class="normal"> d</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">d </span><span class="symbol">==</span><span class="normal"> query</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">())</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> length</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">char</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> query</span><span class="symbol">.</span><span class="function">charAt</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">longestPrefixOf</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">],</span><span class="normal"> query</span><span class="symbol">,</span><span class="normal"> d</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> length</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Removes the key from the set if the key is present.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> key the key</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> key} is {</span><span class="type">@code</span><span class="comment"> null}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">delete</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> key</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">key </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"argument to delete() is null"</span><span class="symbol">);</span>
+<span class="normal">        root </span><span class="symbol">=</span><span class="normal"> </span><span class="function">delete</span><span class="symbol">(</span><span class="normal">root</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Node</span><span class="normal"> </span><span class="function">delete</span><span class="symbol">(</span><span class="usertype">Node</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> d</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">d </span><span class="symbol">==</span><span class="normal"> key</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">val </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> n</span><span class="symbol">--;</span>
+<span class="normal">            x</span><span class="symbol">.</span><span class="normal">val </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">char</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> key</span><span class="symbol">.</span><span class="function">charAt</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">);</span>
+<span class="normal">            x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="function">delete</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">],</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> d</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// remove subtrie rooted at x if it is completely empty</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">val </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> c </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal"> c</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> TrieST} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// build symbol table from standard input</span>
+<span class="normal">        </span><span class="usertype">TrieST&lt;Integer&gt;</span><span class="normal"> st </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> TrieST</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;();</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">StdIn</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">();</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="usertype">String</span><span class="normal"> key </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readString</span><span class="symbol">();</span>
+<span class="normal">            st</span><span class="symbol">.</span><span class="function">put</span><span class="symbol">(</span><span class="normal">key</span><span class="symbol">,</span><span class="normal"> i</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// print results</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">st</span><span class="symbol">.</span><span class="function">size</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">100</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"keys(</span><span class="specialchar">\"\"</span><span class="string">):"</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> key </span><span class="symbol">:</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">keys</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">key </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">key</span><span class="symbol">));</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"longestPrefixOf(</span><span class="specialchar">\"</span><span class="string">shellsort</span><span class="specialchar">\"</span><span class="string">):"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">st</span><span class="symbol">.</span><span class="function">longestPrefixOf</span><span class="symbol">(</span><span class="string">"shellsort"</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"longestPrefixOf(</span><span class="specialchar">\"</span><span class="string">quicksort</span><span class="specialchar">\"</span><span class="string">):"</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">st</span><span class="symbol">.</span><span class="function">longestPrefixOf</span><span class="symbol">(</span><span class="string">"quicksort"</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"keysWithPrefix(</span><span class="specialchar">\"</span><span class="string">shor</span><span class="specialchar">\"</span><span class="string">):"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> s </span><span class="symbol">:</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">keysWithPrefix</span><span class="symbol">(</span><span class="string">"shor"</span><span class="symbol">))</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"keysThatMatch(</span><span class="specialchar">\"</span><span class="string">.he.l.</span><span class="specialchar">\"</span><span class="string">):"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> s </span><span class="symbol">:</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">keysThatMatch</span><span class="symbol">(</span><span class="string">".he.l."</span><span class="symbol">))</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

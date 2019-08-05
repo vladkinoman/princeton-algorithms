@@ -1,0 +1,296 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>CollisionSystem.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="CollisionSystem code in Java">
+<meta NAME="TITLE" CONTENT="CollisionSystem code in Java">
+<meta NAME="KEYWORDS" CONTENT="CollisionSystem,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>CollisionSystem.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "CollisionSystem.java">CollisionSystem.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac CollisionSystem.java</span>
+<span class="comment"> *  Execution:    java CollisionSystem n               (n random particles)</span>
+<span class="comment"> *                java CollisionSystem &lt; input.txt     (from a file) </span>
+<span class="comment"> *  Dependencies: StdDraw.java Particle.java MinPQ.java</span>
+<span class="comment"> *  Data files:   </span><span class="url">http://algs4.cs.princeton.edu/61event/diffusion.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/61event/diffusion2.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/61event/diffusion3.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/61event/brownian.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/61event/brownian2.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/61event/billiards5.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/61event/pendulum.txt</span>
+<span class="comment"> *  </span>
+<span class="comment"> *  Creates n random particles and simulates their motion according</span>
+<span class="comment"> *  to the laws of elastic collisions.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">awt</span><span class="symbol">.</span><span class="normal">Color</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> CollisionSystem} class represents a collection of particles</span>
+<span class="comment"> *  moving in the unit box, according to the laws of elastic collision.</span>
+<span class="comment"> *  This event-based simulation relies on a priority queue.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, </span>
+<span class="comment"> *  see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/61event"</span><span class="keyword">&gt;</span><span class="comment">Section 6.1</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of </span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne. </span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">CollisionSystem</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">double</span><span class="normal"> HZ </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.5</span><span class="symbol">;</span><span class="normal">    </span><span class="comment">// number of redraw events per clock tick</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">MinPQ&lt;Event&gt;</span><span class="normal"> pq</span><span class="symbol">;</span><span class="normal">          </span><span class="comment">// the priority queue</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="normal"> t  </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span><span class="normal">          </span><span class="comment">// simulation clock time</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> Particle</span><span class="symbol">[]</span><span class="normal"> particles</span><span class="symbol">;</span><span class="normal">     </span><span class="comment">// the array of particles</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a system with the specified collection of particles.</span>
+<span class="comment">     * The individual particles will be mutated during the simulation.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  particles the array of particles</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">CollisionSystem</span><span class="symbol">(</span><span class="normal">Particle</span><span class="symbol">[]</span><span class="normal"> particles</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">particles </span><span class="symbol">=</span><span class="normal"> particles</span><span class="symbol">.</span><span class="function">clone</span><span class="symbol">();</span><span class="normal">   </span><span class="comment">// defensive copy</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// updates priority queue with all new events for particle a</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">predict</span><span class="symbol">(</span><span class="usertype">Particle</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> </span><span class="type">double</span><span class="normal"> limit</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// particle-particle collisions</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> particles</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">double</span><span class="normal"> dt </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">timeToHit</span><span class="symbol">(</span><span class="normal">particles</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">t </span><span class="symbol">+</span><span class="normal"> dt </span><span class="symbol">&lt;=</span><span class="normal"> limit</span><span class="symbol">)</span>
+<span class="normal">                pq</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> </span><span class="function">Event</span><span class="symbol">(</span><span class="normal">t </span><span class="symbol">+</span><span class="normal"> dt</span><span class="symbol">,</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> particles</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]));</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// particle-wall collisions</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> dtX </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">timeToHitVerticalWall</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> dtY </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">timeToHitHorizontalWall</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">t </span><span class="symbol">+</span><span class="normal"> dtX </span><span class="symbol">&lt;=</span><span class="normal"> limit</span><span class="symbol">)</span><span class="normal"> pq</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> </span><span class="function">Event</span><span class="symbol">(</span><span class="normal">t </span><span class="symbol">+</span><span class="normal"> dtX</span><span class="symbol">,</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">));</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">t </span><span class="symbol">+</span><span class="normal"> dtY </span><span class="symbol">&lt;=</span><span class="normal"> limit</span><span class="symbol">)</span><span class="normal"> pq</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> </span><span class="function">Event</span><span class="symbol">(</span><span class="normal">t </span><span class="symbol">+</span><span class="normal"> dtY</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">,</span><span class="normal"> a</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// redraw all particles</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">redraw</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> limit</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        StdDraw</span><span class="symbol">.</span><span class="function">clear</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> particles</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            particles</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">draw</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        StdDraw</span><span class="symbol">.</span><span class="function">show</span><span class="symbol">();</span>
+<span class="normal">        StdDraw</span><span class="symbol">.</span><span class="function">pause</span><span class="symbol">(</span><span class="number">20</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">t </span><span class="symbol">&lt;</span><span class="normal"> limit</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            pq</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> </span><span class="function">Event</span><span class="symbol">(</span><span class="normal">t </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1.0</span><span class="normal"> </span><span class="symbol">/</span><span class="normal"> HZ</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">));</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">      </span>
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Simulates the system of particles for the specified amount of time.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  limit the amount of time</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">simulate</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> limit</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span>
+<span class="normal">        </span><span class="comment">// initialize PQ with collision events and redraw event</span>
+<span class="normal">        pq </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> MinPQ</span><span class="symbol">&lt;</span><span class="normal">Event</span><span class="symbol">&gt;();</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> particles</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="function">predict</span><span class="symbol">(</span><span class="normal">particles</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> limit</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        pq</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> </span><span class="function">Event</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">));</span><span class="normal">        </span><span class="comment">// redraw event</span>
+
+
+<span class="normal">        </span><span class="comment">// the main event-driven simulation loop</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">pq</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+
+<span class="normal">            </span><span class="comment">// get impending event, discard if invalidated</span>
+<span class="normal">            </span><span class="usertype">Event</span><span class="normal"> e </span><span class="symbol">=</span><span class="normal"> pq</span><span class="symbol">.</span><span class="function">delMin</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">e</span><span class="symbol">.</span><span class="function">isValid</span><span class="symbol">())</span><span class="normal"> </span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="usertype">Particle</span><span class="normal"> a </span><span class="symbol">=</span><span class="normal"> e</span><span class="symbol">.</span><span class="normal">a</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="usertype">Particle</span><span class="normal"> b </span><span class="symbol">=</span><span class="normal"> e</span><span class="symbol">.</span><span class="normal">b</span><span class="symbol">;</span>
+
+<span class="normal">            </span><span class="comment">// physical collision, so update positions, and then simulation clock</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> particles</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">                particles</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">move</span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">.</span><span class="normal">time </span><span class="symbol">-</span><span class="normal"> t</span><span class="symbol">);</span>
+<span class="normal">            t </span><span class="symbol">=</span><span class="normal"> e</span><span class="symbol">.</span><span class="normal">time</span><span class="symbol">;</span>
+
+<span class="normal">            </span><span class="comment">// process event</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal">      </span><span class="symbol">(</span><span class="normal">a </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> b </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">bounceOff</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">);</span><span class="normal">              </span><span class="comment">// particle-particle collision</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> b </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">bounceOffVerticalWall</span><span class="symbol">();</span><span class="normal">   </span><span class="comment">// particle-wall collision</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> b </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> b</span><span class="symbol">.</span><span class="function">bounceOffHorizontalWall</span><span class="symbol">();</span><span class="normal"> </span><span class="comment">// particle-wall collision</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> b </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="function">redraw</span><span class="symbol">(</span><span class="normal">limit</span><span class="symbol">);</span><span class="normal">               </span><span class="comment">// redraw event</span>
+
+<span class="normal">            </span><span class="comment">// update the priority queue with new collisions involving a or b</span>
+<span class="normal">            </span><span class="function">predict</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> limit</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="function">predict</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">,</span><span class="normal"> limit</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">   </span><span class="comment">/***************************************************************************</span>
+<span class="comment">    *  An event during a particle collision simulation. Each event contains</span>
+<span class="comment">    *  the time at which it will occur (assuming no supervening actions)</span>
+<span class="comment">    *  and the particles a and b involved.</span>
+<span class="comment">    *</span>
+<span class="comment">    *    -  a and b both null:      redraw event</span>
+<span class="comment">    *    -  a null, b not null:     collision with vertical wall</span>
+<span class="comment">    *    -  a not null, b null:     collision with horizontal wall</span>
+<span class="comment">    *    -  a and b both not null:  binary collision between a and b</span>
+<span class="comment">    *</span>
+<span class="comment">    ***************************************************************************/</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Event</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Comparable</span><span class="symbol">&lt;</span><span class="normal">Event</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> time</span><span class="symbol">;</span><span class="normal">         </span><span class="comment">// time that event is scheduled to occur</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Particle</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">;</span><span class="normal">       </span><span class="comment">// particles involved in event, possibly null</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> countA</span><span class="symbol">,</span><span class="normal"> countB</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">// collision counts at event creation</span>
+<span class="normal">                </span>
+<span class="normal">        </span>
+<span class="normal">        </span><span class="comment">// create a new event to occur at time t involving a and b</span>
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="function">Event</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> t</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Particle</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Particle</span><span class="normal"> b</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">time </span><span class="symbol">=</span><span class="normal"> t</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">a    </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">b    </span><span class="symbol">=</span><span class="normal"> b</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> countA </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">count</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal">           countA </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">b </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> countB </span><span class="symbol">=</span><span class="normal"> b</span><span class="symbol">.</span><span class="function">count</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal">           countB </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// compare times when two events will occur</span>
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">compareTo</span><span class="symbol">(</span><span class="usertype">Event</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> Double</span><span class="symbol">.</span><span class="function">compare</span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">time</span><span class="symbol">,</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">time</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span>
+<span class="normal">        </span><span class="comment">// has any collision occurred between when event was created and now?</span>
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isValid</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">count</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> countA</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">b </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> b</span><span class="symbol">.</span><span class="function">count</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> countB</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">   </span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> CollisionSystem} data type.</span>
+<span class="comment">     * Reads in the particle collision system from a standard input</span>
+<span class="comment">     * (or generates {</span><span class="type">@code</span><span class="comment"> N} random particles if a command-line integer</span>
+<span class="comment">     * is specified); simulates the system.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        StdDraw</span><span class="symbol">.</span><span class="function">setCanvasSize</span><span class="symbol">(</span><span class="number">800</span><span class="symbol">,</span><span class="normal"> </span><span class="number">800</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// remove the border</span>
+<span class="normal">        </span><span class="comment">// StdDraw.setXscale(1.0/22.0, 21.0/22.0);</span>
+<span class="normal">        </span><span class="comment">// StdDraw.setYscale(1.0/22.0, 21.0/22.0);</span>
+
+<span class="normal">        </span><span class="comment">// enable double buffering</span>
+<span class="normal">        StdDraw</span><span class="symbol">.</span><span class="function">enableDoubleBuffering</span><span class="symbol">();</span>
+
+<span class="normal">        </span><span class="comment">// the array of particles</span>
+<span class="normal">        Particle</span><span class="symbol">[]</span><span class="normal"> particles</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// create n random particles</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">==</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span>
+<span class="normal">            particles </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Particle</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">                particles</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Particle</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// or read from standard input</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readInt</span><span class="symbol">();</span>
+<span class="normal">            particles </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Particle</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="type">double</span><span class="normal"> rx     </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readDouble</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="type">double</span><span class="normal"> ry     </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readDouble</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="type">double</span><span class="normal"> vx     </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readDouble</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="type">double</span><span class="normal"> vy     </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readDouble</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="type">double</span><span class="normal"> radius </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readDouble</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="type">double</span><span class="normal"> mass   </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readDouble</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> r         </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readInt</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> g         </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readInt</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> b         </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readInt</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="usertype">Color</span><span class="normal"> color   </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Color</span><span class="symbol">(</span><span class="normal">r</span><span class="symbol">,</span><span class="normal"> g</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">);</span>
+<span class="normal">                particles</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Particle</span><span class="symbol">(</span><span class="normal">rx</span><span class="symbol">,</span><span class="normal"> ry</span><span class="symbol">,</span><span class="normal"> vx</span><span class="symbol">,</span><span class="normal"> vy</span><span class="symbol">,</span><span class="normal"> radius</span><span class="symbol">,</span><span class="normal"> mass</span><span class="symbol">,</span><span class="normal"> color</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// create collision system and simulate</span>
+<span class="normal">        </span><span class="usertype">CollisionSystem</span><span class="normal"> system </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">CollisionSystem</span><span class="symbol">(</span><span class="normal">particles</span><span class="symbol">);</span>
+<span class="normal">        system</span><span class="symbol">.</span><span class="function">simulate</span><span class="symbol">(</span><span class="number">10000</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">      </span>
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>SymbolGraph.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="SymbolGraph code in Java">
+<meta NAME="TITLE" CONTENT="SymbolGraph code in Java">
+<meta NAME="KEYWORDS" CONTENT="SymbolGraph,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>SymbolGraph.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "SymbolGraph.java">SymbolGraph.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac SymbolGraph.java</span>
+<span class="comment"> *  Execution:    java SymbolGraph filename.txt delimiter</span>
+<span class="comment"> *  Dependencies: ST.java Graph.java In.java StdIn.java StdOut.java</span>
+<span class="comment"> *  Data files:   </span><span class="url">http://algs4.cs.princeton.edu/41graph/routes.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/41graph/movies.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/41graph/moviestiny.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/41graph/moviesG.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/41graph/moviestopGrossing.txt</span>
+<span class="comment"> *  </span>
+<span class="comment"> *  %  java SymbolGraph routes.txt " "</span>
+<span class="comment"> *  JFK</span>
+<span class="comment"> *     MCO</span>
+<span class="comment"> *     ATL</span>
+<span class="comment"> *     ORD</span>
+<span class="comment"> *  LAX</span>
+<span class="comment"> *     PHX</span>
+<span class="comment"> *     LAS</span>
+<span class="comment"> *</span>
+<span class="comment"> *  % java SymbolGraph movies.txt "/"</span>
+<span class="comment"> *  Tin Men (1987)</span>
+<span class="comment"> *     Hershey, Barbara</span>
+<span class="comment"> *     Geppi, Cindy</span>
+<span class="comment"> *     Jones, Kathy (II)</span>
+<span class="comment"> *     Herr, Marcia</span>
+<span class="comment"> *     ...</span>
+<span class="comment"> *     Blumenfeld, Alan</span>
+<span class="comment"> *     DeBoy, David</span>
+<span class="comment"> *  Bacon, Kevin</span>
+<span class="comment"> *     Woodsman, The (2004)</span>
+<span class="comment"> *     Wild Things (1998)</span>
+<span class="comment"> *     Where the Truth Lies (2005)</span>
+<span class="comment"> *     Tremors (1990)</span>
+<span class="comment"> *     ...</span>
+<span class="comment"> *     Apollo 13 (1995)</span>
+<span class="comment"> *     Animal House (1978)</span>
+<span class="comment"> *</span>
+<span class="comment"> * </span>
+<span class="comment"> *  Assumes that input file is encoded using UTF-8.</span>
+<span class="comment"> *  % iconv -f ISO-8859-1 -t UTF-8 movies-iso8859.txt &gt; movies.txt</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> SymbolGraph} class represents an undirected graph, where the</span>
+<span class="comment"> *  vertex names are arbitrary strings.</span>
+<span class="comment"> *  By providing mappings between string vertex names and integers,</span>
+<span class="comment"> *  it serves as a wrapper around the</span>
+<span class="comment"> *  {</span><span class="type">@link</span><span class="comment"> Graph} data type, which assumes the vertex names are integers</span>
+<span class="comment"> *  between 0 and </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> - 1.</span>
+<span class="comment"> *  It also supports initializing a symbol graph from a file.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses an {</span><span class="type">@link</span><span class="comment"> ST} to map from strings to integers,</span>
+<span class="comment"> *  an array to map from integers to strings, and a {</span><span class="type">@link</span><span class="comment"> Graph} to store</span>
+<span class="comment"> *  the underlying graph.</span>
+<span class="comment"> *  The </span><span class="keyword">&lt;em&gt;</span><span class="comment">indexOf</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> and </span><span class="keyword">&lt;em&gt;</span><span class="comment">contains</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operations take time </span>
+<span class="comment"> *  proportional to log </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, where </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the number of vertices.</span>
+<span class="comment"> *  The </span><span class="keyword">&lt;em&gt;</span><span class="comment">nameOf</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operation takes constant time.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/41graph"</span><span class="keyword">&gt;</span><span class="comment">Section 4.1</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">SymbolGraph</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">ST&lt;String, Integer&gt;</span><span class="normal"> st</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">// string -&gt; index</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> String</span><span class="symbol">[]</span><span class="normal"> keys</span><span class="symbol">;</span><span class="normal">           </span><span class="comment">// index  -&gt; string</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> graph</span><span class="symbol">;</span><span class="normal">             </span><span class="comment">// the underlying graph</span>
+
+<span class="normal">    </span><span class="comment">/**  </span>
+<span class="comment">     * Initializes a graph from a file using the specified delimiter.</span>
+<span class="comment">     * Each line in the file contains</span>
+<span class="comment">     * the name of a vertex, followed by a list of the names</span>
+<span class="comment">     * of the vertices adjacent to that vertex, separated by the delimiter.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> filename the name of the file</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> delimiter the delimiter between fields</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">SymbolGraph</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> filename</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> delimiter</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        st </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> ST</span><span class="symbol">&lt;</span><span class="normal">String</span><span class="symbol">,</span><span class="normal"> Integer</span><span class="symbol">&gt;();</span>
+
+<span class="normal">        </span><span class="comment">// First pass builds the index by reading strings to associate</span>
+<span class="normal">        </span><span class="comment">// distinct strings with an index</span>
+<span class="normal">        </span><span class="usertype">In</span><span class="normal"> in </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">In</span><span class="symbol">(</span><span class="normal">filename</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="comment">// while (in.hasNextLine()) {</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">in</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            String</span><span class="symbol">[]</span><span class="normal"> a </span><span class="symbol">=</span><span class="normal"> in</span><span class="symbol">.</span><span class="function">readLine</span><span class="symbol">().</span><span class="function">split</span><span class="symbol">(</span><span class="normal">delimiter</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">st</span><span class="symbol">.</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]))</span>
+<span class="normal">                    st</span><span class="symbol">.</span><span class="function">put</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">size</span><span class="symbol">());</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Done reading "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> filename</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// inverted index to get string keys in an aray</span>
+<span class="normal">        keys </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> String</span><span class="symbol">[</span><span class="normal">st</span><span class="symbol">.</span><span class="function">size</span><span class="symbol">()];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> name </span><span class="symbol">:</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">keys</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            keys</span><span class="symbol">[</span><span class="normal">st</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">name</span><span class="symbol">)]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> name</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// second pass builds the graph by connecting first vertex on each</span>
+<span class="normal">        </span><span class="comment">// line to all others</span>
+<span class="normal">        graph </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Graph</span><span class="symbol">(</span><span class="normal">st</span><span class="symbol">.</span><span class="function">size</span><span class="symbol">());</span>
+<span class="normal">        in </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">In</span><span class="symbol">(</span><span class="normal">filename</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">in</span><span class="symbol">.</span><span class="function">hasNextLine</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            String</span><span class="symbol">[]</span><span class="normal"> a </span><span class="symbol">=</span><span class="normal"> in</span><span class="symbol">.</span><span class="function">readLine</span><span class="symbol">().</span><span class="function">split</span><span class="symbol">(</span><span class="normal">delimiter</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> w </span><span class="symbol">=</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">                graph</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Does the graph contain the vertex named {</span><span class="type">@code</span><span class="comment"> s}?</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> s the name of a vertex</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if {</span><span class="type">@code</span><span class="comment"> s} is the name of a vertex, and {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">contains</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> s</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the integer associated with the vertex named {</span><span class="type">@code</span><span class="comment"> s}.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> s the name of a vertex</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the integer (between 0 and </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> - 1) associated with the vertex named {</span><span class="type">@code</span><span class="comment"> s}</span>
+<span class="comment">     * </span><span class="type">@deprecated</span><span class="comment"> Replaced by {</span><span class="type">@link</span><span class="comment"> #indexOf(String)}.</span>
+<span class="comment">     */</span>
+<span class="normal">    @Deprecated</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">index</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> s</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the integer associated with the vertex named {</span><span class="type">@code</span><span class="comment"> s}.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> s the name of a vertex</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the integer (between 0 and </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> - 1) associated with the vertex named {</span><span class="type">@code</span><span class="comment"> s}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">indexOf</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> s</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> st</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the name of the vertex associated with the integer {</span><span class="type">@code</span><span class="comment"> v}.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  v the integer corresponding to a vertex (between 0 and </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> - 1) </span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the name of the vertex associated with the integer {</span><span class="type">@code</span><span class="comment"> v}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= v &lt; V}</span>
+<span class="comment">     * </span><span class="type">@deprecated</span><span class="comment"> Replaced by {</span><span class="type">@link</span><span class="comment"> #nameOf(int)}.</span>
+<span class="comment">     */</span>
+<span class="normal">    @Deprecated</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">name</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">validateVertex</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> keys</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the name of the vertex associated with the integer {</span><span class="type">@code</span><span class="comment"> v}.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  v the integer corresponding to a vertex (between 0 and </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> - 1) </span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= v &lt; V}</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the name of the vertex associated with the integer {</span><span class="type">@code</span><span class="comment"> v}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">nameOf</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">validateVertex</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> keys</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the graph assoicated with the symbol graph. It is the client's responsibility</span>
+<span class="comment">     * not to mutate the graph.</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the graph associated with the symbol graph</span>
+<span class="comment">     * </span><span class="type">@deprecated</span><span class="comment"> Replaced by {</span><span class="type">@link</span><span class="comment"> #graph()}.</span>
+<span class="comment">     */</span>
+<span class="normal">    @Deprecated</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">G</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> graph</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the graph assoicated with the symbol graph. It is the client's responsibility</span>
+<span class="comment">     * not to mutate the graph.</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the graph associated with the symbol graph</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Graph</span><span class="normal"> </span><span class="function">graph</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> graph</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">validateVertex</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">         </span><span class="type">int</span><span class="normal"> V </span><span class="symbol">=</span><span class="normal"> graph</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> v </span><span class="symbol">&gt;=</span><span class="normal"> V</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"vertex "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> v </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" is not between 0 and "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> SymbolGraph} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">String</span><span class="normal"> filename  </span><span class="symbol">=</span><span class="normal"> args</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="usertype">String</span><span class="normal"> delimiter </span><span class="symbol">=</span><span class="normal"> args</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="usertype">SymbolGraph</span><span class="normal"> sg </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">SymbolGraph</span><span class="symbol">(</span><span class="normal">filename</span><span class="symbol">,</span><span class="normal"> delimiter</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">Graph</span><span class="normal"> graph </span><span class="symbol">=</span><span class="normal"> sg</span><span class="symbol">.</span><span class="function">graph</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">StdIn</span><span class="symbol">.</span><span class="function">hasNextLine</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="usertype">String</span><span class="normal"> source </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readLine</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">sg</span><span class="symbol">.</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">source</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> s </span><span class="symbol">=</span><span class="normal"> sg</span><span class="symbol">.</span><span class="function">index</span><span class="symbol">(</span><span class="normal">source</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">:</span><span class="normal"> graph</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"   "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> sg</span><span class="symbol">.</span><span class="function">name</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">));</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"input not contain '"</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> source </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"'"</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

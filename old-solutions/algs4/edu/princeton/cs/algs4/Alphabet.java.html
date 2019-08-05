@@ -1,0 +1,329 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>Alphabet.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="Alphabet code in Java">
+<meta NAME="TITLE" CONTENT="Alphabet code in Java">
+<meta NAME="KEYWORDS" CONTENT="Alphabet,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>Alphabet.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "Alphabet.java">Alphabet.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac Alphabet.java</span>
+<span class="comment"> *  Execution:    java Alphabet</span>
+<span class="comment"> *  Dependencies: StdOut.java</span>
+<span class="comment"> *  </span>
+<span class="comment"> *  A data type for alphabets, for use with string-processing code</span>
+<span class="comment"> *  that must convert between an alphabet of size R and the integers</span>
+<span class="comment"> *  0 through R-1.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Warning: supports only the basic multilingual plane (BMP), i.e,</span>
+<span class="comment"> *           Unicode characters between U+0000 and U+FFFF.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Alphabet</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The binary alphabet { 0, 1 }.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> BINARY </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="string">"01"</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The octal alphabet { 0, 1, 2, 3, 4, 5, 6, 7 }.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> OCTAL </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="string">"01234567"</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The decimal alphabet { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> DECIMAL </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="string">"0123456789"</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The hexadecimal alphabet { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F }.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> HEXADECIMAL </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="string">"0123456789ABCDEF"</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The DNA alphabet { A, C, T, G }.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> DNA </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="string">"ACGT"</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The lowercase alphabet { a, b, c, ..., z }.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> LOWERCASE </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="string">"abcdefghijklmnopqrstuvwxyz"</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The uppercase alphabet { A, B, C, ..., Z }.</span>
+<span class="comment">     */</span>
+
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> UPPERCASE </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="string">"ABCDEFGHIJKLMNOPQRSTUVWXYZ"</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The protein alphabet { A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y }.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> PROTEIN </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="string">"ACDEFGHIKLMNPQRSTVWY"</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The base-64 alphabet (64 characters).</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> BASE64 </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="string">"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The ASCII alphabet (0-127).</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> ASCII </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="number">128</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The extended ASCII alphabet (0-255).</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> EXTENDED_ASCII </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="number">256</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     *  The Unicode 16 alphabet (0-65,535).</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="usertype">Alphabet</span><span class="normal"> UNICODE16      </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="number">65536</span><span class="symbol">);</span>
+
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">char</span><span class="symbol">[]</span><span class="normal"> alphabet</span><span class="symbol">;</span><span class="normal">     </span><span class="comment">// the characters in the alphabet</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> inverse</span><span class="symbol">;</span><span class="normal">       </span><span class="comment">// indices</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal">         </span><span class="comment">// the radix of the alphabet</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a new alphabet from the given set of characters.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> alpha the set of characters</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> alpha</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// check that alphabet contains no duplicate chars</span>
+<span class="normal">        </span><span class="type">boolean</span><span class="symbol">[]</span><span class="normal"> unicode </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[</span><span class="normal">Character</span><span class="symbol">.</span><span class="normal">MAX_VALUE</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> alpha</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">();</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">char</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> alpha</span><span class="symbol">.</span><span class="function">charAt</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">unicode</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">])</span>
+<span class="normal">                </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Illegal alphabet: repeated character = '"</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> c </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"'"</span><span class="symbol">);</span>
+<span class="normal">            unicode</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        alphabet </span><span class="symbol">=</span><span class="normal"> alpha</span><span class="symbol">.</span><span class="function">toCharArray</span><span class="symbol">();</span>
+<span class="normal">        R </span><span class="symbol">=</span><span class="normal"> alpha</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">();</span>
+<span class="normal">        inverse </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">Character</span><span class="symbol">.</span><span class="normal">MAX_VALUE</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> inverse</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            inverse</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// can't use char since R can be as big as 65,536</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> c </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal"> c</span><span class="symbol">++)</span>
+<span class="normal">            inverse</span><span class="symbol">[</span><span class="normal">alphabet</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> c</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a new alphabet using characters 0 through R-1.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> radix the number of characters in the alphabet (the radix R)</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> radix</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">R </span><span class="symbol">=</span><span class="normal"> radix</span><span class="symbol">;</span>
+<span class="normal">        alphabet </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">char</span><span class="symbol">[</span><span class="normal">R</span><span class="symbol">];</span>
+<span class="normal">        inverse </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">R</span><span class="symbol">];</span>
+
+<span class="normal">        </span><span class="comment">// can't use char since R can be as big as 65,536</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            alphabet</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="type">char</span><span class="symbol">)</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            inverse</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a new alphabet using characters 0 through 255.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">Alphabet</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">(</span><span class="number">256</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns true if the argument is a character in this alphabet.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  c the character</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if {</span><span class="type">@code</span><span class="comment"> c} is a character in this alphabet;</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">contains</span><span class="symbol">(</span><span class="type">char</span><span class="normal"> c</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inverse</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the number of characters in this alphabet (the radix).</span>
+<span class="comment">     * </span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the number of characters in this alphabet</span>
+<span class="comment">     * </span><span class="type">@deprecated</span><span class="comment"> Replaced by {</span><span class="type">@link</span><span class="comment"> #radix()}.</span>
+<span class="comment">     */</span>
+<span class="normal">    @Deprecated</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">R</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> R</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the number of characters in this alphabet (the radix).</span>
+<span class="comment">     * </span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the number of characters in this alphabet</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">radix</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> R</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the binary logarithm of the number of characters in this alphabet.</span>
+<span class="comment">     * </span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the binary logarithm (rounded up) of the number of characters in this alphabet</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">lgR</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> lgR </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> t </span><span class="symbol">=</span><span class="normal"> R</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> t </span><span class="symbol">&gt;=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> t </span><span class="symbol">/=</span><span class="normal"> </span><span class="number">2</span><span class="symbol">)</span>
+<span class="normal">            lgR</span><span class="symbol">++;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> lgR</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the index corresponding to the argument character.</span>
+<span class="comment">     * </span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  c the character</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the index corresponding to the character {</span><span class="type">@code</span><span class="comment"> c}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> c} is a character in this alphabet</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">toIndex</span><span class="symbol">(</span><span class="type">char</span><span class="normal"> c</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">c </span><span class="symbol">&gt;=</span><span class="normal"> inverse</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">||</span><span class="normal"> inverse</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Character "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> c </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" not in alphabet"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inverse</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the indices corresponding to the argument characters.</span>
+<span class="comment">     * </span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  s the characters</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the indices corresponding to the characters {</span><span class="type">@code</span><span class="comment"> s}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless every character in {</span><span class="type">@code</span><span class="comment"> s}</span>
+<span class="comment">     *         is a character in this alphabet</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> </span><span class="function">toIndices</span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> s</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">char</span><span class="symbol">[]</span><span class="normal"> source </span><span class="symbol">=</span><span class="normal"> s</span><span class="symbol">.</span><span class="function">toCharArray</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> target  </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">s</span><span class="symbol">.</span><span class="function">length</span><span class="symbol">()];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> source</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            target</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="function">toIndex</span><span class="symbol">(</span><span class="normal">source</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> target</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the character corresponding to the argument index.</span>
+<span class="comment">     * </span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  index the index</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the character corresponding to the index {</span><span class="type">@code</span><span class="comment"> index}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= index &lt; R}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="function">toChar</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> index</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">index </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> index </span><span class="symbol">&gt;=</span><span class="normal"> R</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"index must be between 0 and "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> R </span><span class="symbol">+</span><span class="normal"> </span><span class="string">": "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> index</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> alphabet</span><span class="symbol">[</span><span class="normal">index</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the characters corresponding to the argument indices.</span>
+<span class="comment">     * </span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  indices the indices</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the characters corresponding to the indices {</span><span class="type">@code</span><span class="comment"> indices}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt; indices[i] &lt; R}</span>
+<span class="comment">     *         for every {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">toChars</span><span class="symbol">(</span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> indices</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">StringBuilder</span><span class="normal"> s </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">StringBuilder</span><span class="symbol">(</span><span class="normal">indices</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> indices</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            s</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="function">toChar</span><span class="symbol">(</span><span class="normal">indices</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]));</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> s</span><span class="symbol">.</span><span class="function">toString</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> Alphabet} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal">  encoded1 </span><span class="symbol">=</span><span class="normal"> Alphabet</span><span class="symbol">.</span><span class="normal">BASE64</span><span class="symbol">.</span><span class="function">toIndices</span><span class="symbol">(</span><span class="string">"NowIsTheTimeForAllGoodMen"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">String</span><span class="normal"> decoded1 </span><span class="symbol">=</span><span class="normal"> Alphabet</span><span class="symbol">.</span><span class="normal">BASE64</span><span class="symbol">.</span><span class="function">toChars</span><span class="symbol">(</span><span class="normal">encoded1</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">decoded1</span><span class="symbol">);</span>
+<span class="normal"> </span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal">  encoded2 </span><span class="symbol">=</span><span class="normal"> Alphabet</span><span class="symbol">.</span><span class="normal">DNA</span><span class="symbol">.</span><span class="function">toIndices</span><span class="symbol">(</span><span class="string">"AACGAACGGTTTACCCCG"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">String</span><span class="normal"> decoded2 </span><span class="symbol">=</span><span class="normal"> Alphabet</span><span class="symbol">.</span><span class="normal">DNA</span><span class="symbol">.</span><span class="function">toChars</span><span class="symbol">(</span><span class="normal">encoded2</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">decoded2</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal">  encoded3 </span><span class="symbol">=</span><span class="normal"> Alphabet</span><span class="symbol">.</span><span class="normal">DECIMAL</span><span class="symbol">.</span><span class="function">toIndices</span><span class="symbol">(</span><span class="string">"01234567890123456789"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">String</span><span class="normal"> decoded3 </span><span class="symbol">=</span><span class="normal"> Alphabet</span><span class="symbol">.</span><span class="normal">DECIMAL</span><span class="symbol">.</span><span class="function">toChars</span><span class="symbol">(</span><span class="normal">encoded3</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">decoded3</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

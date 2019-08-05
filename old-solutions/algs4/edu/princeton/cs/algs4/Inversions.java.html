@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>Inversions.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="Inversions code in Java">
+<meta NAME="TITLE" CONTENT="Inversions code in Java">
+<meta NAME="KEYWORDS" CONTENT="Inversions,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>Inversions.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "Inversions.java">Inversions.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac Inversions.java</span>
+<span class="comment"> *  Execution:    java Inversions &lt; input.txt</span>
+<span class="comment"> *  Dependencies: StdIn.java StdOut.java</span>
+<span class="comment"> *  </span>
+<span class="comment"> *  Read array of n integers and count number of inversions in n log n time.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> Inversions} class provides static methods to count the </span>
+<span class="comment"> *  number of </span><span class="keyword">&lt;em&gt;</span><span class="comment">inversions</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> in either an array of integers or comparables.</span>
+<span class="comment"> *  An inversion in an array {</span><span class="type">@code</span><span class="comment"> a[]} is a pair of indicies {</span><span class="type">@code</span><span class="comment"> i} and</span>
+<span class="comment"> *  {</span><span class="type">@code</span><span class="comment"> j} such that {</span><span class="type">@code</span><span class="comment"> i &lt; j} and {</span><span class="type">@code</span><span class="comment"> a[i] &gt; a[j]}.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses a generalization of mergesort. The </span><span class="keyword">&lt;em&gt;</span><span class="comment">count</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment"> *  operation takes time proportional to </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> log </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment">,</span>
+<span class="comment"> *  where </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the number of keys in the array.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/22mergesort"</span><span class="keyword">&gt;</span><span class="comment">Section 2.2</span><span class="keyword">&lt;/a&gt;</span>
+<span class="comment"> *  of </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Inversions</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">    </span><span class="comment">// do not instantiate</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="function">Inversions</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// merge and count</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">long</span><span class="normal"> </span><span class="function">merge</span><span class="symbol">(</span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> mid</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">long</span><span class="normal"> inversions </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// copy to aux[]</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">;</span><span class="normal"> k </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            aux</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">];</span><span class="normal"> </span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// merge back to a[]</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> mid</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">;</span><span class="normal"> k </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal">      </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&gt;</span><span class="normal"> mid</span><span class="symbol">)</span><span class="normal">           a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">++];</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j </span><span class="symbol">&gt;</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal">            a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">++];</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">])</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">++];</span><span class="normal"> inversions </span><span class="symbol">+=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">mid </span><span class="symbol">-</span><span class="normal"> i </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span><span class="normal"> </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal">                        a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">++];</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inversions</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// return the number of inversions in the subarray b[lo..hi]</span>
+<span class="normal">    </span><span class="comment">// side effect b[lo..hi] is rearranged in ascending order</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">long</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">long</span><span class="normal"> inversions </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">hi </span><span class="symbol">&lt;=</span><span class="normal"> lo</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> mid </span><span class="symbol">=</span><span class="normal"> lo </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">hi </span><span class="symbol">-</span><span class="normal"> lo</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">/</span><span class="normal"> </span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">        inversions </span><span class="symbol">+=</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> mid</span><span class="symbol">);</span><span class="normal">  </span>
+<span class="normal">        inversions </span><span class="symbol">+=</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> mid</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> hi</span><span class="symbol">);</span>
+<span class="normal">        inversions </span><span class="symbol">+=</span><span class="normal"> </span><span class="function">merge</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> mid</span><span class="symbol">,</span><span class="normal"> hi</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> inversions </span><span class="symbol">==</span><span class="normal"> </span><span class="function">brute</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> hi</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inversions</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the number of inversions in the integer array.</span>
+<span class="comment">     * The argument array is not modified.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  a the array</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the number of inversions in the array. An inversion is a pair of </span>
+<span class="comment">     *         indicies {</span><span class="type">@code</span><span class="comment"> i} and {</span><span class="type">@code</span><span class="comment"> j} such that {</span><span class="type">@code</span><span class="comment"> i &lt; j}</span>
+<span class="comment">     *         and {</span><span class="type">@code</span><span class="comment"> a[i] &gt; a[j]}.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">long</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> b   </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> aux </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            b</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="type">long</span><span class="normal"> inversions </span><span class="symbol">=</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inversions</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+
+<span class="normal">    </span><span class="comment">// merge and count (Comparable version)</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal">Key </span><span class="usertype">extends</span><span class="normal"> Comparable</span><span class="symbol">&lt;</span><span class="normal">Key</span><span class="symbol">&gt;&gt;</span><span class="normal"> </span><span class="type">long</span><span class="normal"> </span><span class="function">merge</span><span class="symbol">(</span><span class="normal">Key</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> Key</span><span class="symbol">[]</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> mid</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">long</span><span class="normal"> inversions </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// copy to aux[]</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">;</span><span class="normal"> k </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            aux</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">];</span><span class="normal"> </span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// merge back to a[]</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> mid</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">;</span><span class="normal"> k </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal">      </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&gt;</span><span class="normal"> mid</span><span class="symbol">)</span><span class="normal">                a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">++];</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j </span><span class="symbol">&gt;</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal">                 a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">++];</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">less</span><span class="symbol">(</span><span class="normal">aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">],</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]))</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">++];</span><span class="normal"> inversions </span><span class="symbol">+=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">mid </span><span class="symbol">-</span><span class="normal"> i </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span><span class="normal"> </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal">                             a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">++];</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inversions</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// return the number of inversions in the subarray b[lo..hi]</span>
+<span class="normal">    </span><span class="comment">// side effect b[lo..hi] is rearranged in ascending order</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal">Key </span><span class="usertype">extends</span><span class="normal"> Comparable</span><span class="symbol">&lt;</span><span class="normal">Key</span><span class="symbol">&gt;&gt;</span><span class="normal"> </span><span class="type">long</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="normal">Key</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> Key</span><span class="symbol">[]</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> Key</span><span class="symbol">[]</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">long</span><span class="normal"> inversions </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">hi </span><span class="symbol">&lt;=</span><span class="normal"> lo</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> mid </span><span class="symbol">=</span><span class="normal"> lo </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">hi </span><span class="symbol">-</span><span class="normal"> lo</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">/</span><span class="normal"> </span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">        inversions </span><span class="symbol">+=</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> mid</span><span class="symbol">);</span><span class="normal">  </span>
+<span class="normal">        inversions </span><span class="symbol">+=</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> mid</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> hi</span><span class="symbol">);</span>
+<span class="normal">        inversions </span><span class="symbol">+=</span><span class="normal"> </span><span class="function">merge</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> mid</span><span class="symbol">,</span><span class="normal"> hi</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> inversions </span><span class="symbol">==</span><span class="normal"> </span><span class="function">brute</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> hi</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inversions</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the number of inversions in the comparable array.</span>
+<span class="comment">     * The argument array is not modified.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  a the array</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> </span><span class="keyword">&lt;Key&gt;</span><span class="comment"> the inferred type of the elements in the array</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the number of inversions in the array. An inversion is a pair of </span>
+<span class="comment">     *         indicies {</span><span class="type">@code</span><span class="comment"> i} and {</span><span class="type">@code</span><span class="comment"> j} such that {</span><span class="type">@code</span><span class="comment"> i &lt; j}</span>
+<span class="comment">     *         and {</span><span class="type">@code</span><span class="comment"> a[i].compareTo(a[j]) &gt; 0}.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal">Key </span><span class="usertype">extends</span><span class="normal"> Comparable</span><span class="symbol">&lt;</span><span class="normal">Key</span><span class="symbol">&gt;&gt;</span><span class="normal"> </span><span class="type">long</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="normal">Key</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        Key</span><span class="symbol">[]</span><span class="normal"> b   </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">clone</span><span class="symbol">();</span>
+<span class="normal">        Key</span><span class="symbol">[]</span><span class="normal"> aux </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="function">clone</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="type">long</span><span class="normal"> inversions </span><span class="symbol">=</span><span class="normal"> </span><span class="function">count</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inversions</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">// is v &lt; w ?</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal">Key </span><span class="usertype">extends</span><span class="normal"> Comparable</span><span class="symbol">&lt;</span><span class="normal">Key</span><span class="symbol">&gt;&gt;</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">less</span><span class="symbol">(</span><span class="usertype">Key</span><span class="normal"> v</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Key</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">.</span><span class="function">compareTo</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// count number of inversions in a[lo..hi] via brute force (for debugging only)</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal">Key </span><span class="usertype">extends</span><span class="normal"> Comparable</span><span class="symbol">&lt;</span><span class="normal">Key</span><span class="symbol">&gt;&gt;</span><span class="normal"> </span><span class="type">long</span><span class="normal"> </span><span class="function">brute</span><span class="symbol">(</span><span class="normal">Key</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">long</span><span class="normal"> inversions </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> i </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">less</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">],</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]))</span><span class="normal"> inversions</span><span class="symbol">++;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inversions</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// count number of inversions in a[lo..hi] via brute force (for debugging only)</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">long</span><span class="normal"> </span><span class="function">brute</span><span class="symbol">(</span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">long</span><span class="normal"> inversions </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> i </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">])</span><span class="normal"> inversions</span><span class="symbol">++;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> inversions</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Reads a sequence of integers from standard input and</span>
+<span class="comment">     * prints the number of inversions to standard output.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> a </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readAllInts</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span>
+<span class="normal">        Integer</span><span class="symbol">[]</span><span class="normal"> b </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Integer</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            b</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">Inversions</span><span class="symbol">.</span><span class="function">count</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">));</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">Inversions</span><span class="symbol">.</span><span class="function">count</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

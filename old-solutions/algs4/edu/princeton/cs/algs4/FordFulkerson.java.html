@@ -1,0 +1,344 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>FordFulkerson.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="FordFulkerson code in Java">
+<meta NAME="TITLE" CONTENT="FordFulkerson code in Java">
+<meta NAME="KEYWORDS" CONTENT="FordFulkerson,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>FordFulkerson.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "FordFulkerson.java">FordFulkerson.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac FordFulkerson.java</span>
+<span class="comment"> *  Execution:    java FordFulkerson V E</span>
+<span class="comment"> *  Dependencies: FlowNetwork.java FlowEdge.java Queue.java</span>
+<span class="comment"> *  Data files:   </span><span class="url">http://algs4.cs.princeton.edu/65maxflow/tinyFN.txt</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Ford-Fulkerson algorithm for computing a max flow and </span>
+<span class="comment"> *  a min cut using shortest augmenting path rule.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> FordFulkerson} class represents a data type for computing a</span>
+<span class="comment"> *  </span><span class="keyword">&lt;em&gt;</span><span class="comment">maximum st-flow</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> and </span><span class="keyword">&lt;em&gt;</span><span class="comment">minimum st-cut</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> in a flow</span>
+<span class="comment"> *  network.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses the </span><span class="keyword">&lt;em&gt;</span><span class="comment">Ford-Fulkerson</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> algorithm with</span>
+<span class="comment"> *  the </span><span class="keyword">&lt;em&gt;</span><span class="comment">shortest augmenting path</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> heuristic.</span>
+<span class="comment"> *  The constructor takes time proportional to </span><span class="keyword">&lt;em&gt;</span><span class="comment">E V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> (</span><span class="keyword">&lt;em&gt;</span><span class="comment">E</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> + </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment">)</span>
+<span class="comment"> *  in the worst case and extra space (not including the network)</span>
+<span class="comment"> *  proportional to </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, where </span><span class="keyword">&lt;em&gt;</span><span class="comment">V</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the number of vertices</span>
+<span class="comment"> *  and </span><span class="keyword">&lt;em&gt;</span><span class="comment">E</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the number of edges. In practice, the algorithm will</span>
+<span class="comment"> *  run much faster.</span>
+<span class="comment"> *  Afterwards, the {</span><span class="type">@code</span><span class="comment"> inCut()} and {</span><span class="type">@code</span><span class="comment"> value()} methods take</span>
+<span class="comment"> *  constant time.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  If the capacities and initial flow values are all integers, then this</span>
+<span class="comment"> *  implementation guarantees to compute an integer-valued maximum flow.</span>
+<span class="comment"> *  If the capacities and floating-point numbers, then floating-point</span>
+<span class="comment"> *  roundoff error can accumulate.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation,</span>
+<span class="comment"> *  see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/64maxflow"</span><span class="keyword">&gt;</span><span class="comment">Section 6.4</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">FordFulkerson</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> FLOATING_POINT_EPSILON </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1E-11</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> V</span><span class="symbol">;</span><span class="normal">          </span><span class="comment">// number of vertices</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[]</span><span class="normal"> marked</span><span class="symbol">;</span><span class="normal">     </span><span class="comment">// marked[v] = true iff s-&gt;v path in residual graph</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> FlowEdge</span><span class="symbol">[]</span><span class="normal"> edgeTo</span><span class="symbol">;</span><span class="normal">    </span><span class="comment">// edgeTo[v] = last edge on shortest residual s-&gt;v path</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="normal"> value</span><span class="symbol">;</span><span class="normal">         </span><span class="comment">// current value of max flow</span>
+<span class="normal">  </span>
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Compute a maximum flow and minimum cut in the network {</span><span class="type">@code</span><span class="comment"> G}</span>
+<span class="comment">     * from vertex {</span><span class="type">@code</span><span class="comment"> s} to vertex {</span><span class="type">@code</span><span class="comment"> t}.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  G the flow network</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  s the source vertex</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  t the sink vertex</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= s &lt; V}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= t &lt; V}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> s == t}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if initial flow is infeasible</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">FordFulkerson</span><span class="symbol">(</span><span class="usertype">FlowNetwork</span><span class="normal"> G</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> s</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> t</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        V </span><span class="symbol">=</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="function">validate</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function">validate</span><span class="symbol">(</span><span class="normal">t</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s </span><span class="symbol">==</span><span class="normal"> t</span><span class="symbol">)</span><span class="normal">               </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Source equals sink"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">isFeasible</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Initial flow is infeasible"</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// while there exists an augmenting path, use it</span>
+<span class="normal">        value </span><span class="symbol">=</span><span class="normal"> </span><span class="function">excess</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="function">hasAugmentingPath</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">            </span><span class="comment">// compute bottleneck capacity</span>
+<span class="normal">            </span><span class="type">double</span><span class="normal"> bottle </span><span class="symbol">=</span><span class="normal"> Double</span><span class="symbol">.</span><span class="normal">POSITIVE_INFINITY</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> t</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">!=</span><span class="normal"> s</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> edgeTo</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">].</span><span class="function">other</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                bottle </span><span class="symbol">=</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">min</span><span class="symbol">(</span><span class="normal">bottle</span><span class="symbol">,</span><span class="normal"> edgeTo</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">].</span><span class="function">residualCapacityTo</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">));</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            </span><span class="comment">// augment flow</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> t</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">!=</span><span class="normal"> s</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> edgeTo</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">].</span><span class="function">other</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                edgeTo</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">].</span><span class="function">addResidualFlowTo</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">,</span><span class="normal"> bottle</span><span class="symbol">);</span><span class="normal"> </span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            value </span><span class="symbol">+=</span><span class="normal"> bottle</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// check optimality conditions</span>
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> </span><span class="function">check</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the value of the maximum flow.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the value of the maximum flow</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">value</span><span class="symbol">()</span><span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> value</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns true if the specified vertex is on the {</span><span class="type">@code</span><span class="comment"> s} side of the mincut.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  v vertex</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if vertex {</span><span class="type">@code</span><span class="comment"> v} is on the {</span><span class="type">@code</span><span class="comment"> s} side of the micut;</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= v &lt; V}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">inCut</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">validate</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> marked</span><span class="symbol">[</span><span class="normal">v</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// throw an IllegalArgumentException if v is outside prescibed range</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">validate</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> v </span><span class="symbol">&gt;=</span><span class="normal"> V</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"vertex "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> v </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" is not between 0 and "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">// is there an augmenting path? </span>
+<span class="normal">    </span><span class="comment">// if so, upon termination edgeTo[] will contain a parent-link representation of such a path</span>
+<span class="normal">    </span><span class="comment">// this implementation finds a shortest augmenting path (fewest number of edges),</span>
+<span class="normal">    </span><span class="comment">// which performs well both in theory and in practice</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">hasAugmentingPath</span><span class="symbol">(</span><span class="usertype">FlowNetwork</span><span class="normal"> G</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> s</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> t</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        edgeTo </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> FlowEdge</span><span class="symbol">[</span><span class="normal">G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">()];</span>
+<span class="normal">        marked </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[</span><span class="normal">G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">()];</span>
+
+<span class="normal">        </span><span class="comment">// breadth-first search</span>
+<span class="normal">        </span><span class="usertype">Queue&lt;Integer&gt;</span><span class="normal"> queue </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Queue</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;();</span>
+<span class="normal">        queue</span><span class="symbol">.</span><span class="function">enqueue</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">        marked</span><span class="symbol">[</span><span class="normal">s</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">queue</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">marked</span><span class="symbol">[</span><span class="normal">t</span><span class="symbol">])</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> queue</span><span class="symbol">.</span><span class="function">dequeue</span><span class="symbol">();</span>
+
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">FlowEdge</span><span class="normal"> e </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> w </span><span class="symbol">=</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">other</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">);</span>
+
+<span class="normal">                </span><span class="comment">// if residual capacity from v to w</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">.</span><span class="function">residualCapacityTo</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">marked</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">])</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        edgeTo</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> e</span><span class="symbol">;</span>
+<span class="normal">                        marked</span><span class="symbol">[</span><span class="normal">w</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                        queue</span><span class="symbol">.</span><span class="function">enqueue</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">);</span>
+<span class="normal">                    </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// is there an augmenting path?</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> marked</span><span class="symbol">[</span><span class="normal">t</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+
+<span class="normal">    </span><span class="comment">// return excess flow at vertex v</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">excess</span><span class="symbol">(</span><span class="usertype">FlowNetwork</span><span class="normal"> G</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> v</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> excess </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">FlowEdge</span><span class="normal"> e </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">==</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">from</span><span class="symbol">())</span><span class="normal"> excess </span><span class="symbol">-=</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">flow</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal">               excess </span><span class="symbol">+=</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">flow</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> excess</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// return excess flow at vertex v</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isFeasible</span><span class="symbol">(</span><span class="usertype">FlowNetwork</span><span class="normal"> G</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> s</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> t</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// check that capacity constraints are satisfied</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">FlowEdge</span><span class="normal"> e </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">.</span><span class="function">flow</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">FLOATING_POINT_EPSILON </span><span class="symbol">||</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">flow</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">capacity</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> FLOATING_POINT_EPSILON</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Edge does not satisfy capacity constraints: "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> e</span><span class="symbol">);</span>
+<span class="normal">                    </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// check that net flow into a vertex equals zero, except at source and sink</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">(</span><span class="normal">value </span><span class="symbol">+</span><span class="normal"> </span><span class="function">excess</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> FLOATING_POINT_EPSILON</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Excess at source = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="function">excess</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">));</span>
+<span class="normal">            System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Max flow         = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> value</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">(</span><span class="normal">value </span><span class="symbol">-</span><span class="normal"> </span><span class="function">excess</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> FLOATING_POINT_EPSILON</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Excess at sink   = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="function">excess</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">));</span>
+<span class="normal">            System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Max flow         = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> value</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">==</span><span class="normal"> s </span><span class="symbol">||</span><span class="normal"> v </span><span class="symbol">==</span><span class="normal"> t</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">(</span><span class="function">excess</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> v</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> FLOATING_POINT_EPSILON</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Net flow out of "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> v </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" doesn't equal zero"</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+
+<span class="normal">    </span><span class="comment">// check optimality conditions</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">check</span><span class="symbol">(</span><span class="usertype">FlowNetwork</span><span class="normal"> G</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> s</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> t</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// check that flow is feasible</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">isFeasible</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Flow is infeasible"</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// check that s is on the source side of min cut and that t is not on source side</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">inCut</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"source "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> s </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" is not on source side of min cut"</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">inCut</span><span class="symbol">(</span><span class="normal">t</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"sink "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> t </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" is on source side of min cut"</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// check that value of min cut = value of max flow</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> mincutValue </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">FlowEdge</span><span class="normal"> e </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">v </span><span class="symbol">==</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">from</span><span class="symbol">())</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="function">inCut</span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">.</span><span class="function">from</span><span class="symbol">())</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="function">inCut</span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">.</span><span class="function">to</span><span class="symbol">()))</span>
+<span class="normal">                    mincutValue </span><span class="symbol">+=</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">capacity</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">(</span><span class="normal">mincutValue </span><span class="symbol">-</span><span class="normal"> value</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> FLOATING_POINT_EPSILON</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            System</span><span class="symbol">.</span><span class="normal">err</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Max flow value = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> value </span><span class="symbol">+</span><span class="normal"> </span><span class="string">", min cut value = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> mincutValue</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> FordFulkerson} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// create flow network with V vertices and E edges</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> V </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> E </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> s </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> t </span><span class="symbol">=</span><span class="normal"> V</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">FlowNetwork</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">FlowNetwork</span><span class="symbol">(</span><span class="normal">V</span><span class="symbol">,</span><span class="normal"> E</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// compute maximum flow and minimum cut</span>
+<span class="normal">        </span><span class="usertype">FordFulkerson</span><span class="normal"> maxflow </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">FordFulkerson</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Max flow from "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> s </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" to "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> t</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">FlowEdge</span><span class="normal"> e </span><span class="symbol">:</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">adj</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">v </span><span class="symbol">==</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">from</span><span class="symbol">())</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">flow</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">                    StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"   "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> e</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// print min-cut</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">print</span><span class="symbol">(</span><span class="string">"Min cut: "</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">V</span><span class="symbol">();</span><span class="normal"> v</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">maxflow</span><span class="symbol">.</span><span class="function">inCut</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">))</span><span class="normal"> StdOut</span><span class="symbol">.</span><span class="function">print</span><span class="symbol">(</span><span class="normal">v </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Max flow value = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal">  maxflow</span><span class="symbol">.</span><span class="function">value</span><span class="symbol">());</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

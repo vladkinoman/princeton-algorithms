@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>LinkedBag.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="LinkedBag code in Java">
+<meta NAME="TITLE" CONTENT="LinkedBag code in Java">
+<meta NAME="KEYWORDS" CONTENT="LinkedBag,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>LinkedBag.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "LinkedBag.java">LinkedBag.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac LinkedBag.java</span>
+<span class="comment"> *  Execution:    java LinkedBag &lt; input.txt</span>
+<span class="comment"> *  Dependencies: StdIn.java StdOut.java</span>
+<span class="comment"> *</span>
+<span class="comment"> *  A generic bag or multiset, implemented using a singly-linked list.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  % more tobe.txt </span>
+<span class="comment"> *  to be or not to - be - - that - - - is</span>
+<span class="comment"> *</span>
+<span class="comment"> *  % java Bag &lt; tobe.txt</span>
+<span class="comment"> *  size of bag = 14</span>
+<span class="comment"> *  is</span>
+<span class="comment"> *  -</span>
+<span class="comment"> *  -</span>
+<span class="comment"> *  -</span>
+<span class="comment"> *  that</span>
+<span class="comment"> *  -</span>
+<span class="comment"> *  -</span>
+<span class="comment"> *  be</span>
+<span class="comment"> *  -</span>
+<span class="comment"> *  to</span>
+<span class="comment"> *  not</span>
+<span class="comment"> *  or</span>
+<span class="comment"> *  be</span>
+<span class="comment"> *  to</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">Iterator</span><span class="symbol">;</span>
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">NoSuchElementException</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> LinkedBag} class represents a bag (or multiset) of </span>
+<span class="comment"> *  generic items. It supports insertion and iterating over the </span>
+<span class="comment"> *  items in arbitrary order.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses a singly-linked list with a non-static nested class Node.</span>
+<span class="comment"> *  See {</span><span class="type">@link</span><span class="comment"> Bag} for a version that uses a static nested class.</span>
+<span class="comment"> *  The </span><span class="keyword">&lt;em&gt;</span><span class="comment">add</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">isEmpty</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, and </span><span class="keyword">&lt;em&gt;</span><span class="comment">size</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operations</span>
+<span class="comment"> *  take constant time. Iteration takes time proportional to the number of items.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/13stacks"</span><span class="keyword">&gt;</span><span class="comment">Section 1.3</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">LinkedBag</span><span class="symbol">&lt;</span><span class="normal">Item</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Iterable</span><span class="symbol">&lt;</span><span class="normal">Item</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Node</span><span class="normal"> first</span><span class="symbol">;</span><span class="normal">    </span><span class="comment">// beginning of bag</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal">         </span><span class="comment">// number of elements in bag</span>
+
+<span class="normal">    </span><span class="comment">// helper linked list class</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">Node</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Item</span><span class="normal"> item</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Node</span><span class="normal"> next</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes an empty bag.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">LinkedBag</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        first </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">        n </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Is this bag empty?</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> true if this bag is empty; false otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isEmpty</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> first </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the number of items in this bag.</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the number of items in this bag</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">size</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> n</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Adds the item to this bag.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> item the item to add to this bag</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">add</span><span class="symbol">(</span><span class="usertype">Item</span><span class="normal"> item</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">Node</span><span class="normal"> oldfirst </span><span class="symbol">=</span><span class="normal"> first</span><span class="symbol">;</span>
+<span class="normal">        first </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Node</span><span class="symbol">();</span>
+<span class="normal">        first</span><span class="symbol">.</span><span class="normal">item </span><span class="symbol">=</span><span class="normal"> item</span><span class="symbol">;</span>
+<span class="normal">        first</span><span class="symbol">.</span><span class="normal">next </span><span class="symbol">=</span><span class="normal"> oldfirst</span><span class="symbol">;</span>
+<span class="normal">        n</span><span class="symbol">++;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns an iterator that iterates over the items in the bag.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Iterator&lt;Item&gt;</span><span class="normal"> </span><span class="function">iterator</span><span class="symbol">()</span><span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">ListIterator</span><span class="symbol">();</span><span class="normal">  </span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// an iterator, doesn't implement remove() since it's optional</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">ListIterator</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Iterator</span><span class="symbol">&lt;</span><span class="normal">Item</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Node</span><span class="normal"> current </span><span class="symbol">=</span><span class="normal"> first</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">hasNext</span><span class="symbol">()</span><span class="normal">  </span><span class="cbracket">{</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> current </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span><span class="normal">                     </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">remove</span><span class="symbol">()</span><span class="normal">      </span><span class="cbracket">{</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">UnsupportedOperationException</span><span class="symbol">();</span><span class="normal">  </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Item</span><span class="normal"> </span><span class="function">next</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">hasNext</span><span class="symbol">())</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="usertype">Item</span><span class="normal"> item </span><span class="symbol">=</span><span class="normal"> current</span><span class="symbol">.</span><span class="normal">item</span><span class="symbol">;</span>
+<span class="normal">            current </span><span class="symbol">=</span><span class="normal"> current</span><span class="symbol">.</span><span class="normal">next</span><span class="symbol">;</span><span class="normal"> </span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> item</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> LinkedBag} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">LinkedBag&lt;String&gt;</span><span class="normal"> bag </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> LinkedBag</span><span class="symbol">&lt;</span><span class="normal">String</span><span class="symbol">&gt;();</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">StdIn</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="usertype">String</span><span class="normal"> item </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readString</span><span class="symbol">();</span>
+<span class="normal">            bag</span><span class="symbol">.</span><span class="function">add</span><span class="symbol">(</span><span class="normal">item</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"size of bag = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> bag</span><span class="symbol">.</span><span class="function">size</span><span class="symbol">());</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">String</span><span class="normal"> s </span><span class="symbol">:</span><span class="normal"> bag</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

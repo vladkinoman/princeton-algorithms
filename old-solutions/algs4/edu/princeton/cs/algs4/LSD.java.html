@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>LSD.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="LSD code in Java">
+<meta NAME="TITLE" CONTENT="LSD code in Java">
+<meta NAME="KEYWORDS" CONTENT="LSD,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>LSD.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "LSD.java">LSD.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac LSD.java</span>
+<span class="comment"> *  Execution:    java LSD &lt; input.txt</span>
+<span class="comment"> *  Dependencies: StdIn.java StdOut.java </span>
+<span class="comment"> *  Data files:   </span><span class="url">http://algs4.cs.princeton.edu/51radix/words3.txt</span>
+<span class="comment"> *</span>
+<span class="comment"> *  LSD radix sort</span>
+<span class="comment"> *</span>
+<span class="comment"> *    - Sort a String[] array of n extended ASCII strings (R = 256), each of length w.</span>
+<span class="comment"> *</span>
+<span class="comment"> *    - Sort an int[] array of n 32-bit integers, treating each integer as </span>
+<span class="comment"> *      a sequence of w = 4 bytes (R = 256).</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Uses extra space proportional to n + R.</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  % java LSD &lt; words3.txt</span>
+<span class="comment"> *  all</span>
+<span class="comment"> *  bad</span>
+<span class="comment"> *  bed</span>
+<span class="comment"> *  bug</span>
+<span class="comment"> *  dad</span>
+<span class="comment"> *  ...</span>
+<span class="comment"> *  yes</span>
+<span class="comment"> *  yet</span>
+<span class="comment"> *  zoo</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> LSD} class provides static methods for sorting an</span>
+<span class="comment"> *  array of </span><span class="keyword">&lt;em&gt;</span><span class="comment">w</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-character strings or 32-bit integers using LSD radix sort.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation,</span>
+<span class="comment"> *  see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/51radix"</span><span class="keyword">&gt;</span><span class="comment">Section 5.1</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">LSD</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> BITS_PER_BYTE </span><span class="symbol">=</span><span class="normal"> </span><span class="number">8</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// do not instantiate</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="function">LSD</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**  </span>
+<span class="comment">     * Rearranges the array of W-character strings in ascending order.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> a the array to be sorted</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> w the number of characters per string</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">sort</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> R </span><span class="symbol">=</span><span class="normal"> </span><span class="number">256</span><span class="symbol">;</span><span class="normal">   </span><span class="comment">// extend ASCII alphabet size</span>
+<span class="normal">        String</span><span class="symbol">[]</span><span class="normal"> aux </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> String</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> d </span><span class="symbol">=</span><span class="normal"> w</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> d </span><span class="symbol">&gt;=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> d</span><span class="symbol">--)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="comment">// sort by key-indexed counting on dth character</span>
+
+<span class="normal">            </span><span class="comment">// compute frequency counts</span>
+<span class="normal">            </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> count </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">R</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">                count</span><span class="symbol">[</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">charAt</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">]++;</span>
+
+<span class="normal">            </span><span class="comment">// compute cumulates</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> r </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> r </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal"> r</span><span class="symbol">++)</span>
+<span class="normal">                count</span><span class="symbol">[</span><span class="normal">r</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> count</span><span class="symbol">[</span><span class="normal">r</span><span class="symbol">];</span>
+
+<span class="normal">            </span><span class="comment">// move data</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">                aux</span><span class="symbol">[</span><span class="normal">count</span><span class="symbol">[</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">charAt</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">)]++]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+
+<span class="normal">            </span><span class="comment">// copy back</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">                a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Rearranges the array of 32-bit integers in ascending order.</span>
+<span class="comment">     * This is about 2-3x faster than Arrays.sort().</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> a the array to be sorted</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">sort</span><span class="symbol">(</span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> BITS </span><span class="symbol">=</span><span class="normal"> </span><span class="number">32</span><span class="symbol">;</span><span class="normal">                 </span><span class="comment">// each int is 32 bits </span>
+<span class="normal">        </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> R </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> BITS_PER_BYTE</span><span class="symbol">;</span><span class="normal">    </span><span class="comment">// each bytes is between 0 and 255</span>
+<span class="normal">        </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> MASK </span><span class="symbol">=</span><span class="normal"> R </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal">              </span><span class="comment">// 0xFF</span>
+<span class="normal">        </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> w </span><span class="symbol">=</span><span class="normal"> BITS </span><span class="symbol">/</span><span class="normal"> BITS_PER_BYTE</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">// each int is 4 bytes</span>
+
+<span class="normal">        </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> aux </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> d </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> d </span><span class="symbol">&lt;</span><span class="normal"> w</span><span class="symbol">;</span><span class="normal"> d</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal">         </span>
+
+<span class="normal">            </span><span class="comment">// compute frequency counts</span>
+<span class="normal">            </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> count </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">R</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal">           </span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">&gt;&gt;</span><span class="normal"> BITS_PER_BYTE</span><span class="symbol">*</span><span class="normal">d</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal"> MASK</span><span class="symbol">;</span>
+<span class="normal">                count</span><span class="symbol">[</span><span class="normal">c </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">]++;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            </span><span class="comment">// compute cumulates</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> r </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> r </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal"> r</span><span class="symbol">++)</span>
+<span class="normal">                count</span><span class="symbol">[</span><span class="normal">r</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> count</span><span class="symbol">[</span><span class="normal">r</span><span class="symbol">];</span>
+
+<span class="normal">            </span><span class="comment">// for most significant byte, 0x80-0xFF comes before 0x00-0x7F</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">d </span><span class="symbol">==</span><span class="normal"> w</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> shift1 </span><span class="symbol">=</span><span class="normal"> count</span><span class="symbol">[</span><span class="normal">R</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> count</span><span class="symbol">[</span><span class="normal">R</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">];</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> shift2 </span><span class="symbol">=</span><span class="normal"> count</span><span class="symbol">[</span><span class="normal">R</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">];</span>
+<span class="normal">                </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> r </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> r </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span><span class="normal"> r</span><span class="symbol">++)</span>
+<span class="normal">                    count</span><span class="symbol">[</span><span class="normal">r</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> shift1</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> r </span><span class="symbol">=</span><span class="normal"> R</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span><span class="normal"> r </span><span class="symbol">&lt;</span><span class="normal"> R</span><span class="symbol">;</span><span class="normal"> r</span><span class="symbol">++)</span>
+<span class="normal">                    count</span><span class="symbol">[</span><span class="normal">r</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-=</span><span class="normal"> shift2</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            </span><span class="comment">// move data</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> c </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">&gt;&gt;</span><span class="normal"> BITS_PER_BYTE</span><span class="symbol">*</span><span class="normal">d</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal"> MASK</span><span class="symbol">;</span>
+<span class="normal">                aux</span><span class="symbol">[</span><span class="normal">count</span><span class="symbol">[</span><span class="normal">c</span><span class="symbol">]++]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            </span><span class="comment">// copy back</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">                a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Reads in a sequence of fixed-length strings from standard input;</span>
+<span class="comment">     * LSD radix sorts them;</span>
+<span class="comment">     * and prints them to standard output in ascending order.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        String</span><span class="symbol">[]</span><span class="normal"> a </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readAllStrings</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// check that strings have fixed length</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> w </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="function">length</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">assert</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">length</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> w </span><span class="symbol">:</span><span class="normal"> </span><span class="string">"Strings must have fixed length"</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// sort the strings</span>
+<span class="normal">        </span><span class="function">sort</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// print results</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

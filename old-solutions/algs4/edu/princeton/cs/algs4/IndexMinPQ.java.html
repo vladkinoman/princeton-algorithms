@@ -1,0 +1,437 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>IndexMinPQ.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="IndexMinPQ code in Java">
+<meta NAME="TITLE" CONTENT="IndexMinPQ code in Java">
+<meta NAME="KEYWORDS" CONTENT="IndexMinPQ,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>IndexMinPQ.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "IndexMinPQ.java">IndexMinPQ.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac IndexMinPQ.java</span>
+<span class="comment"> *  Execution:    java IndexMinPQ</span>
+<span class="comment"> *  Dependencies: StdOut.java</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Minimum-oriented indexed PQ implementation using a binary heap.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">Iterator</span><span class="symbol">;</span>
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">NoSuchElementException</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> IndexMinPQ} class represents an indexed priority queue of generic keys.</span>
+<span class="comment"> *  It supports the usual </span><span class="keyword">&lt;em&gt;</span><span class="comment">insert</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> and </span><span class="keyword">&lt;em&gt;</span><span class="comment">delete-the-minimum</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment"> *  operations, along with </span><span class="keyword">&lt;em&gt;</span><span class="comment">delete</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> and </span><span class="keyword">&lt;em&gt;</span><span class="comment">change-the-key</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> </span>
+<span class="comment"> *  methods. In order to let the client refer to keys on the priority queue,</span>
+<span class="comment"> *  an integer between {</span><span class="type">@code</span><span class="comment"> 0} and {</span><span class="type">@code</span><span class="comment"> maxN - 1}</span>
+<span class="comment"> *  is associated with each key—the client uses this integer to specify</span>
+<span class="comment"> *  which key to delete or change.</span>
+<span class="comment"> *  It also supports methods for peeking at the minimum key,</span>
+<span class="comment"> *  testing if the priority queue is empty, and iterating through</span>
+<span class="comment"> *  the keys.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses a binary heap along with an array to associate</span>
+<span class="comment"> *  keys with integers in the given range.</span>
+<span class="comment"> *  The </span><span class="keyword">&lt;em&gt;</span><span class="comment">insert</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">delete-the-minimum</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">delete</span><span class="keyword">&lt;/em&gt;</span><span class="comment">,</span>
+<span class="comment"> *  </span><span class="keyword">&lt;em&gt;</span><span class="comment">change-key</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">decrease-key</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, and </span><span class="keyword">&lt;em&gt;</span><span class="comment">increase-key</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment"> *  operations take logarithmic time.</span>
+<span class="comment"> *  The </span><span class="keyword">&lt;em&gt;</span><span class="comment">is-empty</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">size</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">min-index</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">min-key</span><span class="keyword">&lt;/em&gt;</span><span class="comment">,</span>
+<span class="comment"> *  and </span><span class="keyword">&lt;em&gt;</span><span class="comment">key-of</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> operations take constant time.</span>
+<span class="comment"> *  Construction takes time proportional to the specified capacity.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/24pq"</span><span class="keyword">&gt;</span><span class="comment">Section 2.4</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@param</span><span class="comment"> </span><span class="keyword">&lt;Key&gt;</span><span class="comment"> the generic type of key on this priority queue</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">IndexMinPQ</span><span class="symbol">&lt;</span><span class="normal">Key </span><span class="usertype">extends</span><span class="normal"> Comparable</span><span class="symbol">&lt;</span><span class="normal">Key</span><span class="symbol">&gt;&gt;</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Iterable</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> maxN</span><span class="symbol">;</span><span class="normal">        </span><span class="comment">// maximum number of elements on PQ</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal">           </span><span class="comment">// number of elements on PQ</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> pq</span><span class="symbol">;</span><span class="normal">        </span><span class="comment">// binary heap using 1-based indexing</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> qp</span><span class="symbol">;</span><span class="normal">        </span><span class="comment">// inverse of pq - qp[pq[i]] = pq[qp[i]] = i</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> Key</span><span class="symbol">[]</span><span class="normal"> keys</span><span class="symbol">;</span><span class="normal">      </span><span class="comment">// keys[i] = priority of i</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes an empty indexed priority queue with indices between {</span><span class="type">@code</span><span class="comment"> 0}</span>
+<span class="comment">     * and {</span><span class="type">@code</span><span class="comment"> maxN - 1}.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  maxN the keys on this priority queue are index from {</span><span class="type">@code</span><span class="comment"> 0}</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> maxN - 1}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> maxN &lt; 0}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">IndexMinPQ</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> maxN</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">maxN </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">maxN </span><span class="symbol">=</span><span class="normal"> maxN</span><span class="symbol">;</span>
+<span class="normal">        n </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        keys </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Key</span><span class="symbol">[])</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Comparable</span><span class="symbol">[</span><span class="normal">maxN </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">];</span><span class="normal">    </span><span class="comment">// make this of length maxN??</span>
+<span class="normal">        pq   </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">maxN </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">        qp   </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">maxN </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">];</span><span class="normal">                   </span><span class="comment">// make this of length maxN??</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;=</span><span class="normal"> maxN</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            qp</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns true if this priority queue is empty.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if this priority queue is empty;</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isEmpty</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> n </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Is {</span><span class="type">@code</span><span class="comment"> i} an index on this priority queue?</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i an index</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if {</span><span class="type">@code</span><span class="comment"> i} is an index on this priority queue;</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; maxN}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">contains</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> i </span><span class="symbol">&gt;=</span><span class="normal"> maxN</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> qp</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the number of keys on this priority queue.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the number of keys on this priority queue</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">size</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> n</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Associates key with index {</span><span class="type">@code</span><span class="comment"> i}.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i an index</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  key the key to associate with index {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; maxN}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if there already is an item associated</span>
+<span class="comment">     *         with index {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">insert</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Key</span><span class="normal"> key</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> i </span><span class="symbol">&gt;=</span><span class="normal"> maxN</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"index is already in the priority queue"</span><span class="symbol">);</span>
+<span class="normal">        n</span><span class="symbol">++;</span>
+<span class="normal">        qp</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> n</span><span class="symbol">;</span>
+<span class="normal">        pq</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        keys</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> key</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="function">swim</span><span class="symbol">(</span><span class="normal">n</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns an index associated with a minimum key.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> an index associated with a minimum key</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> NoSuchElementException if this priority queue is empty</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">minIndex</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">n </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">(</span><span class="string">"Priority queue underflow"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> pq</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a minimum key.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a minimum key</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> NoSuchElementException if this priority queue is empty</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Key</span><span class="normal"> </span><span class="function">minKey</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">n </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">(</span><span class="string">"Priority queue underflow"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> keys</span><span class="symbol">[</span><span class="normal">pq</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Removes a minimum key and returns its associated index.</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> an index associated with a minimum key</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> NoSuchElementException if this priority queue is empty</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">delMin</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">n </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">(</span><span class="string">"Priority queue underflow"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> min </span><span class="symbol">=</span><span class="normal"> pq</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="function">exch</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> n</span><span class="symbol">--);</span>
+<span class="normal">        </span><span class="function">sink</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> min </span><span class="symbol">==</span><span class="normal"> pq</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">        qp</span><span class="symbol">[</span><span class="normal">min</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal">        </span><span class="comment">// delete</span>
+<span class="normal">        keys</span><span class="symbol">[</span><span class="normal">min</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span><span class="normal">    </span><span class="comment">// to help with garbage collection</span>
+<span class="normal">        pq</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal">        </span><span class="comment">// not needed</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> min</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the key associated with index {</span><span class="type">@code</span><span class="comment"> i}.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i the index of the key to return</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the key associated with index {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; maxN}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> NoSuchElementException no key is associated with index {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Key</span><span class="normal"> </span><span class="function">keyOf</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> i </span><span class="symbol">&gt;=</span><span class="normal"> maxN</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">(</span><span class="string">"index is not in the priority queue"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> keys</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Change the key associated with index {</span><span class="type">@code</span><span class="comment"> i} to the specified value.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i the index of the key to change</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  key change the key associated with index {</span><span class="type">@code</span><span class="comment"> i} to this key</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; maxN}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> NoSuchElementException no key is associated with index {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">changeKey</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Key</span><span class="normal"> key</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> i </span><span class="symbol">&gt;=</span><span class="normal"> maxN</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">(</span><span class="string">"index is not in the priority queue"</span><span class="symbol">);</span>
+<span class="normal">        keys</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> key</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="function">swim</span><span class="symbol">(</span><span class="normal">qp</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="function">sink</span><span class="symbol">(</span><span class="normal">qp</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Change the key associated with index {</span><span class="type">@code</span><span class="comment"> i} to the specified value.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i the index of the key to change</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  key change the key associated with index {</span><span class="type">@code</span><span class="comment"> i} to this key</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; maxN}</span>
+<span class="comment">     * </span><span class="type">@deprecated</span><span class="comment"> Replaced by {</span><span class="type">@code</span><span class="comment"> changeKey(int, Key)}.</span>
+<span class="comment">     */</span>
+<span class="normal">    @Deprecated</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">change</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Key</span><span class="normal"> key</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">changeKey</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Decrease the key associated with index {</span><span class="type">@code</span><span class="comment"> i} to the specified value.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i the index of the key to decrease</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  key decrease the key associated with index {</span><span class="type">@code</span><span class="comment"> i} to this key</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; maxN}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> key &gt;= keyOf(i)}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> NoSuchElementException no key is associated with index {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">decreaseKey</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Key</span><span class="normal"> key</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> i </span><span class="symbol">&gt;=</span><span class="normal"> maxN</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">(</span><span class="string">"index is not in the priority queue"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">keys</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">compareTo</span><span class="symbol">(</span><span class="normal">key</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Calling decreaseKey() with given argument would not strictly decrease the key"</span><span class="symbol">);</span>
+<span class="normal">        keys</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> key</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="function">swim</span><span class="symbol">(</span><span class="normal">qp</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Increase the key associated with index {</span><span class="type">@code</span><span class="comment"> i} to the specified value.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i the index of the key to increase</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  key increase the key associated with index {</span><span class="type">@code</span><span class="comment"> i} to this key</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; maxN}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> key &lt;= keyOf(i)}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> NoSuchElementException no key is associated with index {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">increaseKey</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Key</span><span class="normal"> key</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> i </span><span class="symbol">&gt;=</span><span class="normal"> maxN</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">(</span><span class="string">"index is not in the priority queue"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">keys</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">compareTo</span><span class="symbol">(</span><span class="normal">key</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&gt;=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Calling increaseKey() with given argument would not strictly increase the key"</span><span class="symbol">);</span>
+<span class="normal">        keys</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> key</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="function">sink</span><span class="symbol">(</span><span class="normal">qp</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Remove the key associated with index {</span><span class="type">@code</span><span class="comment"> i}.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i the index of the key to remove</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; maxN}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> NoSuchElementException no key is associated with index {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">delete</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> i </span><span class="symbol">&gt;=</span><span class="normal"> maxN</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">contains</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">(</span><span class="string">"index is not in the priority queue"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> index </span><span class="symbol">=</span><span class="normal"> qp</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="function">exch</span><span class="symbol">(</span><span class="normal">index</span><span class="symbol">,</span><span class="normal"> n</span><span class="symbol">--);</span>
+<span class="normal">        </span><span class="function">swim</span><span class="symbol">(</span><span class="normal">index</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function">sink</span><span class="symbol">(</span><span class="normal">index</span><span class="symbol">);</span>
+<span class="normal">        keys</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">        qp</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">   </span><span class="comment">/***************************************************************************</span>
+<span class="comment">    * General helper functions.</span>
+<span class="comment">    ***************************************************************************/</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">greater</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> j</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> keys</span><span class="symbol">[</span><span class="normal">pq</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]].</span><span class="function">compareTo</span><span class="symbol">(</span><span class="normal">keys</span><span class="symbol">[</span><span class="normal">pq</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]])</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">exch</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> j</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> swap </span><span class="symbol">=</span><span class="normal"> pq</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        pq</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> pq</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">];</span>
+<span class="normal">        pq</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> swap</span><span class="symbol">;</span>
+<span class="normal">        qp</span><span class="symbol">[</span><span class="normal">pq</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        qp</span><span class="symbol">[</span><span class="normal">pq</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">   </span><span class="comment">/***************************************************************************</span>
+<span class="comment">    * Heap helper functions.</span>
+<span class="comment">    ***************************************************************************/</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">swim</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">k </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="function">greater</span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">,</span><span class="normal"> k</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="function">exch</span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">,</span><span class="normal"> k</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">);</span>
+<span class="normal">            k </span><span class="symbol">=</span><span class="normal"> k</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">sink</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="number">2</span><span class="symbol">*</span><span class="normal">k </span><span class="symbol">&lt;=</span><span class="normal"> n</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">2</span><span class="symbol">*</span><span class="normal">k</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j </span><span class="symbol">&lt;</span><span class="normal"> n </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="function">greater</span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">,</span><span class="normal"> j</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">))</span><span class="normal"> j</span><span class="symbol">++;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">greater</span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">,</span><span class="normal"> j</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="function">exch</span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">,</span><span class="normal"> j</span><span class="symbol">);</span>
+<span class="normal">            k </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">   </span><span class="comment">/***************************************************************************</span>
+<span class="comment">    * Iterators.</span>
+<span class="comment">    ***************************************************************************/</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns an iterator that iterates over the keys on the</span>
+<span class="comment">     * priority queue in ascending order.</span>
+<span class="comment">     * The iterator doesn't implement {</span><span class="type">@code</span><span class="comment"> remove()} since it's optional.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> an iterator that iterates over the keys in ascending order</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Iterator&lt;Integer&gt;</span><span class="normal"> </span><span class="function">iterator</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">HeapIterator</span><span class="symbol">();</span><span class="normal"> </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">HeapIterator</span><span class="normal"> </span><span class="keyword">implements</span><span class="normal"> Iterator</span><span class="symbol">&lt;</span><span class="normal">Integer</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="comment">// create a new pq</span>
+<span class="normal">        </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">IndexMinPQ&lt;Key&gt;</span><span class="normal"> copy</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// add all elements to copy of heap</span>
+<span class="normal">        </span><span class="comment">// takes linear time since already in heap order so no keys move</span>
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="function">HeapIterator</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            copy </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> IndexMinPQ</span><span class="symbol">&lt;</span><span class="normal">Key</span><span class="symbol">&gt;(</span><span class="normal">pq</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;=</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">                copy</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="normal">pq</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> keys</span><span class="symbol">[</span><span class="normal">pq</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">hasNext</span><span class="symbol">()</span><span class="normal">  </span><span class="cbracket">{</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">copy</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">();</span><span class="normal">                     </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">remove</span><span class="symbol">()</span><span class="normal">      </span><span class="cbracket">{</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">UnsupportedOperationException</span><span class="symbol">();</span><span class="normal">  </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Integer</span><span class="normal"> </span><span class="function">next</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">hasNext</span><span class="symbol">())</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NoSuchElementException</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> copy</span><span class="symbol">.</span><span class="function">delMin</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> IndexMinPQ} data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="comment">// insert a bunch of strings</span>
+<span class="normal">        String</span><span class="symbol">[]</span><span class="normal"> strings </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"it"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"was"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"the"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"best"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"of"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"times"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"it"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"was"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"the"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"worst"</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="usertype">IndexMinPQ&lt;String&gt;</span><span class="normal"> pq </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> IndexMinPQ</span><span class="symbol">&lt;</span><span class="normal">String</span><span class="symbol">&gt;(</span><span class="normal">strings</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> strings</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            pq</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> strings</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// delete and print each key</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">pq</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> pq</span><span class="symbol">.</span><span class="function">delMin</span><span class="symbol">();</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> strings</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        </span><span class="comment">// reinsert the same strings</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> strings</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            pq</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> strings</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// print each key using the iterator</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">:</span><span class="normal"> pq</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> strings</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">pq</span><span class="symbol">.</span><span class="function">isEmpty</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            pq</span><span class="symbol">.</span><span class="function">delMin</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

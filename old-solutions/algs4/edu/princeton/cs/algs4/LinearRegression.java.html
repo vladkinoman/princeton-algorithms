@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>LinearRegression.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="LinearRegression code in Java">
+<meta NAME="TITLE" CONTENT="LinearRegression code in Java">
+<meta NAME="KEYWORDS" CONTENT="LinearRegression,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>LinearRegression.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "LinearRegression.java">LinearRegression.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac LinearRegression.java</span>
+<span class="comment"> *  Execution:    java  LinearRegression</span>
+<span class="comment"> *  Dependencies: none</span>
+<span class="comment"> *  </span>
+<span class="comment"> *  Compute least squares solution to y = beta * x + alpha.</span>
+<span class="comment"> *  Simple linear regression.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> LinearRegression} class performs a simple linear regression</span>
+<span class="comment"> *  on an set of </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> data points (</span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;sub&gt;</span><span class="comment">i</span><span class="keyword">&lt;/sub&gt;&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;sub&gt;</span><span class="comment">i</span><span class="keyword">&lt;/sub&gt;&lt;/em&gt;</span><span class="comment">).</span>
+<span class="comment"> *  That is, it fits a straight line </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> = </span><span class="preproc">&amp;alpha;</span><span class="comment"> + </span><span class="preproc">&amp;beta;</span><span class="comment"> </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">,</span>
+<span class="comment"> *  (where </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the response variable, </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> is the predictor variable,</span>
+<span class="comment"> *  </span><span class="preproc">&amp;alpha;</span><span class="comment"> is the </span><span class="keyword">&lt;em&gt;</span><span class="comment">y-intercept</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, and </span><span class="preproc">&amp;beta;</span><span class="comment"> is the </span><span class="keyword">&lt;em&gt;</span><span class="comment">slope</span><span class="keyword">&lt;/em&gt;</span><span class="comment">)</span>
+<span class="comment"> *  that minimizes the sum of squared residuals of the linear regression model.</span>
+<span class="comment"> *  It also computes associated statistics, including the coefficient of</span>
+<span class="comment"> *  determination </span><span class="keyword">&lt;em&gt;</span><span class="comment">R</span><span class="keyword">&lt;/em&gt;&lt;sup&gt;</span><span class="comment">2</span><span class="keyword">&lt;/sup&gt;</span><span class="comment"> and the standard deviation of the</span>
+<span class="comment"> *  estimates for the slope and </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-intercept.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">LinearRegression</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> intercept</span><span class="symbol">,</span><span class="normal"> slope</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> r2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> svar0</span><span class="symbol">,</span><span class="normal"> svar1</span><span class="symbol">;</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Performs a linear regression on the data points {</span><span class="type">@code</span><span class="comment"> (y[i], x[i])}.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  x the values of the predictor variable</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  y the corresponding values of the response variable</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if the lengths of the two arrays are not equal</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">LinearRegression</span><span class="symbol">(</span><span class="type">double</span><span class="symbol">[]</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[]</span><span class="normal"> y</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">!=</span><span class="normal"> y</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"array lengths are not equal"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> x</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// first pass</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> sumx </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">,</span><span class="normal"> sumy </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">,</span><span class="normal"> sumx2 </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            sumx  </span><span class="symbol">+=</span><span class="normal"> x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">            sumx2 </span><span class="symbol">+=</span><span class="normal"> x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]*</span><span class="normal">x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">            sumy  </span><span class="symbol">+=</span><span class="normal"> y</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> xbar </span><span class="symbol">=</span><span class="normal"> sumx </span><span class="symbol">/</span><span class="normal"> n</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> ybar </span><span class="symbol">=</span><span class="normal"> sumy </span><span class="symbol">/</span><span class="normal"> n</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// second pass: compute summary statistics</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> xxbar </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">,</span><span class="normal"> yybar </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">,</span><span class="normal"> xybar </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            xxbar </span><span class="symbol">+=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> xbar</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> xbar</span><span class="symbol">);</span>
+<span class="normal">            yybar </span><span class="symbol">+=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> ybar</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> ybar</span><span class="symbol">);</span>
+<span class="normal">            xybar </span><span class="symbol">+=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> xbar</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> ybar</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        slope  </span><span class="symbol">=</span><span class="normal"> xybar </span><span class="symbol">/</span><span class="normal"> xxbar</span><span class="symbol">;</span>
+<span class="normal">        intercept </span><span class="symbol">=</span><span class="normal"> ybar </span><span class="symbol">-</span><span class="normal"> slope </span><span class="symbol">*</span><span class="normal"> xbar</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// more statistical analysis</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> rss </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span><span class="normal">      </span><span class="comment">// residual sum of squares</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> ssr </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span><span class="normal">      </span><span class="comment">// regression sum of squares</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">double</span><span class="normal"> fit </span><span class="symbol">=</span><span class="normal"> slope</span><span class="symbol">*</span><span class="normal">x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> intercept</span><span class="symbol">;</span>
+<span class="normal">            rss </span><span class="symbol">+=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fit </span><span class="symbol">-</span><span class="normal"> y</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">])</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fit </span><span class="symbol">-</span><span class="normal"> y</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">            ssr </span><span class="symbol">+=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fit </span><span class="symbol">-</span><span class="normal"> ybar</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fit </span><span class="symbol">-</span><span class="normal"> ybar</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="type">int</span><span class="normal"> degreesOfFreedom </span><span class="symbol">=</span><span class="normal"> n</span><span class="symbol">-</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">        r2    </span><span class="symbol">=</span><span class="normal"> ssr </span><span class="symbol">/</span><span class="normal"> yybar</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> svar  </span><span class="symbol">=</span><span class="normal"> rss </span><span class="symbol">/</span><span class="normal"> degreesOfFreedom</span><span class="symbol">;</span>
+<span class="normal">        svar1 </span><span class="symbol">=</span><span class="normal"> svar </span><span class="symbol">/</span><span class="normal"> xxbar</span><span class="symbol">;</span>
+<span class="normal">        svar0 </span><span class="symbol">=</span><span class="normal"> svar</span><span class="symbol">/</span><span class="normal">n </span><span class="symbol">+</span><span class="normal"> xbar</span><span class="symbol">*</span><span class="normal">xbar</span><span class="symbol">*</span><span class="normal">svar1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Returns the </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-intercept </span><span class="preproc">&amp;alpha;</span><span class="comment"> of the best of the best-fit line </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> = </span><span class="preproc">&amp;alpha;</span><span class="comment"> + </span><span class="preproc">&amp;beta;</span><span class="comment"> </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-intercept </span><span class="preproc">&amp;alpha;</span><span class="comment"> of the best-fit line </span><span class="keyword">&lt;em&gt;</span><span class="comment">y = </span><span class="preproc">&amp;alpha;</span><span class="comment"> + </span><span class="preproc">&amp;beta;</span><span class="comment"> x</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">intercept</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> intercept</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Returns the slope </span><span class="preproc">&amp;beta;</span><span class="comment"> of the best of the best-fit line </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> = </span><span class="preproc">&amp;alpha;</span><span class="comment"> + </span><span class="preproc">&amp;beta;</span><span class="comment"> </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the slope </span><span class="preproc">&amp;beta;</span><span class="comment"> of the best-fit line </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> = </span><span class="preproc">&amp;alpha;</span><span class="comment"> + </span><span class="preproc">&amp;beta;</span><span class="comment"> </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">slope</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> slope</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Returns the coefficient of determination </span><span class="keyword">&lt;em&gt;</span><span class="comment">R</span><span class="keyword">&lt;/em&gt;&lt;sup&gt;</span><span class="comment">2</span><span class="keyword">&lt;/sup&gt;</span><span class="comment">.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the coefficient of determination </span><span class="keyword">&lt;em&gt;</span><span class="comment">R</span><span class="keyword">&lt;/em&gt;&lt;sup&gt;</span><span class="comment">2</span><span class="keyword">&lt;/sup&gt;</span><span class="comment">,</span>
+<span class="comment">     *         which is a real number between 0 and 1</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">R2</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> r2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Returns the standard error of the estimate for the intercept.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the standard error of the estimate for the intercept</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">interceptStdErr</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">sqrt</span><span class="symbol">(</span><span class="normal">svar0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Returns the standard error of the estimate for the slope.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the standard error of the estimate for the slope</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">slopeStdErr</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">sqrt</span><span class="symbol">(</span><span class="normal">svar1</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Returns the expected response {</span><span class="type">@code</span><span class="comment"> y} given the value of the predictor</span>
+<span class="comment">     * variable {</span><span class="type">@code</span><span class="comment"> x}.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  x the value of the predictor variable</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the expected response {</span><span class="type">@code</span><span class="comment"> y} given the value of the predictor</span>
+<span class="comment">     *         variable {</span><span class="type">@code</span><span class="comment"> x}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">predict</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> x</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> slope</span><span class="symbol">*</span><span class="normal">x </span><span class="symbol">+</span><span class="normal"> intercept</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Returns a string representation of the simple linear regression model.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a string representation of the simple linear regression model,</span>
+<span class="comment">     *         including the best-fit line and the coefficient of determination</span>
+<span class="comment">     *         </span><span class="keyword">&lt;em&gt;</span><span class="comment">R</span><span class="keyword">&lt;/em&gt;&lt;sup&gt;</span><span class="comment">2</span><span class="keyword">&lt;/sup&gt;</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">toString</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">StringBuilder</span><span class="normal"> s </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">StringBuilder</span><span class="symbol">();</span>
+<span class="normal">        s</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">.</span><span class="function">format</span><span class="symbol">(</span><span class="string">"%.2f n + %.2f"</span><span class="symbol">,</span><span class="normal"> </span><span class="function">slope</span><span class="symbol">(),</span><span class="normal"> </span><span class="function">intercept</span><span class="symbol">()));</span>
+<span class="normal">        s</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="string">"  (R^2 = "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> String</span><span class="symbol">.</span><span class="function">format</span><span class="symbol">(</span><span class="string">"%.3f"</span><span class="symbol">,</span><span class="normal"> </span><span class="function">R2</span><span class="symbol">())</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">")"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> s</span><span class="symbol">.</span><span class="function">toString</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

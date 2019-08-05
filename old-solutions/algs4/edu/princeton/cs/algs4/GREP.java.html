@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>GREP.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="GREP code in Java">
+<meta NAME="TITLE" CONTENT="GREP code in Java">
+<meta NAME="KEYWORDS" CONTENT="GREP,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>GREP.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "GREP.java">GREP.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac GREP.java</span>
+<span class="comment"> *  Execution:    java GREP regexp &lt; input.txt</span>
+<span class="comment"> *  Dependencies: NFA.java StdOut.java</span>
+<span class="comment"> *  Data files:   </span><span class="url">http://algs4.cs.princeton.edu/54regexp/tinyL.txt</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This program takes an RE as a command-line argument and prints</span>
+<span class="comment"> *  the lines from standard input having some substring that</span>
+<span class="comment"> *  is in the language described by the RE. </span>
+<span class="comment"> *</span>
+<span class="comment"> *  % more tinyL.txt</span>
+<span class="comment"> *  AC</span>
+<span class="comment"> *  AD</span>
+<span class="comment"> *  AAA</span>
+<span class="comment"> *  ABD</span>
+<span class="comment"> *  ADD</span>
+<span class="comment"> *  BCD</span>
+<span class="comment"> *  ABCCBD</span>
+<span class="comment"> *  BABAAA</span>
+<span class="comment"> *  BABBAAA</span>
+<span class="comment"> *</span>
+<span class="comment"> *  %  java GREP "(A*B|AC)D" &lt; tinyL.txt</span>
+<span class="comment"> *  ABD</span>
+<span class="comment"> *  ABCCBD</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> GREP} class provides a client for reading in a sequence of</span>
+<span class="comment"> *  lines from standard input and printing to standard output those lines</span>
+<span class="comment"> *  that contain a substring matching a specified regular expression.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/31elementary"</span><span class="keyword">&gt;</span><span class="comment">Section 3.1</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">GREP</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">    </span><span class="comment">// do not instantiate</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="function">GREP</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Interprets the command-line argument as a regular expression</span>
+<span class="comment">     * (supporting closure, binary or, parentheses, and wildcard)</span>
+<span class="comment">     * reads in lines from standard input; writes to standard output</span>
+<span class="comment">     * those lines that contain a substring matching the regular</span>
+<span class="comment">     * expression.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+<span class="normal">        </span><span class="usertype">String</span><span class="normal"> regexp </span><span class="symbol">=</span><span class="normal"> </span><span class="string">"(.*"</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> args</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">".*)"</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">NFA</span><span class="normal"> nfa </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">NFA</span><span class="symbol">(</span><span class="normal">regexp</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">StdIn</span><span class="symbol">.</span><span class="function">hasNextLine</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+<span class="normal">            </span><span class="usertype">String</span><span class="normal"> line </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readLine</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">nfa</span><span class="symbol">.</span><span class="function">recognizes</span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span>
+<span class="cbracket">}</span><span class="normal"> </span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

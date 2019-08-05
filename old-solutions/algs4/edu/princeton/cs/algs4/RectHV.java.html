@@ -1,0 +1,292 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>RectHV.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="RectHV code in Java">
+<meta NAME="TITLE" CONTENT="RectHV code in Java">
+<meta NAME="KEYWORDS" CONTENT="RectHV,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>RectHV.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "RectHV.java">RectHV.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac RectHV.java</span>
+<span class="comment"> *  Execution:    none</span>
+<span class="comment"> *  Dependencies: Point2D.java</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Immutable data type for 2D axis-aligned rectangle.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> RectHV} class is an immutable data type to encapsulate a</span>
+<span class="comment"> *  two-dimensional axis-aligned rectagle with real-value coordinates.</span>
+<span class="comment"> *  The rectangle is </span><span class="keyword">&lt;em&gt;</span><span class="comment">closed</span><span class="keyword">&lt;/em&gt;</span><span class="comment">—it includes the points on the boundary.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, </span>
+<span class="comment"> *  see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/12oop"</span><span class="keyword">&gt;</span><span class="comment">Section 1.2</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of </span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne. </span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">RectHV</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> xmin</span><span class="symbol">,</span><span class="normal"> ymin</span><span class="symbol">;</span><span class="normal">   </span><span class="comment">// minimum x- and y-coordinates</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> xmax</span><span class="symbol">,</span><span class="normal"> ymax</span><span class="symbol">;</span><span class="normal">   </span><span class="comment">// maximum x- and y-coordinates</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Initializes a new rectangle [</span><span class="keyword">&lt;em&gt;</span><span class="comment">xmin</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">xmax</span><span class="keyword">&lt;/em&gt;</span><span class="comment">]</span>
+<span class="comment">     * x [</span><span class="keyword">&lt;em&gt;</span><span class="comment">ymin</span><span class="keyword">&lt;/em&gt;</span><span class="comment">, </span><span class="keyword">&lt;em&gt;</span><span class="comment">ymax</span><span class="keyword">&lt;/em&gt;</span><span class="comment">].</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  xmin the </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of the lower-left endpoint</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  xmax the </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of the upper-right endpoint</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  ymin the </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of the lower-left endpoint</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  ymax the </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of the upper-right endpoint</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if any of {</span><span class="type">@code</span><span class="comment"> xmin},</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> xmax}, {</span><span class="type">@code</span><span class="comment"> ymin}, or {</span><span class="type">@code</span><span class="comment"> ymax}</span>
+<span class="comment">     *         is {</span><span class="type">@code</span><span class="comment"> Double.NaN}.</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> xmax &lt; xmin} or {</span><span class="type">@code</span><span class="comment"> ymax &lt; ymin}.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">RectHV</span><span class="symbol">(</span><span class="type">double</span><span class="normal"> xmin</span><span class="symbol">,</span><span class="normal"> </span><span class="type">double</span><span class="normal"> ymin</span><span class="symbol">,</span><span class="normal"> </span><span class="type">double</span><span class="normal"> xmax</span><span class="symbol">,</span><span class="normal"> </span><span class="type">double</span><span class="normal"> ymax</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Double</span><span class="symbol">.</span><span class="function">isNaN</span><span class="symbol">(</span><span class="normal">xmin</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> Double</span><span class="symbol">.</span><span class="function">isNaN</span><span class="symbol">(</span><span class="normal">xmax</span><span class="symbol">))</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"x-coordinate cannot be NaN"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Double</span><span class="symbol">.</span><span class="function">isNaN</span><span class="symbol">(</span><span class="normal">ymin</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> Double</span><span class="symbol">.</span><span class="function">isNaN</span><span class="symbol">(</span><span class="normal">ymax</span><span class="symbol">))</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"y-coordinates cannot be NaN"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">xmax </span><span class="symbol">&lt;</span><span class="normal"> xmin </span><span class="symbol">||</span><span class="normal"> ymax </span><span class="symbol">&lt;</span><span class="normal"> ymin</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"Invalid rectangle"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">xmin </span><span class="symbol">=</span><span class="normal"> xmin</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">ymin </span><span class="symbol">=</span><span class="normal"> ymin</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">xmax </span><span class="symbol">=</span><span class="normal"> xmax</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">ymax </span><span class="symbol">=</span><span class="normal"> ymax</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the minimum </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of any point in this rectangle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the minimum </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of any point in this rectangle</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">xmin</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> xmin</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the maximum </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of any point in this rectangle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the maximum </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of any point in this rectangle</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">xmax</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> xmax</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the minimum </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of any point in this rectangle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the minimum </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of any point in this rectangle</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">ymin</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> ymin</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the maximum </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of any point in this rectangle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the maximum </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinate of any point in this rectangle</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">ymax</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> ymax</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the width of this rectangle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the width of this rectangle {</span><span class="type">@code</span><span class="comment"> xmax - xmin}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">width</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> xmax </span><span class="symbol">-</span><span class="normal"> xmin</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the height of this rectangle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the height of this rectangle {</span><span class="type">@code</span><span class="comment"> ymax - ymin}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">height</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> ymax </span><span class="symbol">-</span><span class="normal"> ymin</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns true if the two rectangles intersect. This includes</span>
+<span class="comment">     * </span><span class="keyword">&lt;em&gt;</span><span class="comment">improper intersections</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> (at points on the boundary</span>
+<span class="comment">     * of each rectangle) and </span><span class="keyword">&lt;em&gt;</span><span class="comment">nested intersctions</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment">     * (when one rectangle is contained inside the other)</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  that the other rectangle</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if this rectangle intersect the argument</span>
+<span class="comment">               rectangle at one or more points</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">intersects</span><span class="symbol">(</span><span class="usertype">RectHV</span><span class="normal"> that</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">xmax </span><span class="symbol">&gt;=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">xmin </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">ymax </span><span class="symbol">&gt;=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">ymin</span>
+<span class="normal">            </span><span class="symbol">&amp;&amp;</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">xmax </span><span class="symbol">&gt;=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">xmin </span><span class="symbol">&amp;&amp;</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">ymax </span><span class="symbol">&gt;=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">ymin</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns true if this rectangle contain the point.</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  p the point</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if this rectangle contain the point {</span><span class="type">@code</span><span class="comment"> p},</span>
+<span class="comment">               possibly at the boundary; {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">contains</span><span class="symbol">(</span><span class="usertype">Point2D</span><span class="normal"> p</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">.</span><span class="function">x</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&gt;=</span><span class="normal"> xmin</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">.</span><span class="function">x</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;=</span><span class="normal"> xmax</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">.</span><span class="function">y</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&gt;=</span><span class="normal"> ymin</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">.</span><span class="function">y</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;=</span><span class="normal"> ymax</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the Euclidean distance between this rectangle and the point {</span><span class="type">@code</span><span class="comment"> p}.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  p the point</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the Euclidean distance between the point {</span><span class="type">@code</span><span class="comment"> p} and the closest point</span>
+<span class="comment">               on this rectangle; 0 if the point is contained in this rectangle</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">distanceTo</span><span class="symbol">(</span><span class="usertype">Point2D</span><span class="normal"> p</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">sqrt</span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="function">distanceSquaredTo</span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the square of the Euclidean distance between this rectangle and the point {</span><span class="type">@code</span><span class="comment"> p}.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  p the point</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the square of the Euclidean distance between the point {</span><span class="type">@code</span><span class="comment"> p} and</span>
+<span class="comment">     *         the closest point on this rectangle; 0 if the point is contained</span>
+<span class="comment">     *         in this rectangle</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">distanceSquaredTo</span><span class="symbol">(</span><span class="usertype">Point2D</span><span class="normal"> p</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> dx </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">,</span><span class="normal"> dy </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal">      </span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">.</span><span class="function">x</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> xmin</span><span class="symbol">)</span><span class="normal"> dx </span><span class="symbol">=</span><span class="normal"> p</span><span class="symbol">.</span><span class="function">x</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> xmin</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">.</span><span class="function">x</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> xmax</span><span class="symbol">)</span><span class="normal"> dx </span><span class="symbol">=</span><span class="normal"> p</span><span class="symbol">.</span><span class="function">x</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> xmax</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal">      </span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">.</span><span class="function">y</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> ymin</span><span class="symbol">)</span><span class="normal"> dy </span><span class="symbol">=</span><span class="normal"> p</span><span class="symbol">.</span><span class="function">y</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> ymin</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">.</span><span class="function">y</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> ymax</span><span class="symbol">)</span><span class="normal"> dy </span><span class="symbol">=</span><span class="normal"> p</span><span class="symbol">.</span><span class="function">y</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> ymax</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> dx</span><span class="symbol">*</span><span class="normal">dx </span><span class="symbol">+</span><span class="normal"> dy</span><span class="symbol">*</span><span class="normal">dy</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Compares this rectangle to the specified rectangle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  other the other rectangle</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> {</span><span class="type">@code</span><span class="comment"> true} if this rectangle equals {</span><span class="type">@code</span><span class="comment"> other};</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> false} otherwise</span>
+<span class="comment">     */</span>
+<span class="normal">    @Override</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">equals</span><span class="symbol">(</span><span class="usertype">Object</span><span class="normal"> other</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">other </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">other </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">other</span><span class="symbol">.</span><span class="function">getClass</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="keyword">this</span><span class="symbol">.</span><span class="function">getClass</span><span class="symbol">())</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">RectHV</span><span class="normal"> that </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">RectHV</span><span class="symbol">)</span><span class="normal"> other</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">xmin </span><span class="symbol">!=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">xmin</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">ymin </span><span class="symbol">!=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">ymin</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">xmax </span><span class="symbol">!=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">xmax</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">ymax </span><span class="symbol">!=</span><span class="normal"> that</span><span class="symbol">.</span><span class="normal">ymax</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns an integer hash code for this rectangle.</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> an integer hash code for this rectangle</span>
+<span class="comment">     */</span>
+<span class="normal">    @Override</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">hashCode</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> hash1 </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">Double</span><span class="symbol">)</span><span class="normal"> xmin</span><span class="symbol">).</span><span class="function">hashCode</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> hash2 </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">Double</span><span class="symbol">)</span><span class="normal"> ymin</span><span class="symbol">).</span><span class="function">hashCode</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> hash3 </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">Double</span><span class="symbol">)</span><span class="normal"> xmax</span><span class="symbol">).</span><span class="function">hashCode</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> hash4 </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">Double</span><span class="symbol">)</span><span class="normal"> ymax</span><span class="symbol">).</span><span class="function">hashCode</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="number">31</span><span class="symbol">*(</span><span class="number">31</span><span class="symbol">*(</span><span class="number">31</span><span class="symbol">*</span><span class="normal">hash1 </span><span class="symbol">+</span><span class="normal"> hash2</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> hash3</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> hash4</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns a string representation of this rectangle.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> a string representation of this rectangle, using the format</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> [xmin, xmax] x [ymin, ymax]}</span>
+<span class="comment">     */</span>
+<span class="normal">    @Override</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">String</span><span class="normal"> </span><span class="function">toString</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="string">"["</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> xmin </span><span class="symbol">+</span><span class="normal"> </span><span class="string">", "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> xmax </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"] x ["</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> ymin </span><span class="symbol">+</span><span class="normal"> </span><span class="string">", "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> ymax </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"]"</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Draws this rectangle to standard draw.</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">draw</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        StdDraw</span><span class="symbol">.</span><span class="function">line</span><span class="symbol">(</span><span class="normal">xmin</span><span class="symbol">,</span><span class="normal"> ymin</span><span class="symbol">,</span><span class="normal"> xmax</span><span class="symbol">,</span><span class="normal"> ymin</span><span class="symbol">);</span>
+<span class="normal">        StdDraw</span><span class="symbol">.</span><span class="function">line</span><span class="symbol">(</span><span class="normal">xmax</span><span class="symbol">,</span><span class="normal"> ymin</span><span class="symbol">,</span><span class="normal"> xmax</span><span class="symbol">,</span><span class="normal"> ymax</span><span class="symbol">);</span>
+<span class="normal">        StdDraw</span><span class="symbol">.</span><span class="function">line</span><span class="symbol">(</span><span class="normal">xmax</span><span class="symbol">,</span><span class="normal"> ymax</span><span class="symbol">,</span><span class="normal"> xmin</span><span class="symbol">,</span><span class="normal"> ymax</span><span class="symbol">);</span>
+<span class="normal">        StdDraw</span><span class="symbol">.</span><span class="function">line</span><span class="symbol">(</span><span class="normal">xmin</span><span class="symbol">,</span><span class="normal"> ymax</span><span class="symbol">,</span><span class="normal"> xmin</span><span class="symbol">,</span><span class="normal"> ymin</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

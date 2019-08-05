@@ -1,0 +1,379 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>AssignmentProblem.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="AssignmentProblem code in Java">
+<meta NAME="TITLE" CONTENT="AssignmentProblem code in Java">
+<meta NAME="KEYWORDS" CONTENT="AssignmentProblem,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>AssignmentProblem.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "AssignmentProblem.java">AssignmentProblem.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac AssignmentProblem.java</span>
+<span class="comment"> *  Execution:    java AssignmentProblem n</span>
+<span class="comment"> *  Dependencies: DijkstraSP.java DirectedEdge.java</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Solve an n-by-n assignment problem in n^3 log n time using the</span>
+<span class="comment"> *  successive shortest path algorithm.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> AssignmentProblem} class represents a data type for computing</span>
+<span class="comment"> *  an optimal solution to an </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-by-</span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> </span><span class="keyword">&lt;em&gt;</span><span class="comment">assignment problem</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment"> *  The assignment problem is to find a minimum weight matching in an</span>
+<span class="comment"> *  edge-weighted complete bipartite graph.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  The data type supplies methods for determining the optimal solution</span>
+<span class="comment"> *  and the corresponding dual solution.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses the </span><span class="keyword">&lt;em&gt;</span><span class="comment">successive shortest paths algorithm</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment"> *  The order of growth of the running time in the worst case is</span>
+<span class="comment"> *  O(</span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment">^3 log </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment">) to solve an </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-by-</span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span>
+<span class="comment"> *  instance.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see</span>
+<span class="comment"> *  </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/65reductions"</span><span class="keyword">&gt;</span><span class="comment">Section 6.5</span><span class="keyword">&lt;/a&gt;</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">AssignmentProblem</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">double</span><span class="normal"> FLOATING_POINT_EPSILON </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1E-14</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">final</span><span class="normal"> </span><span class="type">int</span><span class="normal"> UNMATCHED </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal">              </span><span class="comment">// number of rows and columns</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[][]</span><span class="normal"> weight</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">// the n-by-n cost matrix</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="normal"> minWeight</span><span class="symbol">;</span><span class="normal">   </span><span class="comment">// minimum value of any weight</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[]</span><span class="normal"> px</span><span class="symbol">;</span><span class="normal">        </span><span class="comment">// px[i] = dual variable for row i</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[]</span><span class="normal"> py</span><span class="symbol">;</span><span class="normal">        </span><span class="comment">// py[j] = dual variable for col j</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> xy</span><span class="symbol">;</span><span class="normal">           </span><span class="comment">// xy[i] = j means i-j is a match</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> yx</span><span class="symbol">;</span><span class="normal">           </span><span class="comment">// yx[j] = i means i-j is a match</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Determines an optimal solution to the assignment problem.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  weight the </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-by-</span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> matrix of weights</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless all weights are nonnegative</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> weight} is {</span><span class="type">@code</span><span class="comment"> null}</span>
+<span class="comment">     */</span><span class="normal"> </span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">AssignmentProblem</span><span class="symbol">(</span><span class="type">double</span><span class="symbol">[][]</span><span class="normal"> weight</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">weight </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"constructor argument is null"</span><span class="symbol">);</span>
+
+<span class="normal">        n </span><span class="symbol">=</span><span class="normal"> weight</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">weight </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">][</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Double</span><span class="symbol">.</span><span class="function">isNaN</span><span class="symbol">(</span><span class="normal">weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]))</span>
+<span class="normal">                    </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"weight "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> i </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"-"</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> j  </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" is NaN"</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> minWeight</span><span class="symbol">)</span><span class="normal"> minWeight </span><span class="symbol">=</span><span class="normal"> weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">];</span>
+<span class="normal">                </span><span class="keyword">this</span><span class="symbol">.</span><span class="normal">weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// dual variables</span>
+<span class="normal">        px </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        py </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+
+<span class="normal">        </span><span class="comment">// initial matching is empty</span>
+<span class="normal">        xy </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        yx </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">             xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> UNMATCHED</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span>
+<span class="normal">             yx</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> UNMATCHED</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// add n edges to matching</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> k </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">assert</span><span class="normal"> </span><span class="function">isDualFeasible</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">assert</span><span class="normal"> </span><span class="function">isComplementarySlack</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="function">augment</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> </span><span class="function">certifySolution</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// find shortest augmenting path and upate</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">augment</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// build residual graph</span>
+<span class="normal">        </span><span class="usertype">EdgeWeightedDigraph</span><span class="normal"> G </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">EdgeWeightedDigraph</span><span class="symbol">(</span><span class="number">2</span><span class="symbol">*</span><span class="normal">n</span><span class="symbol">+</span><span class="number">2</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> s </span><span class="symbol">=</span><span class="normal"> </span><span class="number">2</span><span class="symbol">*</span><span class="normal">n</span><span class="symbol">,</span><span class="normal"> t </span><span class="symbol">=</span><span class="normal"> </span><span class="number">2</span><span class="symbol">*</span><span class="normal">n</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> UNMATCHED</span><span class="symbol">)</span>
+<span class="normal">                G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> </span><span class="function">DirectedEdge</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">,</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">));</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">yx</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> UNMATCHED</span><span class="symbol">)</span>
+<span class="normal">                G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> </span><span class="function">DirectedEdge</span><span class="symbol">(</span><span class="normal">n</span><span class="symbol">+</span><span class="normal">j</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">,</span><span class="normal"> py</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]));</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> j</span><span class="symbol">)</span><span class="normal"> G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> </span><span class="function">DirectedEdge</span><span class="symbol">(</span><span class="normal">n</span><span class="symbol">+</span><span class="normal">j</span><span class="symbol">,</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">));</span>
+<span class="normal">                </span><span class="keyword">else</span><span class="normal">            G</span><span class="symbol">.</span><span class="function">addEdge</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> </span><span class="function">DirectedEdge</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> n</span><span class="symbol">+</span><span class="normal">j</span><span class="symbol">,</span><span class="normal"> </span><span class="function">reducedCost</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> j</span><span class="symbol">)));</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// compute shortest path from s to every other vertex</span>
+<span class="normal">        </span><span class="usertype">DijkstraSP</span><span class="normal"> spt </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">DijkstraSP</span><span class="symbol">(</span><span class="normal">G</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// augment along alternating path</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">DirectedEdge</span><span class="normal"> e </span><span class="symbol">:</span><span class="normal"> spt</span><span class="symbol">.</span><span class="function">pathTo</span><span class="symbol">(</span><span class="normal">t</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">from</span><span class="symbol">(),</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> e</span><span class="symbol">.</span><span class="function">to</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> n</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">;</span>
+<span class="normal">                yx</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// update dual variables</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            px</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> spt</span><span class="symbol">.</span><span class="function">distTo</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span>
+<span class="normal">            py</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> spt</span><span class="symbol">.</span><span class="function">distTo</span><span class="symbol">(</span><span class="normal">n</span><span class="symbol">+</span><span class="normal">j</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// reduced cost of i-j</span>
+<span class="normal">    </span><span class="comment">// (subtracting off minWeight reweights all weights to be non-negative)</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">reducedCost</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> j</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> reducedCost </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> minWeight</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> px</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> py</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">];</span>
+
+<span class="normal">        </span><span class="comment">// to avoid issues with floating-point precision</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> magnitude </span><span class="symbol">=</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">(</span><span class="normal">weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">])</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">(</span><span class="normal">px</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">])</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">(</span><span class="normal">py</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">(</span><span class="normal">reducedCost</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;=</span><span class="normal"> FLOATING_POINT_EPSILON </span><span class="symbol">*</span><span class="normal"> magnitude</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> reducedCost </span><span class="symbol">&gt;=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> reducedCost</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the dual optimal value for the specified row.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i the row index</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the dual optimal value for row {</span><span class="type">@code</span><span class="comment"> i}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; n}</span>
+<span class="comment">     *</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="comment">// dual variable for row i</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">dualRow</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">validate</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> px</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the dual optimal value for the specified column.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  j the column index</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the dual optimal value for column {</span><span class="type">@code</span><span class="comment"> j}</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= j &lt; n}</span>
+<span class="comment">     *</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">dualCol</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">validate</span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> py</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the column associated with the specified row in the optimal solution.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  i the row index</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the column matched to row {</span><span class="type">@code</span><span class="comment"> i} in the optimal solution</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException unless {</span><span class="type">@code</span><span class="comment"> 0 &lt;= i &lt; n}</span>
+<span class="comment">     *</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">sol</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">validate</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the total weight of the optimal solution</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the total weight of the optimal solution</span>
+<span class="comment">     *</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">weight</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> total </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> UNMATCHED</span><span class="symbol">)</span>
+<span class="normal">                total </span><span class="symbol">+=</span><span class="normal"> weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]];</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> total</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">validate</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> i </span><span class="symbol">&gt;=</span><span class="normal"> n</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"index is not between 0 and "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">n</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">": "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> i</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**************************************************************************</span>
+<span class="comment">     *</span>
+<span class="comment">     *  The code below is solely for testing correctness of the data type.</span>
+<span class="comment">     *</span>
+<span class="comment">     **************************************************************************/</span>
+
+<span class="normal">    </span><span class="comment">// check that dual variables are feasible</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isDualFeasible</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="comment">// check that all edges have &gt;= 0 reduced cost</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">reducedCost</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> j</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Dual variables are not feasible"</span><span class="symbol">);</span>
+<span class="normal">                    </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// check that primal and dual variables are complementary slack</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isComplementarySlack</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// check that all matched edges have 0-reduced cost</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> UNMATCHED</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">(</span><span class="function">reducedCost</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">])</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Primal and dual variables are not complementary slack"</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// check that primal variables are a perfect matching</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">isPerfectMatching</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// check that xy[] is a perfect matching</span>
+<span class="normal">        </span><span class="type">boolean</span><span class="symbol">[]</span><span class="normal"> perm </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">boolean</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">perm</span><span class="symbol">[</span><span class="normal">xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]])</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Not a perfect matching"</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            perm</span><span class="symbol">[</span><span class="normal">xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// check that xy[] and yx[] are inverses</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">xy</span><span class="symbol">[</span><span class="normal">yx</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> j</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"xy[] and yx[] are not inverses"</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">yx</span><span class="symbol">[</span><span class="normal">xy</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"xy[] and yx[] are not inverses"</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// check optimality conditions</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">certifySolution</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">isPerfectMatching</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="function">isDualFeasible</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="function">isComplementarySlack</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> AssignmentProblem} data type.</span>
+<span class="comment">     * Takes a command-line argument n; creates a random n-by-n matrix;</span>
+<span class="comment">     * solves the n-by-n assignment problem; and prints the optimal</span>
+<span class="comment">     * solution.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// create random n-by-n matrix</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">args</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="type">double</span><span class="symbol">[][]</span><span class="normal"> weight </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">double</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">][</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> StdRandom</span><span class="symbol">.</span><span class="function">uniform</span><span class="symbol">(</span><span class="number">900</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">100</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">// 3 digits</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// solve assignment problem</span>
+<span class="normal">        </span><span class="usertype">AssignmentProblem</span><span class="normal"> assignment </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">AssignmentProblem</span><span class="symbol">(</span><span class="normal">weight</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">printf</span><span class="symbol">(</span><span class="string">"weight = %.0f</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> assignment</span><span class="symbol">.</span><span class="function">weight</span><span class="symbol">());</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+
+<span class="normal">        </span><span class="comment">// print n-by-n matrix and optimal solution</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">n </span><span class="symbol">&gt;=</span><span class="normal"> </span><span class="number">20</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j </span><span class="symbol">==</span><span class="normal"> assignment</span><span class="symbol">.</span><span class="function">sol</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">))</span>
+<span class="normal">                    StdOut</span><span class="symbol">.</span><span class="function">printf</span><span class="symbol">(</span><span class="string">"*%.0f "</span><span class="symbol">,</span><span class="normal"> weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]);</span>
+<span class="normal">                </span><span class="keyword">else</span>
+<span class="normal">                    StdOut</span><span class="symbol">.</span><span class="function">printf</span><span class="symbol">(</span><span class="string">" %.0f "</span><span class="symbol">,</span><span class="normal"> weight</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

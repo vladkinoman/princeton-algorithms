@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>FenwickTree.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="FenwickTree code in Java">
+<meta NAME="TITLE" CONTENT="FenwickTree code in Java">
+<meta NAME="KEYWORDS" CONTENT="FenwickTree,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>FenwickTree.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "FenwickTree.java">FenwickTree.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac FenwickTree.java</span>
+<span class="comment"> *  Execution:    java FenwickTree</span>
+<span class="comment"> *</span>
+<span class="comment"> *  A Fenwick tree.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">ArrayList</span><span class="symbol">;</span>
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">Arrays</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> * Created by </span><span class="url">ricardodpsx@gmail.com</span><span class="comment"> on 4/01/15.</span>
+<span class="comment"> * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> * In {</span><span class="type">@code</span><span class="comment"> Fenwick Tree} structure We arrange the array in an smart way to perform efficient </span><span class="keyword">&lt;em&gt;</span><span class="comment">range queries and updates</span><span class="keyword">&lt;/em&gt;</span><span class="comment">.</span>
+<span class="comment"> * The key point is this: In a fenwick array, each position "responsible" for storing cumulative data of N previous positions (N could be 1)</span>
+<span class="comment"> * For example:</span>
+<span class="comment"> * array[40] stores: array[40] + array[39] ... + array[32] (8 positions)</span>
+<span class="comment"> * array[32] stores: array[32] + array[31] ... + array[1]  (32 positions)</span>
+<span class="comment"> * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> * </span><span class="keyword">&lt;strong&gt;</span><span class="comment">But, how do you know how much positions a given index is "responsible" for?</span><span class="keyword">&lt;/strong&gt;</span>
+<span class="comment"> * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> * To know the number of items that a given array position 'ind' is responsible for</span>
+<span class="comment"> * We should extract from 'ind' the portion up to the first significant one of the binary representation of 'ind'</span>
+<span class="comment"> * for example, given ind == 40 (101000 in binary), according to Fenwick algorithm</span>
+<span class="comment"> * what We want is to extract 1000(8 in decimal).</span>
+<span class="comment"> * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> * This means that array[40] has cumulative information of 8 array items.</span>
+<span class="comment"> * But We still need to know the cumulative data bellow array[40 - 8 = 32]</span>
+<span class="comment"> * 32 is  100000 in binnary, and the portion up to the least significant one is 32 itself!</span>
+<span class="comment"> * So array[32] has information of 32 items, and We are done!</span>
+<span class="comment"> * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> * So cummulative data of array[1...40] = array[40] + array[32]</span>
+<span class="comment"> * Because 40 has information of items from 40 to 32, and 32 has information of items from 32 to  1</span>
+<span class="comment"> * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> * Memory usage:  O(n)</span>
+<span class="comment"> *</span>
+<span class="comment"> * </span><span class="type">@author</span><span class="comment"> Ricardo Pacheco </span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">FenwickTree</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">    </span><span class="type">int</span><span class="symbol">[]</span><span class="normal"> array</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// 1-indexed array, In this array We save cumulative information to perform efficient range queries and updates</span>
+
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">FenwickTree</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> size</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        array </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="type">int</span><span class="symbol">[</span><span class="normal">size </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Range Sum query from 1 to ind</span>
+<span class="comment">     * ind is 1-indexed</span>
+<span class="comment">     * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment">     * Time-Complexity:    O(log(n))</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  ind index</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> sum</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">rsq</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> ind</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> ind </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> sum </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ind </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            sum </span><span class="symbol">+=</span><span class="normal"> array</span><span class="symbol">[</span><span class="normal">ind</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="comment">//Extracting the portion up to the first significant one of the binary representation of 'ind' and decrementing ind by that number</span>
+<span class="normal">            ind </span><span class="symbol">-=</span><span class="normal"> ind </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="symbol">(-</span><span class="normal">ind</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> sum</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Range Sum Query from a to b.</span>
+<span class="comment">     * Search for the sum from array index from a to b</span>
+<span class="comment">     * a and b are 1-indexed</span>
+<span class="comment">     * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment">     * Time-Complexity:    O(log(n))</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  a left index</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  b right index</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> sum</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">rsq</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> b</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> b </span><span class="symbol">&gt;=</span><span class="normal"> a </span><span class="symbol">&amp;&amp;</span><span class="normal"> a </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> b </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">rsq</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="function">rsq</span><span class="symbol">(</span><span class="normal">a </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Update the array at ind and all the affected regions above ind.</span>
+<span class="comment">     * ind is 1-indexed</span>
+<span class="comment">     * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment">     * Time-Complexity:    O(log(n))</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  ind   index</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  value value</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">update</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> ind</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> value</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> ind </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ind </span><span class="symbol">&lt;</span><span class="normal"> array</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            array</span><span class="symbol">[</span><span class="normal">ind</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> value</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="comment">//Extracting the portion up to the first significant one of the binary representation of 'ind' and incrementing ind by that number</span>
+<span class="normal">            ind </span><span class="symbol">+=</span><span class="normal"> ind </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="symbol">(-</span><span class="normal">ind</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">int</span><span class="normal"> </span><span class="function">size</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> array</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Read the following commands:</span>
+<span class="comment">     * init n     Initializes the array of size n all zeroes</span>
+<span class="comment">     * set a b c    Initializes the array  with [a, b, c ...]</span>
+<span class="comment">     * rsq a b      Range Sum Query for the range [a,b]</span>
+<span class="comment">     * up  i v      Update the i position of the array with value v.</span>
+<span class="comment">     * exit</span>
+<span class="comment">     * </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment">     * The array is 1-indexed</span>
+<span class="comment">     * Example:</span>
+<span class="comment">     * set 1 2 3 4 5 6</span>
+<span class="comment">     * rsq 1 3</span>
+<span class="comment">     * Sum from 1 to 3 = 6</span>
+<span class="comment">     * rmq 1 3</span>
+<span class="comment">     * Min from 1 to 3 = 1</span>
+<span class="comment">     * input up 1 3</span>
+<span class="comment">     * [3,2,3,4,5,6]</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+
+<span class="normal">        </span><span class="usertype">FenwickTree</span><span class="normal"> ft </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="usertype">String</span><span class="normal"> cmd </span><span class="symbol">=</span><span class="normal"> </span><span class="string">"cmp"</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">true</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            String</span><span class="symbol">[]</span><span class="normal"> line </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readLine</span><span class="symbol">().</span><span class="function">split</span><span class="symbol">(</span><span class="string">" "</span><span class="symbol">);</span>
+
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="function">equals</span><span class="symbol">(</span><span class="string">"exit"</span><span class="symbol">))</span><span class="normal"> </span><span class="keyword">break</span><span class="symbol">;</span>
+
+<span class="normal">            </span><span class="type">int</span><span class="normal"> arg1 </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> arg2 </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                arg1 </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">2</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                arg2 </span><span class="symbol">=</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">]);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">((!</span><span class="normal">line</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="function">equals</span><span class="symbol">(</span><span class="string">"set"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">line</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="function">equals</span><span class="symbol">(</span><span class="string">"init"</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> ft </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"FenwickTree not initialized"</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="function">equals</span><span class="symbol">(</span><span class="string">"init"</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                ft </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">FenwickTree</span><span class="symbol">(</span><span class="normal">arg1</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;=</span><span class="normal"> ft</span><span class="symbol">.</span><span class="function">size</span><span class="symbol">();</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    StdOut</span><span class="symbol">.</span><span class="function">print</span><span class="symbol">(</span><span class="normal">ft</span><span class="symbol">.</span><span class="function">rsq</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="function">equals</span><span class="symbol">(</span><span class="string">"set"</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                ft </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">FenwickTree</span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;=</span><span class="normal"> line</span><span class="symbol">.</span><span class="normal">length </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    ft</span><span class="symbol">.</span><span class="function">update</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> Integer</span><span class="symbol">.</span><span class="function">parseInt</span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]));</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="function">equals</span><span class="symbol">(</span><span class="string">"up"</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                ft</span><span class="symbol">.</span><span class="function">update</span><span class="symbol">(</span><span class="normal">arg1</span><span class="symbol">,</span><span class="normal"> arg2</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;=</span><span class="normal"> ft</span><span class="symbol">.</span><span class="function">size</span><span class="symbol">();</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    StdOut</span><span class="symbol">.</span><span class="function">print</span><span class="symbol">(</span><span class="normal">ft</span><span class="symbol">.</span><span class="function">rsq</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> i</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="function">equals</span><span class="symbol">(</span><span class="string">"rsq"</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">printf</span><span class="symbol">(</span><span class="string">"Sum from %d to %d = %d%n"</span><span class="symbol">,</span><span class="normal"> arg1</span><span class="symbol">,</span><span class="normal"> arg2</span><span class="symbol">,</span><span class="normal"> ft</span><span class="symbol">.</span><span class="function">rsq</span><span class="symbol">(</span><span class="normal">arg1</span><span class="symbol">,</span><span class="normal"> arg2</span><span class="symbol">));</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="string">"Invalid command"</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="cbracket">}</span>
+
+
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">close</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>

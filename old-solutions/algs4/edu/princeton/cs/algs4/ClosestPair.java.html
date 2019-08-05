@@ -1,0 +1,280 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang = "en">
+
+<head>
+
+<link rel="shortcut icon" href="http://algs4.cs.princeton.edu/favicon.ico">
+<link rel="stylesheet"    href="http://algs4.cs.princeton.edu/java.css" type="text/css">
+
+<title>ClosestPair.java</title>
+
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<meta NAME="AUTHOR" CONTENT="Robert Sedgewick and Kevin Wayne">
+<meta NAME="DESCRIPTION" CONTENT="ClosestPair code in Java">
+<meta NAME="TITLE" CONTENT="ClosestPair code in Java">
+<meta NAME="KEYWORDS" CONTENT="ClosestPair,java,programming,computer science,algorithm,data structure,program,code">
+<meta NAME="ROBOTS" CONTENT="INDEX,FOLLOW">
+
+</head>
+
+
+<body>
+<center><h1>ClosestPair.java</h1></center><p><br>
+
+Below is the syntax highlighted version of <a href = "ClosestPair.java">ClosestPair.java</a>.
+<p><br>
+
+<!-- Generator: GNU source-highlight 3.1.6
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Compilation:  javac ClosestPair.java</span>
+<span class="comment"> *  Execution:    java ClosestPair &lt; input.txt</span>
+<span class="comment"> *  Dependencies: Point2D.java</span>
+<span class="comment"> *  Data files:   </span><span class="url">http://algs4.cs.princeton.edu/99hull/rs1423.txt</span>
+<span class="comment"> *                </span><span class="url">http://algs4.cs.princeton.edu/99hull/kw1260.txt</span>
+<span class="comment"> *  </span>
+<span class="comment"> *  Given n points in the plane, find the closest pair in n log n time.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  Note: could speed it up by comparing square of Euclidean distances</span>
+<span class="comment"> *  instead of Euclidean distances.</span>
+<span class="comment"> *</span>
+<span class="comment"> ******************************************************************************/</span>
+
+<span class="preproc">package</span><span class="normal"> edu</span><span class="symbol">.</span><span class="normal">princeton</span><span class="symbol">.</span><span class="normal">cs</span><span class="symbol">.</span><span class="normal">algs4</span><span class="symbol">;</span>
+
+<span class="preproc">import</span><span class="normal"> java</span><span class="symbol">.</span><span class="normal">util</span><span class="symbol">.</span><span class="normal">Arrays</span><span class="symbol">;</span>
+
+<span class="comment">/**</span>
+<span class="comment"> *  The {</span><span class="type">@code</span><span class="comment"> ClosestPair} data type computes a closest pair of points</span>
+<span class="comment"> *  in a set of </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> points in the plane and provides accessor methods </span>
+<span class="comment"> *  for getting the closest pair of points and the distance between them.</span>
+<span class="comment"> *  The distance between two points is their Euclidean distance.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  This implementation uses a divide-and-conquer algorithm. </span>
+<span class="comment"> *  It runs in O(</span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment"> log </span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment">) time in the worst case and uses</span>
+<span class="comment"> *  O(</span><span class="keyword">&lt;em&gt;</span><span class="comment">n</span><span class="keyword">&lt;/em&gt;</span><span class="comment">) extra space.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  See also {</span><span class="type">@link</span><span class="comment"> FarthestPair}.</span>
+<span class="comment"> *  </span><span class="keyword">&lt;p&gt;</span>
+<span class="comment"> *  For additional documentation, see </span><span class="keyword">&lt;a</span><span class="normal"> </span><span class="type">href</span><span class="symbol">=</span><span class="string">"http://algs4.cs.princeton.edu/99hull"</span><span class="keyword">&gt;</span><span class="comment">Section 9.9</span><span class="keyword">&lt;/a&gt;</span><span class="comment"> of</span>
+<span class="comment"> *  </span><span class="keyword">&lt;i&gt;</span><span class="comment">Algorithms, 4th Edition</span><span class="keyword">&lt;/i&gt;</span><span class="comment"> by Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Robert Sedgewick</span>
+<span class="comment"> *  </span><span class="type">@author</span><span class="comment"> Kevin Wayne</span>
+<span class="comment"> */</span>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">class</span><span class="normal"> </span><span class="classname">ClosestPair</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">    </span><span class="comment">// closest pair of points and their Euclidean distance</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="usertype">Point2D</span><span class="normal"> best1</span><span class="symbol">,</span><span class="normal"> best2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="normal"> bestDistance </span><span class="symbol">=</span><span class="normal"> Double</span><span class="symbol">.</span><span class="normal">POSITIVE_INFINITY</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Computes the closest pair of points in the specified array of points.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment">  points the array of points</span>
+<span class="comment">     * </span><span class="type">@throws</span><span class="comment"> IllegalArgumentException if {</span><span class="type">@code</span><span class="comment"> points} is {</span><span class="type">@code</span><span class="comment"> null} or if any</span>
+<span class="comment">     *         entry in {</span><span class="type">@code</span><span class="comment"> points[]} is {</span><span class="type">@code</span><span class="comment"> null}</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="function">ClosestPair</span><span class="symbol">(</span><span class="normal">Point2D</span><span class="symbol">[]</span><span class="normal"> points</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">points </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"constructor argument is null"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> points</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">points</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">throw</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">IllegalArgumentException</span><span class="symbol">(</span><span class="string">"array element "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> i </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" is null"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> points</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">n </span><span class="symbol">&lt;=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// sort by x-coordinate (breaking ties by y-coordinate)</span>
+<span class="normal">        Point2D</span><span class="symbol">[]</span><span class="normal"> pointsByX </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Point2D</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            pointsByX</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> points</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        Arrays</span><span class="symbol">.</span><span class="function">sort</span><span class="symbol">(</span><span class="normal">pointsByX</span><span class="symbol">,</span><span class="normal"> Point2D</span><span class="symbol">.</span><span class="normal">X_ORDER</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// check for coincident points</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">pointsByX</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">equals</span><span class="symbol">(</span><span class="normal">pointsByX</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                bestDistance </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span><span class="symbol">;</span>
+<span class="normal">                best1 </span><span class="symbol">=</span><span class="normal"> pointsByX</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">                best2 </span><span class="symbol">=</span><span class="normal"> pointsByX</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// sort by y-coordinate (but not yet sorted) </span>
+<span class="normal">        Point2D</span><span class="symbol">[]</span><span class="normal"> pointsByY </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Point2D</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">            pointsByY</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> pointsByX</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+
+<span class="normal">        </span><span class="comment">// auxiliary array</span>
+<span class="normal">        Point2D</span><span class="symbol">[]</span><span class="normal"> aux </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Point2D</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+
+<span class="normal">        </span><span class="function">closest</span><span class="symbol">(</span><span class="normal">pointsByX</span><span class="symbol">,</span><span class="normal"> pointsByY</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> n</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// find closest pair of points in pointsByX[lo..hi]</span>
+<span class="normal">    </span><span class="comment">// precondition:  pointsByX[lo..hi] and pointsByY[lo..hi] are the same sequence of points</span>
+<span class="normal">    </span><span class="comment">// precondition:  pointsByX[lo..hi] sorted by x-coordinate</span>
+<span class="normal">    </span><span class="comment">// postcondition: pointsByY[lo..hi] sorted by y-coordinate</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">closest</span><span class="symbol">(</span><span class="normal">Point2D</span><span class="symbol">[]</span><span class="normal"> pointsByX</span><span class="symbol">,</span><span class="normal"> Point2D</span><span class="symbol">[]</span><span class="normal"> pointsByY</span><span class="symbol">,</span><span class="normal"> Point2D</span><span class="symbol">[]</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">hi </span><span class="symbol">&lt;=</span><span class="normal"> lo</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> Double</span><span class="symbol">.</span><span class="normal">POSITIVE_INFINITY</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="type">int</span><span class="normal"> mid </span><span class="symbol">=</span><span class="normal"> lo </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">hi </span><span class="symbol">-</span><span class="normal"> lo</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">/</span><span class="normal"> </span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">Point2D</span><span class="normal"> median </span><span class="symbol">=</span><span class="normal"> pointsByX</span><span class="symbol">[</span><span class="normal">mid</span><span class="symbol">];</span>
+
+<span class="normal">        </span><span class="comment">// compute closest pair with both endpoints in left subarray or both in right subarray</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> delta1 </span><span class="symbol">=</span><span class="normal"> </span><span class="function">closest</span><span class="symbol">(</span><span class="normal">pointsByX</span><span class="symbol">,</span><span class="normal"> pointsByY</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> mid</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> delta2 </span><span class="symbol">=</span><span class="normal"> </span><span class="function">closest</span><span class="symbol">(</span><span class="normal">pointsByX</span><span class="symbol">,</span><span class="normal"> pointsByY</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> mid</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> hi</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> delta </span><span class="symbol">=</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">min</span><span class="symbol">(</span><span class="normal">delta1</span><span class="symbol">,</span><span class="normal"> delta2</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// merge back so that pointsByY[lo..hi] are sorted by y-coordinate</span>
+<span class="normal">        </span><span class="function">merge</span><span class="symbol">(</span><span class="normal">pointsByY</span><span class="symbol">,</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> mid</span><span class="symbol">,</span><span class="normal"> hi</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// aux[0..m-1] = sequence of points closer than delta, sorted by y-coordinate</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> m </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">abs</span><span class="symbol">(</span><span class="normal">pointsByY</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">x</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> median</span><span class="symbol">.</span><span class="function">x</span><span class="symbol">())</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> delta</span><span class="symbol">)</span>
+<span class="normal">                aux</span><span class="symbol">[</span><span class="normal">m</span><span class="symbol">++]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> pointsByY</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// compare each point to its neighbors with y-coordinate closer than delta</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> m</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="comment">// a geometric packing argument shows that this loop iterates at most 7 times</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j </span><span class="symbol">&lt;</span><span class="normal"> m</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">].</span><span class="function">y</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">y</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> delta</span><span class="symbol">);</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="type">double</span><span class="normal"> distance </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">].</span><span class="function">distanceTo</span><span class="symbol">(</span><span class="normal">aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">]);</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">distance </span><span class="symbol">&lt;</span><span class="normal"> delta</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    delta </span><span class="symbol">=</span><span class="normal"> distance</span><span class="symbol">;</span>
+<span class="normal">                    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">distance </span><span class="symbol">&lt;</span><span class="normal"> bestDistance</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        bestDistance </span><span class="symbol">=</span><span class="normal"> delta</span><span class="symbol">;</span>
+<span class="normal">                        best1 </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">                        best2 </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">];</span>
+<span class="normal">                        </span><span class="comment">// StdOut.println("better distance = " + delta + " from " + best1 + " to " + best2);</span>
+<span class="normal">                    </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> delta</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns one of the points in the closest pair of points.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> one of the two points in the closest pair of points;</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> null} if no such point (because there are fewer than 2 points)</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Point2D</span><span class="normal"> </span><span class="function">either</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> best1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the other point in the closest pair of points.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the other point in the closest pair of points</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> null} if no such point (because there are fewer than 2 points)</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="usertype">Point2D</span><span class="normal"> </span><span class="function">other</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> best2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/**</span>
+<span class="comment">     * Returns the Eucliden distance between the closest pair of points.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@return</span><span class="comment"> the Euclidean distance between the closest pair of points</span>
+<span class="comment">     *         {</span><span class="type">@code</span><span class="comment"> Double.POSITIVE_INFINITY} if no such pair of points</span>
+<span class="comment">     *         exist (because there are fewer than 2 points)</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="type">double</span><span class="normal"> </span><span class="function">distance</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> bestDistance</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// is v &lt; w ?</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">boolean</span><span class="normal"> </span><span class="function">less</span><span class="symbol">(</span><span class="usertype">Comparable</span><span class="normal"> v</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Comparable</span><span class="normal"> w</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> v</span><span class="symbol">.</span><span class="function">compareTo</span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">// stably merge a[lo .. mid] with a[mid+1 ..hi] using aux[lo .. hi]</span>
+<span class="normal">    </span><span class="comment">// precondition: a[lo .. mid] and a[mid+1 .. hi] are sorted subarrays</span>
+<span class="normal">    </span><span class="keyword">private</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">merge</span><span class="symbol">(</span><span class="normal">Comparable</span><span class="symbol">[]</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> Comparable</span><span class="symbol">[]</span><span class="normal"> aux</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> mid</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="comment">// copy to aux[]</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">;</span><span class="normal"> k </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            aux</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span>
+<span class="normal">        </span><span class="comment">// merge back to a[] </span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">,</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> mid</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k </span><span class="symbol">=</span><span class="normal"> lo</span><span class="symbol">;</span><span class="normal"> k </span><span class="symbol">&lt;=</span><span class="normal"> hi</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal">      </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">&gt;</span><span class="normal"> mid</span><span class="symbol">)</span><span class="normal">              a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">++];</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j </span><span class="symbol">&gt;</span><span class="normal"> hi</span><span class="symbol">)</span><span class="normal">               a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">++];</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">less</span><span class="symbol">(</span><span class="normal">aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">],</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]))</span><span class="normal"> a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">++];</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal">                           a</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> aux</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">++];</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+
+
+<span class="normal">   </span><span class="comment">/**</span>
+<span class="comment">     * Unit tests the {</span><span class="type">@code</span><span class="comment"> ClosestPair} data type.</span>
+<span class="comment">     * Reads in an integer {</span><span class="type">@code</span><span class="comment"> n} and {</span><span class="type">@code</span><span class="comment"> n} points (specified by</span>
+<span class="comment">     * their </span><span class="keyword">&lt;em&gt;</span><span class="comment">x</span><span class="keyword">&lt;/em&gt;</span><span class="comment">- and </span><span class="keyword">&lt;em&gt;</span><span class="comment">y</span><span class="keyword">&lt;/em&gt;</span><span class="comment">-coordinates) from standard input;</span>
+<span class="comment">     * computes a closest pair of points; and prints the pair to standard</span>
+<span class="comment">     * output.</span>
+<span class="comment">     *</span>
+<span class="comment">     * </span><span class="type">@param</span><span class="comment"> args the command-line arguments</span>
+<span class="comment">     */</span>
+<span class="normal">    </span><span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="normal">String</span><span class="symbol">[]</span><span class="normal"> args</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> n </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readInt</span><span class="symbol">();</span>
+<span class="normal">        Point2D</span><span class="symbol">[]</span><span class="normal"> points </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> Point2D</span><span class="symbol">[</span><span class="normal">n</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">double</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readDouble</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="type">double</span><span class="normal"> y </span><span class="symbol">=</span><span class="normal"> StdIn</span><span class="symbol">.</span><span class="function">readDouble</span><span class="symbol">();</span>
+<span class="normal">            points</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Point2D</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">,</span><span class="normal"> y</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="usertype">ClosestPair</span><span class="normal"> closest </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">ClosestPair</span><span class="symbol">(</span><span class="normal">points</span><span class="symbol">);</span>
+<span class="normal">        StdOut</span><span class="symbol">.</span><span class="function">println</span><span class="symbol">(</span><span class="normal">closest</span><span class="symbol">.</span><span class="function">distance</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" from "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> closest</span><span class="symbol">.</span><span class="function">either</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" to "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> closest</span><span class="symbol">.</span><span class="function">other</span><span class="symbol">());</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="cbracket">}</span>
+
+<span class="comment">/******************************************************************************</span>
+<span class="comment"> *  Copyright 2002-2016, Robert Sedgewick and Kevin Wayne.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This file is part of algs4.jar, which accompanies the textbook</span>
+<span class="comment"> *</span>
+<span class="comment"> *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,</span>
+<span class="comment"> *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.</span>
+<span class="comment"> *      </span><span class="url">http://algs4.cs.princeton.edu</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is free software: you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation, either version 3 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  algs4.jar is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with algs4.jar.  If not, see </span><span class="url">http://www.gnu.org/licenses.</span>
+<span class="comment"> ******************************************************************************/</span>
+</tt></pre>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10811519-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+
+<p><br><address><small>
+Last updated: Sat Jul 15 19:37:37 EDT 2017.
+</small></address>
+
+</html>
