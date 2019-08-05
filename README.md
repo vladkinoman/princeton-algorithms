@@ -1,1 +1,1 @@
-# thinking-in-programming
+# Assignmens for Coursera Algorithms: Part 1 & Part 2 (Princeton)
