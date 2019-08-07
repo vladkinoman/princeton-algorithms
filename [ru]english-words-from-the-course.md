@@ -1,7 +1,8 @@
 # Английские слова с курса Algorithms: part 1
 
-## Глаголы
+## Глаголы (verbs)
 
+- to maintain - поддерживать (our algorithms maintain them)
 - to encounter - сталкиваться (столкновение без to)
 - to acquire - приобретать
 - to tend - имеет тенденцию или “как правило”
@@ -12,13 +13,14 @@
 - to worth (ed) - стоить
 - to strike (strike - struck [strʌk] - stricken [strɪkən]) - поражать
 
-## Существительные
+## Существительные (nouns)
 
 - flaw - недостаток (так же и downside)
 - boost - ускорение (форсировать)
 - worth - ценность, цена
+- inquiry - исследование (scientific inquiry)
 
-## Прилагательные
+## Прилагательные (adjectives)
 
 - porous - пористый
 - comprised of - состоящая из
@@ -29,15 +31,18 @@
 - essential [или substantial] - существенный
 - worthwhile - стоящий
 
-## Наречие
+## Наречие (adverbs)
 
+- mutually - обоюдно
 - on the contrary - напротив
 
-## Союз
+## Союзы (conjuctions)
 
 - Because of - из-за
 
-## Хорошие устойчивые фразы
+## Хорошие устойчивые фразы (idioms)
+
+- all the way down to code - вплоть до кода
 
 - you may end up working with - вы можете в конечном итоге работая с..
 
