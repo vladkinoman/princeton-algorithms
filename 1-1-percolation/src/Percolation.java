@@ -12,7 +12,7 @@ public class Percolation {
             throw new IllegalArgumentException();
 
         // using wqu version with 2 additional virtual sites
-        ufDataStructure = new WeightedQuickUnionUF(n + 2);
+        ufDataStructure = new WeightedQuickUnionUF(n*n + 2);
 
         grid = new boolean[n][];
         this.n = n;
@@ -36,6 +36,7 @@ public class Percolation {
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col){
+        // elements are counted from 1 to n.
         int shiftedRow = row - 1;
         int shiftedCol = col - 1;
 
@@ -47,11 +48,11 @@ public class Percolation {
         {
             grid[shiftedRow][shiftedCol] = true;
 
-            int curr = row * n + col;
-            int right = row * n + col + 1;
-            int up = (row - 1) * n + col;
-            int left = row * n + col - 1;
-            int bottom = (row + 1) * n + col;
+            int curr = shiftedRow * n + shiftedCol;
+            int right = shiftedRow * n + shiftedCol + 1;
+            int up = (shiftedRow - 1) * n + shiftedCol;
+            int left = shiftedRow * n + shiftedCol - 1;
+            int bottom = (shiftedRow + 1) * n + shiftedCol;
 
             if(shiftedCol + 1 < n && grid[shiftedRow][shiftedCol + 1])
                 ufDataStructure.union(curr, right);
