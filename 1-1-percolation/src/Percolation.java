@@ -7,6 +7,7 @@ public class Percolation {
     WeightedQuickUnionUF ufDataStructure;
     int virtualTopSite;
     int virtualBottomSite;
+    WeightedQuickUnionUF ufDataStructureWithTwoExtraSites;
 
     // creates n-by-n grid, with all sites initially blocked
     public Percolation(int n){
@@ -16,8 +17,8 @@ public class Percolation {
         virtualTopSite = n * n;
         virtualBottomSite = n * n + 1;
         // using wqu version with 2 additional virtual sites
-        ufDataStructure = new WeightedQuickUnionUF( n * n + 2);
-
+        ufDataStructure = new WeightedQuickUnionUF( n * n);
+        ufDataStructureWithTwoExtraSites = new WeightedQuickUnionUF(n * n + 2);
         grid = new boolean[n][];
         this.n = n;
         for (int i = 0; i < n; i++) {
@@ -28,11 +29,11 @@ public class Percolation {
 
         // connect top row to the virtual top site
         for (int i = 0; i < n; i++)
-            ufDataStructure.union(i, virtualTopSite);
+            ufDataStructureWithTwoExtraSites.union(i, virtualTopSite);
 
         // connect bottom row to the virtual bottom site
         for (int i = 0; i < n; i++)
-            ufDataStructure.union(n * (n - 1) + i, virtualBottomSite);
+            ufDataStructureWithTwoExtraSites.union(n * (n - 1) + i, virtualBottomSite);
 
     }
 
@@ -56,17 +57,25 @@ public class Percolation {
             int left = shiftedRow * n + shiftedCol - 1;
             int bottom = (shiftedRow + 1) * n + shiftedCol;
 
-            if(shiftedCol + 1 < n && grid[shiftedRow][shiftedCol + 1])
+            if(shiftedCol + 1 < n && grid[shiftedRow][shiftedCol + 1]) {
                 ufDataStructure.union(curr, right);
+                ufDataStructureWithTwoExtraSites.union(curr, right);
+            }
 
-            if(shiftedRow - 1 >= 0 && grid[shiftedRow - 1][shiftedCol])
+            if(shiftedRow - 1 >= 0 && grid[shiftedRow - 1][shiftedCol]) {
                 ufDataStructure.union(curr, up);
+                ufDataStructureWithTwoExtraSites.union(curr, up);
+            }
 
-            if(shiftedCol - 1 >= 0 && grid[shiftedRow][shiftedCol - 1])
+            if(shiftedCol - 1 >= 0 && grid[shiftedRow][shiftedCol - 1]) {
                 ufDataStructure.union(curr, left);
+                ufDataStructureWithTwoExtraSites.union(curr, left);
+            }
 
-            if(shiftedRow + 1 < n && grid[shiftedRow + 1][shiftedCol])
+            if(shiftedRow + 1 < n && grid[shiftedRow + 1][shiftedCol]) {
                 ufDataStructure.union(curr, bottom);
+                ufDataStructureWithTwoExtraSites.union(curr, bottom);
+            }
 
             openSites++;
         }
@@ -87,7 +96,11 @@ public class Percolation {
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col){
-        return isOpen(row, col) && ufDataStructure.connected((row - 1) * n + (col - 1), virtualTopSite);
+        if (isOpen(row, col))
+            for (int i = 0; i < n; i++)
+                if(ufDataStructure.connected((row - 1) * n + (col - 1), i))
+                    return true;
+        return false;
     }
 
     // returns the number of open sites
@@ -95,7 +108,7 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates(){
-        return n != 1 ? ufDataStructure.connected(virtualTopSite, virtualBottomSite) : grid[0][0];
+        return n != 1 ? ufDataStructureWithTwoExtraSites.connected(virtualTopSite, virtualBottomSite) : grid[0][0];
     }
 
     // test client (optional)
