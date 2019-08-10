@@ -1,36 +1,38 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private boolean grid[][];
-    private int n;
-    private int openSites;
+    boolean grid[][];
+    int n;
+    int openSites;
     WeightedQuickUnionUF ufDataStructure;
+    int virtualTopSite;
+    int virtualBottomSite;
 
     // creates n-by-n grid, with all sites initially blocked
     public Percolation(int n){
         if (n <= 0)
             throw new IllegalArgumentException();
 
+        virtualTopSite = n * n;
+        virtualBottomSite = n * n + 1;
         // using wqu version with 2 additional virtual sites
-        ufDataStructure = new WeightedQuickUnionUF(n*n + 2);
+        ufDataStructure = new WeightedQuickUnionUF( n * n + 2);
 
         grid = new boolean[n][];
         this.n = n;
         for (int i = 0; i < n; i++) {
-            {
                 grid[i] = new boolean[n];
                 for (int j = 0; j < n; j++)
                     grid[i][j] = false;
-            }
         }
 
         // connect top row to the virtual top site
         for (int i = 0; i < n; i++)
-            ufDataStructure.union(i, n * n);
+            ufDataStructure.union(i, virtualTopSite);
 
         // connect bottom row to the virtual bottom site
         for (int i = 0; i < n; i++)
-            ufDataStructure.union(n * (n - 1) + i, n * n + 1);
+            ufDataStructure.union(n * (n - 1) + i, virtualBottomSite);
 
     }
 
@@ -85,14 +87,7 @@ public class Percolation {
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col){
-        int shiftedRow = row - 1;
-        int shiftedCol = col - 1;
-
-        if(shiftedRow < 0 || shiftedRow >= n
-                || shiftedCol < 0 || shiftedCol >= n)
-            throw new IllegalArgumentException();
-
-        return !grid[shiftedRow][shiftedCol];
+        return isOpen(row, col) && ufDataStructure.connected((row - 1) * n + (col - 1), virtualTopSite);
     }
 
     // returns the number of open sites
@@ -100,7 +95,7 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates(){
-        return n != 1 ? ufDataStructure.connected(n * n, n * n + 1) : grid[0][0];
+        return n != 1 ? ufDataStructure.connected(virtualTopSite, virtualBottomSite) : grid[0][0];
     }
 
     // test client (optional)
