@@ -1,7 +1,6 @@
 
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
-import edu.princeton.cs.algs4.StdStats;
 
 /**
  * The {@code PercolationStats} class provides methods
@@ -10,11 +9,12 @@ import edu.princeton.cs.algs4.StdStats;
  * @author Vlad Beklenyshchev aka vladkinoman
  */
 public class PercolationStats {
+    private int n; // width of the grid
+    private int trials; // trials - number of observations in the experiment
+    private double sumOfFractionOfOpenSites;
+    private double[] arrFractionOfOpenSites;
     // see: https://en.wikipedia.org/wiki/1.96
-    private static final double PART_OF_STANDARD_DEVIATION = 1.96;
-    private final int trials; // trials - number of observations in the experiment
-    private final double mean;
-    private final double stddev;
+    private final double partOfStandardDeviation = 1.96;
 
     /**
      * Perform independent trials on an n-by-n grid.
@@ -25,9 +25,9 @@ public class PercolationStats {
     public PercolationStats(int n, int trials) {
         if (n <= 0 || trials <= 0)
             throw new IllegalArgumentException();
-
+        this.n = n;
         this.trials = trials;
-        double[] arrFractionOfOpenSites = new double[trials];
+        arrFractionOfOpenSites = new double[trials];
         for (int t = 0; t < trials; t++) {
             Percolation perc = new Percolation(n);
             while (!perc.percolates()) {
@@ -42,9 +42,8 @@ public class PercolationStats {
             }
             arrFractionOfOpenSites[t] = (double) perc.numberOfOpenSites()
                     / (n * n);
+            sumOfFractionOfOpenSites += arrFractionOfOpenSites[t];
         }
-        mean = StdStats.mean(arrFractionOfOpenSites);
-        stddev = StdStats.stddev(arrFractionOfOpenSites);
     }
     
     /**
@@ -54,7 +53,7 @@ public class PercolationStats {
      * @return a sample mean of percolation threshold.
      */
     public double mean() {
-        return mean;
+        return sumOfFractionOfOpenSites / trials;
     }
 
     /**
@@ -64,7 +63,12 @@ public class PercolationStats {
      * @return standard deviation of percolation threshold
      */
     public double stddev() {
-        return stddev;
+        double sumOfSquares = 0;
+        for (int i = 0; i < trials; i++)
+            sumOfSquares += (arrFractionOfOpenSites[i]
+                - mean()) * (arrFractionOfOpenSites[i] - mean());
+
+        return Math.sqrt(sumOfSquares / (trials - 1));
     }
 
     /**
@@ -73,8 +77,7 @@ public class PercolationStats {
      * @return a low endpoint of 95% confidence interval
      */
     public double confidenceLo() {
-        return mean() - PART_OF_STANDARD_DEVIATION * stddev()
-                / Math.sqrt(trials);
+        return mean() - partOfStandardDeviation * stddev() / Math.sqrt(trials);
     }
 
     /**
@@ -83,8 +86,7 @@ public class PercolationStats {
      * @return a right value from the confidence interval
      */
     public double confidenceHi() {
-        return mean() + PART_OF_STANDARD_DEVIATION * stddev()
-                / Math.sqrt(trials);
+        return mean() + partOfStandardDeviation * stddev() / Math.sqrt(trials);
     }
 
     /**

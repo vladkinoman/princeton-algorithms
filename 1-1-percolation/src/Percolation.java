@@ -10,13 +10,13 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
  * @author Vlad Beklenyshchev aka vladkinoman
  */
 public class Percolation {
-    private boolean[][] grid;
-    private final int n;
+    private boolean grid[][];
+    private int n;
     private int openSites;
-    private final int virtualTopSite;
-    private final int virtualBottomSite;
-    private final WeightedQuickUnionUF ufDataStructureWithOneExtraSite;  // only top
-    private final WeightedQuickUnionUF ufDataStructureWithTwoExtraSites; // top & bottom
+    private WeightedQuickUnionUF ufDataStructure;
+    private int virtualTopSite;
+    private int virtualBottomSite;
+    private WeightedQuickUnionUF ufDataStructureWithTwoExtraSites;
 
     /**
      * Creates n-by-n grid, with all sites initially blocked.
@@ -32,32 +32,19 @@ public class Percolation {
         virtualTopSite = n * n;
         virtualBottomSite = n * n + 1;
 
-        ufDataStructureWithOneExtraSite =
-                new WeightedQuickUnionUF(n * n + 1);                  // n
+        // using wqu version with 2 additional virtual sites
+        ufDataStructure = new WeightedQuickUnionUF(n * n); // n
         ufDataStructureWithTwoExtraSites =
-                new WeightedQuickUnionUF(n * n + 2);                  // n
+                new WeightedQuickUnionUF(n * n + 2);       // n
 
         // connect top row to the virtual top site
-        for (int i = 0; i < n; i++) {                                    // n
-            ufDataStructureWithOneExtraSite.union(i, virtualTopSite);
+        for (int i = 0; i < n; i++)                           // n
             ufDataStructureWithTwoExtraSites.union(i, virtualTopSite);
-        }
 
         // connect bottom row to the virtual bottom site
-        for (int i = 0; i < n; i++)                                      // n
+        for (int i = 0; i < n; i++)                          // n
             ufDataStructureWithTwoExtraSites.union(n * (n - 1) + i,
                     virtualBottomSite);
-    }
-
-    /**
-     * Validates row and column indices.
-     *
-     * @param row row number of the element
-     * @param col column number of the element
-     */
-    private void validateIndices(int row, int col) {
-        if (row < 1 || row > n || col < 1 || col > n)
-            throw new IllegalArgumentException();
     }
 
     /**
@@ -70,10 +57,13 @@ public class Percolation {
      * @param col column number of the element
      */
     public void open(int row, int col) {
-        validateIndices(row, col);
 
         int shiftedRow = row - 1;
         int shiftedCol = col - 1;
+
+        if (shiftedRow < 0 || shiftedRow >= n
+                || shiftedCol < 0 || shiftedCol >= n)
+            throw new IllegalArgumentException();
 
         if (!grid[shiftedRow][shiftedCol]) {
 
@@ -86,22 +76,22 @@ public class Percolation {
             int bottom = (shiftedRow + 1) * n + shiftedCol;
 
             if (shiftedCol + 1 < n && grid[shiftedRow][shiftedCol + 1]) {
-                ufDataStructureWithOneExtraSite.union(curr, right);
+                ufDataStructure.union(curr, right);
                 ufDataStructureWithTwoExtraSites.union(curr, right);
             }
 
             if (shiftedRow - 1 >= 0 && grid[shiftedRow - 1][shiftedCol]) {
-                ufDataStructureWithOneExtraSite.union(curr, up);
+                ufDataStructure.union(curr, up);
                 ufDataStructureWithTwoExtraSites.union(curr, up);
             }
 
             if (shiftedCol - 1 >= 0 && grid[shiftedRow][shiftedCol - 1]) {
-                ufDataStructureWithOneExtraSite.union(curr, left);
+                ufDataStructure.union(curr, left);
                 ufDataStructureWithTwoExtraSites.union(curr, left);
             }
 
             if (shiftedRow + 1 < n && grid[shiftedRow + 1][shiftedCol]) {
-                ufDataStructureWithOneExtraSite.union(curr, bottom);
+                ufDataStructure.union(curr, bottom);
                 ufDataStructureWithTwoExtraSites.union(curr, bottom);
             }
 
@@ -119,23 +109,34 @@ public class Percolation {
      * @return {@code true} if the site is full, {@code false} otherwise
      */
     public boolean isOpen(int row, int col) {
-        validateIndices(row, col);
+        int shiftedRow = row - 1;
+        int shiftedCol = col - 1;
 
-        return grid[row - 1][col - 1];
+        if (shiftedRow < 0 || shiftedRow >= n
+                || shiftedCol < 0 || shiftedCol >= n)
+            throw new IllegalArgumentException();
+
+        return grid[shiftedRow][shiftedCol];
     }
 
     /**
      * Returns a boolean value which is true when the site (row, col) is full
      * (flooded with water / painted blue) and returns false otherwise.
-     * Performance: 1 call to the uf method connected() in the worst case.
+     * Performance: n calls to the uf method connected() in the worst case :/
      *
      * @param row row number of the element
      * @param col column number of the element
      * @return {@code true} if the site is full, {@code false} otherwise
      */
     public boolean isFull(int row, int col) {
-        return isOpen(row, col) && ufDataStructureWithOneExtraSite.connected(
-                (row - 1) * n + (col - 1), virtualTopSite);
+        if (isOpen(row, col))
+            for (int i = 0; i < n; i++)
+                // worst case scenario: when all blocks of the top row are opened
+                // and possible connected block is the last one
+                if (grid[0][i] && ufDataStructure.connected((row - 1) * n
+                        + (col - 1), i))
+                    return true;
+        return false;
     }
 
     /**
