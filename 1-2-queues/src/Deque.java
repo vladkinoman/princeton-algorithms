@@ -81,6 +81,8 @@ public class Deque<Item> implements Iterable<Item> {
         newNode.next = first;
         newNode.prev = null;
         first = newNode;
+        if (last == null)    last = first;
+        if (first.next != null) first.next.prev = first;
         count++;
     }
 
@@ -97,6 +99,8 @@ public class Deque<Item> implements Iterable<Item> {
         newNode.next = null;
         newNode.prev = last;
         last = newNode;
+        if (first == null)   first = last;
+        if (last.prev != null) last.prev.next = last;
         count++;
     }
 
@@ -110,7 +114,8 @@ public class Deque<Item> implements Iterable<Item> {
         if (isEmpty()) throw new NoSuchElementException();
         Item removingItem = first.item;
         first = first.next;
-        first.prev = null;
+        if (first != null) first.prev = null;
+        else               last = null;
         count--;
         return removingItem;
     }
@@ -125,7 +130,8 @@ public class Deque<Item> implements Iterable<Item> {
         if (isEmpty()) throw new NoSuchElementException();
         Item removingItem = last.item;
         last = last.prev;
-        last.next = null;
+        if (last != null) last.next = null;
+        else              first = null;
         count--;
         return removingItem;
     }
@@ -168,6 +174,33 @@ public class Deque<Item> implements Iterable<Item> {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-
+        Deque<String> deque = new Deque<>();
+        while (!StdIn.isEmpty()) {
+            String sign = StdIn.readString();
+            switch (sign) {
+                case "+f":
+                    String itemOnFirst = StdIn.readString();
+                    deque.addFirst(itemOnFirst);
+                    break;
+                case "+l":
+                    String itemOnLast = StdIn.readString();
+                    deque.addLast(itemOnLast);
+                    break;
+                case "-f":
+                    if (!deque.isEmpty())
+                        StdOut.print(deque.removeFirst() + " ");
+                    break;
+                case "-l":
+                    if (!deque.isEmpty())
+                        StdOut.print(deque.removeLast() + " ");
+                    break;
+                default:
+                    break;
+            }
+        }
+        StdOut.println("(" + deque.size() + " left on deque)");
+        for (String str : deque) {
+            StdOut.print(str + " ");
+        }
     }
 }
