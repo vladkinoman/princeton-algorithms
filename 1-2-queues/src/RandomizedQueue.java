@@ -21,11 +21,18 @@ import java.util.NoSuchElementException;
  */
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
+    private Item[] resizingArray;
+    private int head;
+    private int tail;
+    private int count;
     /**
      * Constructs an empty randomized queue.
      */
     public RandomizedQueue() {
-
+        resizingArray = (Item[]) new Object[1];
+        head = 0;
+        tail = 0;
+        count = 0;
     }
 
     /**
@@ -35,7 +42,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      *         {@code false} otherwise
      */
     public boolean isEmpty() {
-        return false;
+        return count == 0;
     }
 
     /**
@@ -43,8 +50,8 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      *
      * @return the number of items on the queue
      */
-    public int size() {
-        return 0;
+    public int count() {
+        return count;
     }
 
     /**
@@ -55,6 +62,19 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public void enqueue(Item item) {
         if (item == null) throw new IllegalArgumentException();
+        if (count == resizingArray.length) resize(2 * resizingArray.length);
+        resizingArray[tail++] = item;
+        count++;
+    }
+
+    private void resize(int capacity) {
+        Item[] copy = (Item[]) new Object[capacity];
+        for (int i = 0, j = 0; i < count; j++)
+            if (resizingArray[j] != null)
+                copy[i++] = resizingArray[j];
+        resizingArray = copy;
+        head = 0;
+        tail = count;
     }
 
     /**
@@ -65,7 +85,21 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public Item dequeue() {
         if (isEmpty()) throw new NoSuchElementException();
-        return null;
+        int randomPlace = StdRandom.uniform(head, tail);
+        Item item = resizingArray[randomPlace];
+        resizingArray[randomPlace] = null;
+        count--;
+
+        if (count > 0) {
+            if (count == resizingArray.length / 4)
+                resize(resizingArray.length / 2);
+            else if (randomPlace == head)     head++;
+            else if (randomPlace == tail - 1) tail--;
+            // deleting from the middle:
+            else resize(resizingArray.length - 1);
+        }
+
+        return item;
     }
 
     /**
@@ -76,7 +110,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public Item sample() {
         if (isEmpty()) throw new NoSuchElementException();
-        return null;
+        return resizingArray[StdRandom.uniform(head, tail)];
     }
 
     /**
@@ -85,20 +119,40 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      * @return an iterator that iterates over the items in random order
      */
     public Iterator<Item> iterator() {
-        return null;
+        return new RandomizedQueueIterator();
     }
 
-    private class RanomizedQueueIterator<Item> implements Iterator<Item> {
+    private class RandomizedQueueIterator implements Iterator<Item> {
+
+        private Item[] currentArray;
+        private int curr;
+        private int leftToIterate;
+
+        /**
+         * Construct iterator for randomized queue.
+         */
+        RandomizedQueueIterator() {
+            currentArray = (Item[]) new Object[count];
+            curr = head;
+            leftToIterate = count;
+
+            for (int i = 0, j = 0; i < count; j++)
+                if (resizingArray[j] != null)
+                    currentArray[i++] = resizingArray[j];
+
+            StdRandom.shuffle(currentArray);
+        }
 
         @Override
         public boolean hasNext() {
-            return false;
+            return leftToIterate != 0;
         }
 
         @Override
         public Item next() {
             if (isEmpty()) throw new NoSuchElementException();
-            return null;
+            leftToIterate--;
+            return currentArray[curr++];
         }
 
         @Override
