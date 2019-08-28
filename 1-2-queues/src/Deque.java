@@ -12,7 +12,8 @@ import java.util.NoSuchElementException;
  *  from either the front or the back of the data structure,
  *  and iterating over the items in order from front to back.
  *  <p>
- *  This implementation uses a ... with a ... .
+ This implementation uses a doubly-linked list with a static nested class for
+ *  linked-list nodes.
  *
  * @author Vlad Beklenyshchev aka vladkinoman
  *
@@ -22,12 +23,12 @@ public class Deque<Item> implements Iterable<Item> {
     /**
      * Beginning of deque.
      */
-    private Node first;
+    private Node<Item> first;
 
     /**
      * Ending of deque.
      */
-    private Node last;
+    private Node<Item> last;
     /**
      * Number of items in deque.
      */
@@ -36,9 +37,9 @@ public class Deque<Item> implements Iterable<Item> {
     /**
      * Helper linked list class.
      */
-    private class Node {
-        private Node next;
-        private Node prev;
+    private static class Node<Item> {
+        private Node<Item> next;
+        private Node<Item> prev;
         private Item item;
     }
     /**
@@ -76,7 +77,7 @@ public class Deque<Item> implements Iterable<Item> {
      */
     public void addFirst(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node newNode = new Node();
+        Node<Item> newNode = new Node<>();
         newNode.item = item;
         newNode.next = first;
         newNode.prev = null;
@@ -94,7 +95,7 @@ public class Deque<Item> implements Iterable<Item> {
      */
     public void addLast(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node newNode = new Node();
+        Node<Item> newNode = new Node<>();
         newNode.item = item;
         newNode.next = null;
         newNode.prev = last;
@@ -121,7 +122,7 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     /**
-     * Removes and returns the item from the back
+     * Removes and returns the item from the back.
      *
      * @return the item which is removed from the front
      * @throws NoSuchElementException if the client calls removeLast() when the deque is empty
@@ -147,7 +148,7 @@ public class Deque<Item> implements Iterable<Item> {
 
     private class DoubleLinkedListIterator implements Iterator<Item> {
 
-        private Node current = first;
+        private Node<Item> current = first;
 
         @Override
         public boolean hasNext() {
@@ -156,7 +157,7 @@ public class Deque<Item> implements Iterable<Item> {
 
         @Override
         public Item next() {
-            if (isEmpty()) throw new NoSuchElementException();
+            if (!hasNext()) throw new NoSuchElementException();
             Item currItem = current.item;
             current = current.next;
             return currItem;

@@ -19,7 +19,6 @@ public class Permutation {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-
         RandomizedQueue<String> randqueue = new RandomizedQueue<>();
         while (!StdIn.isEmpty())
             randqueue.enqueue(StdIn.readString());
@@ -29,9 +28,9 @@ public class Permutation {
             throw new IllegalArgumentException();
 
         for (String s : randqueue) {
+            if (k == 0) break;
             StdOut.println(s);
-            if (--k == 0) break;
+            k--;
         }
-
     }
 }

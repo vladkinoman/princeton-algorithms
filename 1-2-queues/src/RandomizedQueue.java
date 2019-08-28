@@ -69,9 +69,15 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private void resize(int capacity) {
         Item[] copy = (Item[]) new Object[capacity];
-        for (int i = 0, j = 0; i < count; j++)
-            if (resizingArray[j] != null)
-                copy[i++] = resizingArray[j];
+
+        int i = 0;
+        for (int j = 0; i < count; j++) {
+            if (resizingArray[j] != null) {
+                copy[i] = resizingArray[j];
+                i++;
+            }
+        }
+
         resizingArray = copy;
         head = 0;
         tail = count;
@@ -124,7 +130,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private class RandomizedQueueIterator implements Iterator<Item> {
 
-        private Item[] currentArray;
+        private final Item[] currentArray;
         private int curr;
         private int leftToIterate;
 
@@ -136,9 +142,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             curr = head;
             leftToIterate = count;
 
-            for (int i = 0, j = 0; i < count; j++)
-                if (resizingArray[j] != null)
-                    currentArray[i++] = resizingArray[j];
+            int i = 0;
+            for (int j = 0; i < count; j++)
+                if (resizingArray[j] != null) {
+                    currentArray[i] = resizingArray[j];
+                    i++;
+                }
 
             StdRandom.shuffle(currentArray);
         }
@@ -150,7 +159,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         @Override
         public Item next() {
-            if (isEmpty()) throw new NoSuchElementException();
+            if (!hasNext()) throw new NoSuchElementException();
             leftToIterate--;
             return currentArray[curr++];
         }
