@@ -50,7 +50,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      *
      * @return the number of items on the queue
      */
-    public int count() {
+    public int size() {
         return count;
     }
 
@@ -167,7 +167,30 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-
+        RandomizedQueue<String> randqueue = new RandomizedQueue<>();
+        while (!StdIn.isEmpty()) {
+            String sign = StdIn.readString();
+            switch (sign) {
+                case "+":
+                    String item = StdIn.readString();
+                    randqueue.enqueue(item);
+                    break;
+                case "-s":
+                    if (!randqueue.isEmpty())
+                        StdOut.print(randqueue.sample() + " ");
+                    break;
+                case "-d":
+                    if (!randqueue.isEmpty())
+                        StdOut.print(randqueue.dequeue() + " ");
+                    break;
+                default:
+                    break;
+            }
+        }
+        StdOut.println("(" + randqueue.size() + " left on rand queue)");
+        for (String str : randqueue) {
+            StdOut.print(str + " ");
+        }
     }
 
 }
