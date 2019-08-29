@@ -62,7 +62,8 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public void enqueue(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        if (count == resizingArray.length) resize(2 * resizingArray.length);
+        if (count == resizingArray.length || tail == resizingArray.length)
+            resize(2 * resizingArray.length);
         resizingArray[tail++] = item;
         count++;
     }
@@ -91,20 +92,32 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public Item dequeue() {
         if (isEmpty()) throw new NoSuchElementException();
-        int randomPlace = StdRandom.uniform(head, tail);
-        Item item = resizingArray[randomPlace];
+        int randomPlace = 0;
+        Item item = null;
+        do {
+            randomPlace = StdRandom.uniform(head, tail);
+        } while ((item = resizingArray[randomPlace]) == null);
         resizingArray[randomPlace] = null;
         count--;
-
         if (count > 0) {
-            if (count == resizingArray.length / 4)
+            // invariant: array is between 25% and 100% full.
+            if (count == resizingArray.length / 4) {
                 resize(resizingArray.length / 2);
-            else if (randomPlace == head)     head++;
-            else if (randomPlace == tail - 1) tail--;
-            // deleting from the middle:
-            else resize(resizingArray.length - 1);
+            } else if (head == randomPlace) {
+                // invariant: head is in the interval [0; tail)
+                // && array[head] == null
+                for (; resizingArray[head] == null; head++)
+                    ;
+            } else if (tail == randomPlace - 1) {
+                // invariant: tail is in the interval (head; length of the array]
+                // && array[tail - 1] == null && array[head] != null
+                for (; resizingArray[tail - 1] == null; --tail)
+                    ;
+            }
+        } else if (count == 0) {
+            head = 0;
+            tail = 0;
         }
-
         return item;
     }
 
@@ -116,7 +129,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public Item sample() {
         if (isEmpty()) throw new NoSuchElementException();
-        return resizingArray[StdRandom.uniform(head, tail)];
+        int randomPlace = 0;
+        Item item = null;
+        do {
+            randomPlace = StdRandom.uniform(head, tail);
+        } while ((item = resizingArray[randomPlace]) == null);
+        return item;
     }
 
     /**
@@ -132,35 +150,33 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         private final Item[] currentArray;
         private int curr;
-        private int leftToIterate;
 
         /**
          * Construct iterator for randomized queue.
          */
         RandomizedQueueIterator() {
             currentArray = (Item[]) new Object[count];
-            curr = head;
-            leftToIterate = count;
 
             int i = 0;
-            for (int j = 0; i < count; j++)
+            for (int j = 0; i < count; j++) {
                 if (resizingArray[j] != null) {
                     currentArray[i] = resizingArray[j];
                     i++;
                 }
+            }
 
             StdRandom.shuffle(currentArray);
+            curr = 0;
         }
 
         @Override
         public boolean hasNext() {
-            return leftToIterate != 0;
+            return curr != currentArray.length;
         }
 
         @Override
         public Item next() {
             if (!hasNext()) throw new NoSuchElementException();
-            leftToIterate--;
             return currentArray[curr++];
         }
 

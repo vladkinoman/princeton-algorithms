@@ -11,10 +11,11 @@
       <library>
         <CLASSES>
           <root url="jar://D:/Software/3rd-party-software/Libraries/algs4.jar!/" />
+          <root url="jar://D:/Software/Programming Tools/Libraries/algs4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://D:/Software/3rd-party-software/Libraries/algs4.jar!/" />
+          <root url="jar://D:/Software/Programming Tools/Libraries/algs4.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>
