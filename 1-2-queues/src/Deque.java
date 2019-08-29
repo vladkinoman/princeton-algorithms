@@ -23,12 +23,12 @@ public class Deque<Item> implements Iterable<Item> {
     /**
      * Beginning of deque.
      */
-    private Node<Item> first;
+    private Node first;
 
     /**
      * Ending of deque.
      */
-    private Node<Item> last;
+    private Node last;
     /**
      * Number of items in deque.
      */
@@ -37,9 +37,9 @@ public class Deque<Item> implements Iterable<Item> {
     /**
      * Helper linked list class.
      */
-    private static class Node<Item> {
-        private Node<Item> next;
-        private Node<Item> prev;
+    private class Node {
+        private Node next;
+        private Node prev;
         private Item item;
     }
     /**
@@ -77,7 +77,7 @@ public class Deque<Item> implements Iterable<Item> {
      */
     public void addFirst(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node<Item> newNode = new Node<>();
+        Node newNode = new Node();
         newNode.item = item;
         newNode.next = first;
         newNode.prev = null;
@@ -95,7 +95,7 @@ public class Deque<Item> implements Iterable<Item> {
      */
     public void addLast(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node<Item> newNode = new Node<>();
+        Node newNode = new Node();
         newNode.item = item;
         newNode.next = null;
         newNode.prev = last;
@@ -143,13 +143,16 @@ public class Deque<Item> implements Iterable<Item> {
      * @return an iterator that iterates over the items in order from front to back
      */
     public Iterator<Item> iterator() {
-        return new DoubleLinkedListIterator();
+        return new DoubleLinkedListIterator(first);
     }
 
     private class DoubleLinkedListIterator implements Iterator<Item> {
 
-        private Node<Item> current = first;
+        private Node current;
 
+        public DoubleLinkedListIterator(Node first) {
+            current = first;
+        }
         @Override
         public boolean hasNext() {
             return current != null;
