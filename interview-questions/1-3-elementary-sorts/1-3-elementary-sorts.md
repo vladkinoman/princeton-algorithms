@@ -8,7 +8,7 @@
 >
 > In layman's terms it's anything between linear and quadratic for instance n^2/logn.
 
-**Answer**. 
+**Answer**. The right answer is at the bottom of the answer paragraph.
 
 Brute-force solution which is similar to Selection Sort (assume that points are distinct):
 
@@ -58,6 +58,40 @@ return count;
 This algorithm takes time proportional to `~N^{3/2}` in the worst case which is great! :)
 
 Conclusion: the version with Binary Search is my answer on this question.
+
+Attempting to improve the second algorithm according to [this](https://stackoverflow.com/questions/12863904/algorithm-to-find-intersection-of-two-sets-without-using-any-data-structure#answer-12864031) answer after getting the hint below:
+
+```Java
+/* Using next class from the algs4.jar
+public final class edu.princeton.cs.algs4.Point2D implements java.lang.Comparable<edu.princeton.cs.algs4.Point2D> {
+  ...
+  public double x();
+  public double y();
+  ...
+}
+*/
+int count = 0; 
+Shell.sort(a); // ~ N^{3/2}
+Shell.sort(b); // ~ N^{3/2}
+
+for (int i = 0, j = 0; i < N && j < N; ) {
+    if 	    (a[i].x() > b[j].x()) j++;
+    else if (a[i].x() < b[j].x()) i++;
+    else {
+        if 		(a[i].y() > b[j].y()) j++;
+        else if (a[i].x() < b[j].x()) i++;
+        else {
+           // element is in intersection
+           count++;
+           i++;
+           j++;  
+        }
+    }
+}
+return count;
+```
+
+The running time of this algorithm is `~ 2N^{3/2}` (`+8N` compares) in the worst case which is better than quadratic time.
 
 > *Hint*: shellsort (or any other subquadratic sort).
 
@@ -135,6 +169,34 @@ In this way, I can guarantee that only two performance requirements will be main
 - At most `n` calls to `swap()`.
 - Constant extra space.
 
-Sorry, I couldn't find a solution to maintain first performance requirement. TODO find out what it is:
+Sorry, I couldn't find a solution to maintain first performance requirement.
+
+*3-way partitioning* (according to this [WIKI](https://www.wikiwand.com/en/Dutch_national_flag_problem) page):
+
+The following pseudocode for three-way partitioning assumes zero-based array indexing. It uses three indices `i`, `j` and `n`, maintaining the invariant that `i ≤ j`. In this example `mid` is equal to `0` which corresponds to `white` color of a pebble.
+
+`n` holds the lower boundary of numbers greater than `mid`.
+
+`j` is the position of the number under consideration. And `i` is the boundary for the numbers less than the mid value.
+
+```pseudocode
+procedure three_way_partition(A : array of values, mid : value):
+    i:= 0;
+    j:= 0;
+    n:= size of A - 1;
+
+    while j <= n:
+        if color(j) < mid:
+            swap(i, j);
+            i:= i + 1;
+            j:= j + 1;
+        else if color(j) > mid:
+            swap(j, n);
+            n:= n - 1;
+        else:
+            j:= j + 1;
+```
+
+Note that `j` will be greater than `i` only if the `mid` is hit.
 
 > *Hint*: 3-way partitioning.
