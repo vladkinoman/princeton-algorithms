@@ -44,22 +44,22 @@ public class BruteCollinearPoints {
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
                 for (int k = j + 1; k < n; k++) {
-                    for (int l = k + 1; l < n; l++) {
+                    for (int m = k + 1; m < n; m++) {
 
                         if (points[i].slopeTo(points[j])
                                 == points[i].slopeTo(points[k])
                         &&  points[i].slopeTo(points[j])
-                                == points[i].slopeTo(points[l])) {
+                                == points[i].slopeTo(points[m])) {
                             // We want to get only two points in the
                             //   segment p->q->r->s - p and s.
-                            // I will choose the segment p->s (i->l).
+                            // I will choose the segment p->s (i->m).
                             // Sure, we can pick s->p segment if we want to.
                             tmpPointSegments[countOfPointSegments] =
                                     new Point[2];
                             tmpPointSegments[countOfPointSegments][0] =
                                     points[i];
                             tmpPointSegments[countOfPointSegments][1] =
-                                    points[l];
+                                    points[m];
                             countOfPointSegments++;
 
                         }
@@ -79,9 +79,29 @@ public class BruteCollinearPoints {
                     .slopeTo(tmpPointSegments[i][1]);
 
             int j = i + 1;
-            while (j < countOfPointSegments && tmpPointSegments[i][0]
-                    .slopeTo(tmpPointSegments[j][1]) == firstSlope)
+            while (j < countOfPointSegments) {
+                // We want to make sure that the segment being checked
+                // enters the tmpPointSegments[i] segment.
+                if ((tmpPointSegments[i][0].slopeTo(tmpPointSegments[j][0])
+                            != firstSlope && tmpPointSegments[i][0]
+                        .slopeTo(tmpPointSegments[j][0])
+                            != Double.NEGATIVE_INFINITY)
+                   || (tmpPointSegments[i][1].slopeTo(tmpPointSegments[j][1])
+                            != firstSlope && tmpPointSegments[i][1]
+                        .slopeTo(tmpPointSegments[j][1])
+                            != Double.NEGATIVE_INFINITY)
+                   || (tmpPointSegments[i][0].slopeTo(tmpPointSegments[j][1])
+                            != firstSlope && tmpPointSegments[i][0]
+                        .slopeTo(tmpPointSegments[j][1])
+                            != Double.NEGATIVE_INFINITY)
+                   || (tmpPointSegments[i][1].slopeTo(tmpPointSegments[j][0])
+                            != firstSlope && tmpPointSegments[i][1]
+                        .slopeTo(tmpPointSegments[j][0])
+                            != Double.NEGATIVE_INFINITY)) {
+                    break;
+                }
                 j++;
+            }
 
             j--;
             tmpLineSegments[countOfLineSegments] =
@@ -119,7 +139,6 @@ public class BruteCollinearPoints {
      *
      * @param args
      */
-    @SuppressWarnings("checkstyle:MagicNumber")
     public static void main(String[] args) {
         int n = StdIn.readInt();
         Point[] points = new Point[n];

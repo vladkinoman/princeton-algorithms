@@ -11,7 +11,6 @@ public class Point implements Comparable<Point> {
      * @param  x the <em>x</em>-coordinate of the point
      * @param  y the <em>y</em>-coordinate of the point
      */
-    @SuppressWarnings("checkstyle:MagicNumber")
     public Point(int x, int y) {
         if (x < 0 || x > 32767 || y < 0 || y > 32767)
             throw new IllegalArgumentException();
