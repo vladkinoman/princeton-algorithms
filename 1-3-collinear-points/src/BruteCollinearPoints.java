@@ -13,23 +13,28 @@ public class BruteCollinearPoints {
      * we check whether the three slopes between p and q, between
      * p and r, and between p and s are all equal.
      *
-     * @param points array which consists of objects of the Point data type
+     * @param inputPoints array which consists of objects of the Point dt
      */
-    public BruteCollinearPoints(Point[] points) {
+    public BruteCollinearPoints(Point[] inputPoints) {
         // Checking corner cases...
-        if (points == null)
+        if (inputPoints == null)
             throw new IllegalArgumentException(
                     "Argument of the constructor is NULL.");
 
-        for (Point p: points)
+        for (Point p: inputPoints)
             if (p == null) throw new IllegalArgumentException(
                     "One of the points is NULL");
 
-        for (int i = 0; i < points.length; i++)
-            for (int j = i + 1; j < points.length; j++)
-                if (points[j].compareTo(points[i]) == 0)
+        for (int i = 0; i < inputPoints.length; i++)
+            for (int j = i + 1; j < inputPoints.length; j++)
+                if (inputPoints[j].compareTo(inputPoints[i]) == 0)
                     throw new IllegalArgumentException(
                             "Two points are equal.");
+
+        Point[] points = new Point[inputPoints.length];
+        for (int i = 0; i < inputPoints.length; i++) {
+            points[i] = inputPoints[i];
+        }
 
         // Sort points by natural order to make it easier
         // to find where p and s are in the next sequence: p->q->r->s.
@@ -46,10 +51,10 @@ public class BruteCollinearPoints {
                 for (int k = j + 1; k < n; k++) {
                     for (int m = k + 1; m < n; m++) {
 
-                        if (points[i].slopeTo(points[j])
-                                == points[i].slopeTo(points[k])
-                        &&  points[i].slopeTo(points[j])
-                                == points[i].slopeTo(points[m])) {
+                        if (Double.compare(points[i].slopeTo(points[j]),
+                                points[i].slopeTo(points[k])) == 0
+                        &&  Double.compare(points[i].slopeTo(points[j]),
+                                points[i].slopeTo(points[m])) == 0) {
                             // We want to get only two points in the
                             //   segment p->q->r->s - p and s.
                             // I will choose the segment p->s (i->m).
@@ -74,41 +79,49 @@ public class BruteCollinearPoints {
         // of the next segment.
         LineSegment[] tmpLineSegments = new LineSegment[countOfPointSegments];
         int countOfLineSegments = 0;
-        for (int i = 0; i < countOfPointSegments;) {
+        int j = 1;
+        for (int i = 0; i < countOfPointSegments; i = j, j++) {
+
+            // [i] points to the first slope.
+            // [j] points to the next slopes.
             double firstSlope = tmpPointSegments[i][0]
                     .slopeTo(tmpPointSegments[i][1]);
 
-            int j = i + 1;
             while (j < countOfPointSegments) {
                 // We want to make sure that the segment being checked
                 // enters the tmpPointSegments[i] segment.
-                if ((tmpPointSegments[i][0].slopeTo(tmpPointSegments[j][0])
-                            != firstSlope && tmpPointSegments[i][0]
-                        .slopeTo(tmpPointSegments[j][0])
-                            != Double.NEGATIVE_INFINITY)
-                   || (tmpPointSegments[i][1].slopeTo(tmpPointSegments[j][1])
-                            != firstSlope && tmpPointSegments[i][1]
-                        .slopeTo(tmpPointSegments[j][1])
-                            != Double.NEGATIVE_INFINITY)
-                   || (tmpPointSegments[i][0].slopeTo(tmpPointSegments[j][1])
-                            != firstSlope && tmpPointSegments[i][0]
-                        .slopeTo(tmpPointSegments[j][1])
-                            != Double.NEGATIVE_INFINITY)
-                   || (tmpPointSegments[i][1].slopeTo(tmpPointSegments[j][0])
-                            != firstSlope && tmpPointSegments[i][1]
-                        .slopeTo(tmpPointSegments[j][0])
-                            != Double.NEGATIVE_INFINITY)) {
+                if ((Double.compare(tmpPointSegments[i][0]
+                        .slopeTo(tmpPointSegments[j][0]), firstSlope) != 0
+                        && Double.compare(tmpPointSegments[i][0]
+                        .slopeTo(tmpPointSegments[j][0]),
+                        Double.NEGATIVE_INFINITY) != 0)
+
+                   || (Double.compare(tmpPointSegments[i][1]
+                        .slopeTo(tmpPointSegments[j][1]), firstSlope) != 0
+                        && Double.compare(tmpPointSegments[i][1]
+                        .slopeTo(tmpPointSegments[j][1]),
+                        Double.NEGATIVE_INFINITY) != 0)
+
+                   || (Double.compare(tmpPointSegments[i][0]
+                        .slopeTo(tmpPointSegments[j][1]), firstSlope) != 0
+                        && Double.compare(tmpPointSegments[i][0]
+                        .slopeTo(tmpPointSegments[j][1]),
+                        Double.NEGATIVE_INFINITY) != 0)
+
+                   || (Double.compare(tmpPointSegments[i][1]
+                        .slopeTo(tmpPointSegments[j][0]), firstSlope) != 0
+                        && Double.compare(tmpPointSegments[i][1]
+                        .slopeTo(tmpPointSegments[j][0]),
+                        Double.NEGATIVE_INFINITY) != 0)) {
                     break;
                 }
                 j++;
             }
 
-            j--;
             tmpLineSegments[countOfLineSegments] =
                     new LineSegment(tmpPointSegments[i][0],
-                            tmpPointSegments[j][1]);
+                            tmpPointSegments[j - 1][1]);
             countOfLineSegments++;
-            i = j + 1;
         }
 
         segments = new LineSegment[countOfLineSegments];
@@ -131,7 +144,11 @@ public class BruteCollinearPoints {
      * @return the line segments
      */
     public LineSegment[] segments() {
-        return segments;
+        LineSegment[] outputSegments = new LineSegment[segments.length];
+        for (int i = 0; i < segments.length; i++) {
+            outputSegments[i] = segments[i];
+        }
+        return outputSegments;
     }
 
     /**

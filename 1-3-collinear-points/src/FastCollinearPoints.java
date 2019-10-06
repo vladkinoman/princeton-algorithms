@@ -11,24 +11,28 @@ public class FastCollinearPoints {
     /**
      * Finds all line segments containing 4 points.
      *
-     * @param points
+     * @param inputPoints array which consists of objects of the Point dt
      */
-    public FastCollinearPoints(Point[] points) {
+    public FastCollinearPoints(Point[] inputPoints) {
         // Checking corner cases...
-        if (points == null)
+        if (inputPoints == null)
             throw new IllegalArgumentException(
                     "Argument of the constructor is NULL.");
 
-        for (Point p : points)
+        for (Point p : inputPoints)
             if (p == null) throw new IllegalArgumentException(
                     "One of the points is NULL");
 
-        for (int i = 0; i < points.length; i++)
-            for (int j = i + 1; j < points.length; j++)
-                if (points[j].compareTo(points[i]) == 0)
+        for (int i = 0; i < inputPoints.length; i++)
+            for (int j = i + 1; j < inputPoints.length; j++)
+                if (inputPoints[j].compareTo(inputPoints[i]) == 0)
                     throw new IllegalArgumentException(
                             "Two points are equal.");
 
+        Point[] points = new Point[inputPoints.length];
+        for (int i = 0; i < inputPoints.length; i++) {
+            points[i] = inputPoints[i];
+        }
         int n = points.length;
 
         Point[][] tmpPointSegments = new Point[n * n][];
@@ -49,7 +53,8 @@ public class FastCollinearPoints {
                     // Check if any 3 (or more) adjacent points in the sorted
                     // order have equal slopes with respect to p. If so, these
                     // points, together with p, are collinear.
-                    if (points[i].slopeTo(points[j + k]) != firstSlope) {
+                    if (Double.compare(points[i].slopeTo(points[j + k]),
+                            firstSlope) != 0) {
                         break;
                     }
                     countOfCollPoints++;
@@ -90,7 +95,8 @@ public class FastCollinearPoints {
         // of the next segment.
         LineSegment[] tmpLineSegments = new LineSegment[countOfPointSegments];
         int countOfLineSegments = 0;
-        for (int i = 0; i < countOfPointSegments;) {
+        int j = 1;
+        for (int i = 0; i < countOfPointSegments; i = j, j++) {
 
             // Created an inner class for Comparator to avoid the next warning:
             // (Defining a nested class in this program suggests poor design.)
@@ -108,43 +114,47 @@ public class FastCollinearPoints {
                                 [0].slopeTo(pSegment[0]);
                         double slope0with2 = tmpPointSegments[iForComparator]
                                 [0].slopeTo(qSegment[0]);
-                        if      (slope0with1 < slope0with2) return -1;
-                        else if (slope0with1 > slope0with2) return 1;
-                        return 0;
+                        return Double.compare(slope0with1, slope0with2);
                 }
             });
 
+            // [i] points to the first slope.
+            // [j] points to the next slopes.
             double firstSlope = tmpPointSegments[i][0]
                     .slopeTo(tmpPointSegments[i][1]);
 
-            int j = i + 1;
             while (j < countOfPointSegments) {
                 // We want to make sure that the segment being checked
                 // enters the tmpPointSegments[i] segment.
-                if ((tmpPointSegments[i][0].slopeTo(tmpPointSegments[j][0])
-                        != firstSlope && tmpPointSegments[i][0]
-                        .slopeTo(tmpPointSegments[j][0])
-                        != Double.NEGATIVE_INFINITY)
-                   || (tmpPointSegments[i][1].slopeTo(tmpPointSegments[j][1])
-                        != firstSlope && tmpPointSegments[i][1]
-                        .slopeTo(tmpPointSegments[j][1])
-                        != Double.NEGATIVE_INFINITY)
-                   || (tmpPointSegments[i][0].slopeTo(tmpPointSegments[j][1])
-                        != firstSlope && tmpPointSegments[i][0]
-                        .slopeTo(tmpPointSegments[j][1])
-                        != Double.NEGATIVE_INFINITY)
-                   || (tmpPointSegments[i][1].slopeTo(tmpPointSegments[j][0])
-                        != firstSlope && tmpPointSegments[i][1]
-                        .slopeTo(tmpPointSegments[j][0])
-                        != Double.NEGATIVE_INFINITY)) {
+                if ((Double.compare(tmpPointSegments[i][0]
+                        .slopeTo(tmpPointSegments[j][0]), firstSlope) != 0
+                        && Double.compare(tmpPointSegments[i][0]
+                                .slopeTo(tmpPointSegments[j][0]),
+                        Double.NEGATIVE_INFINITY) != 0)
+
+                        || (Double.compare(tmpPointSegments[i][1]
+                        .slopeTo(tmpPointSegments[j][1]), firstSlope) != 0
+                        && Double.compare(tmpPointSegments[i][1]
+                                .slopeTo(tmpPointSegments[j][1]),
+                        Double.NEGATIVE_INFINITY) != 0)
+
+                        || (Double.compare(tmpPointSegments[i][0]
+                        .slopeTo(tmpPointSegments[j][1]), firstSlope) != 0
+                        && Double.compare(tmpPointSegments[i][0]
+                                .slopeTo(tmpPointSegments[j][1]),
+                        Double.NEGATIVE_INFINITY) != 0)
+
+                        || (Double.compare(tmpPointSegments[i][1]
+                        .slopeTo(tmpPointSegments[j][0]), firstSlope) != 0
+                        && Double.compare(tmpPointSegments[i][1]
+                                .slopeTo(tmpPointSegments[j][0]),
+                        Double.NEGATIVE_INFINITY) != 0)) {
                     break;
                 }
                 j++;
             }
-            // We don't want to include the last element
-            // which already has a different slope.
-            j--;
-            Arrays.sort(tmpPointSegments, i, j + 1,
+
+            Arrays.sort(tmpPointSegments, i, j,
                     new Comparator<Point[]>() {
                 @Override
                 public int compare(final Point[] pSegment,
@@ -157,16 +167,16 @@ public class FastCollinearPoints {
 
             Point right;
             if (tmpPointSegments[i][1]
-                    .compareTo(tmpPointSegments[j][1]) > 0) {
+                    .compareTo(tmpPointSegments[j - 1][1]) > 0) {
                 right = tmpPointSegments[i][1];
             } else {
-                right = tmpPointSegments[j][1];
+                right = tmpPointSegments[j - 1][1];
             }
 
             tmpLineSegments[countOfLineSegments] =
                     new LineSegment(tmpPointSegments[i][0], right);
             countOfLineSegments++;
-            i = j + 1;
+
         }
 
         segments = new LineSegment[countOfLineSegments];
@@ -189,7 +199,11 @@ public class FastCollinearPoints {
      * @return the line segments
      */
     public LineSegment[] segments() {
-        return segments;
+        LineSegment[] outputSegments = new LineSegment[segments.length];
+        for (int i = 0; i < segments.length; i++) {
+            outputSegments[i] = segments[i];
+        }
+        return outputSegments;
     }
 
     /**

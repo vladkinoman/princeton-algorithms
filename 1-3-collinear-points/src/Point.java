@@ -12,9 +12,6 @@ public class Point implements Comparable<Point> {
      * @param  y the <em>y</em>-coordinate of the point
      */
     public Point(int x, int y) {
-        if (x < 0 || x > 32767 || y < 0 || y > 32767)
-            throw new IllegalArgumentException();
-        /* DO NOT MODIFY */
         this.x = x;
         this.y = y;
     }
@@ -108,9 +105,7 @@ public class Point implements Comparable<Point> {
         public int compare(Point p, Point q) {
             double slope0with1 = thisPoint.slopeTo(p);
             double slope0with2 = thisPoint.slopeTo(q);
-            if      (slope0with1 < slope0with2) return -1;
-            else if (slope0with1 > slope0with2) return 1;
-            return 0;
+            return Double.compare(slope0with1, slope0with2);
         }
     }
 
@@ -130,5 +125,7 @@ public class Point implements Comparable<Point> {
      * Unit tests the Point data type.
      */
     public static void main(String[] args) {
+        // I test this ADT in the BruteCollinearPoints
+        // and FastCollinearPoints classes.
     }
 }
