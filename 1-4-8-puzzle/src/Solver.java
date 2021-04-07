@@ -1,25 +1,64 @@
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Queue;
+
+class SearchNode implements Comparable {
+    Board board;
+    int moves;
+    SearchNode prevSearchNode;
+    public SearchNode(Board board, int moves, SearchNode prevSearchNode) {
+        this.board = board;
+        this.moves = moves;
+        this.prevSearchNode = prevSearchNode;
+    }
+
+    // You should compare distances
+    @Override
+    public int compareTo(Object o) {
+        throw UnsupportedOperationException();
+    }
+}
+
 public class Solver {
+
+    private MinPQ<SearchNode> mainPQ;
+    private Queue<Board> deletions;
+    private int minNumOfMoves;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
-
+        if (initial == null) throw new IllegalArgumentException();
+        mainPQ = new MinPQ<>();
+        deletions = new Queue<>();
+        mainPQ.insert(new SearchNode(initial, 0, null));
+        SearchNode curNode = mainPQ.delMin();
+        deletions.enqueue(curNode.board);
+        while (!curNode.board.isGoal()) {
+            for (Board nb : curNode.board.neighbors()) {
+                mainPQ.insert(new SearchNode(nb, curNode.moves + 1, curNode));
+            }
+            curNode = mainPQ.delMin();
+            deletions.enqueue(curNode.board);
+        }
+        minNumOfMoves = curNode.moves;
     }
 
     // is the initial board solvable? (see below)
     public boolean isSolvable() {
-        return false;
+        return true;
     }
 
     // min number of moves to solve initial board
     public int moves() {
-        return 0;
+        if (!isSolvable()) return -1;
+        return minNumOfMoves;
     }
 
     // sequence of boards in a shortest solution
     public Iterable<Board> solution() {
-        return null;
+        if (!isSolvable()) return null;
+        return deletions;
     }
 
     // test client
