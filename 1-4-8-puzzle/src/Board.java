@@ -3,26 +3,69 @@ import java.util.*;
 
 public class Board {
     private final int n;
-    private final int[][] copyOfTiles;
+    private int[][] copyOfTiles;
 
     private final Map<PairOfIndices, Integer> board;
+    private PairOfIndices blank;
     private final Map<PairOfIndices, Integer> goalBoard;
     private final Map<Integer, PairOfIndices> reversedGoalBoard;
 
     private final List<Board> lNeighbors;
-    private static boolean areNeighborsCreated = false;
+
+    private class PairOfIndices {
+        private final int x;
+        private final int y;
+        public PairOfIndices(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public int getRow() {
+            return x;
+        }
+
+        public int getCol() {
+            return y;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PairOfIndices that = (PairOfIndices) o;
+            return x == that.x && y == that.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
+        }
+
+        @Override
+        public String toString() {
+            return "PairOfIndices{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    '}';
+        }
+    }
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
         n = tiles.length;
-        copyOfTiles = tiles.clone();
+        copyOfTiles = new int[n][];
+        for (int i = 0; i < n; i++) {
+            copyOfTiles[i] = new int[n];
+            for (int j = 0; j < n; j++) {
+                copyOfTiles[i][j] = tiles[i][j];
+            }
+        }
 
         board = new LinkedHashMap<>(n*n);
         goalBoard = new LinkedHashMap<>(n*n);
         reversedGoalBoard = new HashMap<>(n*n);
-
-        PairOfIndices blank = new PairOfIndices(0, 0);
+        blank = null;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (tiles[i][j] == 0) blank = new PairOfIndices(i, j);
@@ -33,33 +76,7 @@ public class Board {
                 reversedGoalBoard.put(defaultValue, new PairOfIndices(i, j));
             }
         }
-
         lNeighbors = new ArrayList<>();
-        if (!areNeighborsCreated) {
-            areNeighborsCreated = true;
-            int blankRow = blank.getRow();
-            int blankCol = blank.getCol();
-            if (blankCol != 0) {
-                swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol-1);
-                lNeighbors.add(new Board(copyOfTiles));
-                swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol-1);
-            }
-            if (blankRow != 0) {
-                swap(copyOfTiles, blankRow, blankCol, blankRow-1, blankCol);
-                lNeighbors.add(new Board(copyOfTiles));
-                swap(copyOfTiles, blankRow, blankCol, blankRow-1, blankCol);
-            }
-            if (blankCol != n-1) {
-                swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol+1);
-                lNeighbors.add(new Board(copyOfTiles));
-                swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol+1);
-            }
-            if (blankRow != n-1) {
-                swap(copyOfTiles, blankRow, blankCol, blankRow+1, blankCol);
-                lNeighbors.add(new Board(copyOfTiles));
-                swap(copyOfTiles, blankRow, blankCol, blankRow+1, blankCol);
-            }
-        }
     }
 
     // string representation of this board
@@ -134,6 +151,28 @@ public class Board {
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
+        int blankRow = blank.getRow();
+        int blankCol = blank.getCol();
+        if (blankCol != 0) {
+            swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol-1);
+            lNeighbors.add(new Board(copyOfTiles));
+            swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol-1);
+        }
+        if (blankRow != 0) {
+            swap(copyOfTiles, blankRow, blankCol, blankRow-1, blankCol);
+            lNeighbors.add(new Board(copyOfTiles));
+            swap(copyOfTiles, blankRow, blankCol, blankRow-1, blankCol);
+        }
+        if (blankCol != n-1) {
+            swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol+1);
+            lNeighbors.add(new Board(copyOfTiles));
+            swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol+1);
+        }
+        if (blankRow != n-1) {
+            swap(copyOfTiles, blankRow, blankCol, blankRow+1, blankCol);
+            lNeighbors.add(new Board(copyOfTiles));
+            swap(copyOfTiles, blankRow, blankCol, blankRow+1, blankCol);
+        }
         return lNeighbors;
     }
 
@@ -175,7 +214,7 @@ public class Board {
         System.out.println("Hamming distance: " + board.hamming());
         System.out.println("Manhattan distance: " + board.manhattan());
         System.out.println("Neighbors:");
-        for (Board neighborBoard: board.lNeighbors) {
+        for (Board neighborBoard: board.neighbors()) {
             System.out.println(neighborBoard);
         }
         System.out.println("Twin: ");
@@ -197,43 +236,3 @@ public class Board {
         arr[p][q] = tmp;
     }
 }
-
-class PairOfIndices {
-    private final int x;
-    private final int y;
-    public PairOfIndices(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public int getRow() {
-        return x;
-    }
-
-    public int getCol() {
-        return y;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PairOfIndices that = (PairOfIndices) o;
-        return x == that.x && y == that.y;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y);
-    }
-
-    @Override
-    public String toString() {
-        return "PairOfIndices{" +
-                "x=" + x +
-                ", y=" + y +
-                '}';
-    }
-}
-
-

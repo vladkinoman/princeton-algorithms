@@ -3,23 +3,6 @@ import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Queue;
 
-class SearchNode implements Comparable {
-    Board board;
-    int moves;
-    SearchNode prevSearchNode;
-    public SearchNode(Board board, int moves, SearchNode prevSearchNode) {
-        this.board = board;
-        this.moves = moves;
-        this.prevSearchNode = prevSearchNode;
-    }
-
-    // You should compare distances
-    @Override
-    public int compareTo(Object o) {
-        throw UnsupportedOperationException();
-    }
-}
-
 public class Solver {
 
     private MinPQ<SearchNode> mainPQ;
@@ -59,6 +42,24 @@ public class Solver {
     public Iterable<Board> solution() {
         if (!isSolvable()) return null;
         return deletions;
+    }
+
+    private class SearchNode implements Comparable {
+        Board board;
+        int moves;
+        SearchNode prevSearchNode;
+        public SearchNode(Board board, int moves, SearchNode prevSearchNode) {
+            this.board = board;
+            this.moves = moves;
+            this.prevSearchNode = prevSearchNode;
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            SearchNode that = (SearchNode)o;
+            return this.board.manhattan() + this.moves
+                    - (that.board.manhattan() + that.moves);
+        }
     }
 
     // test client
