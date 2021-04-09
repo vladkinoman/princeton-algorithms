@@ -1,14 +1,16 @@
 import java.lang.Math;
 import java.util.*;
 
+import edu.princeton.cs.algs4.LinearProbingHashST;
+
 public class Board {
     private final int n;
     private final int[][] copyOfTiles;
 
-    private final Map<PairOfIndices, Integer> board;
     private PairOfIndices blank;
-    private final Map<PairOfIndices, Integer> goalBoard;
-    private final Map<Integer, PairOfIndices> reversedGoalBoard;
+    private final LinearProbingHashST<PairOfIndices, Integer> board;
+    private final LinearProbingHashST<PairOfIndices, Integer> goalBoard;
+    private final LinearProbingHashST<Integer, PairOfIndices> reversedGoalBoard;
 
     private final List<Board> lNeighbors;
 
@@ -21,10 +23,9 @@ public class Board {
             copyOfTiles[i] = new int[n];
             System.arraycopy(tiles[i], 0, copyOfTiles[i], 0, n);
         }
-        board = new LinkedHashMap<>(n*n);
-        goalBoard = new LinkedHashMap<>(n*n);
-        reversedGoalBoard = new HashMap<>(n*n);
-        blank = null;
+        board = new LinearProbingHashST<>(n*n);
+        goalBoard = new LinearProbingHashST<>(n*n);
+        reversedGoalBoard = new LinearProbingHashST<>(n*n);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (tiles[i][j] == 0) blank = new PairOfIndices(i, j);
@@ -40,12 +41,12 @@ public class Board {
 
     // string representation of this board
     public String toString() {
-        Iterator<Integer> it = board.values().iterator();
+        Iterator<PairOfIndices> it = board.keys().iterator();
         StringBuilder s = new StringBuilder();
         s.append(n).append("\n");
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                s.append(String.format("%2d ", it.next()));
+                s.append(String.format("%2d ", board.get(it.next())));
             }
             s.append("\n");
         }
@@ -60,12 +61,12 @@ public class Board {
     // number of tiles out of place
     public int hamming() {
         int dist = 0;
-        Iterator<Integer> itBoard = board.values().iterator();
-        Iterator<Integer> itGoalBoard = goalBoard.values().iterator();
+        Iterator<PairOfIndices> itBoard = board.keys().iterator();
+        Iterator<PairOfIndices> itGoalBoard = goalBoard.keys().iterator();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if ((i != n-1 || j != n-1) && !itBoard.next()
-                        .equals(itGoalBoard.next())) {
+                if ((i != n-1 || j != n-1) && !board.get(itBoard.next())
+                        .equals(goalBoard.get(itGoalBoard.next()))) {
                     dist++;
                 }
             }
@@ -76,11 +77,10 @@ public class Board {
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
         int sumOfDist = 0;
-        Iterator<Integer> itValuesOfBoard = board.values().iterator();
-        Iterator<PairOfIndices> itIndicesOfBoard = board.keySet().iterator();
+        Iterator<PairOfIndices> itIndicesOfBoard = board.keys().iterator();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                int valOfBoard = itValuesOfBoard.next();
+                int valOfBoard = board.get(itIndicesOfBoard.next());
                 PairOfIndices pIndicesOfBoard = itIndicesOfBoard.next();
                 PairOfIndices pIndicesOfReversedGoalBoard = reversedGoalBoard
                         .get(valOfBoard);

@@ -1,23 +1,34 @@
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.Queue;
 
 public class Solver {
 
-    private MinPQ<SearchNode> mainPQ;
-    private Queue<Board> deletions;
-    private int minNumOfMoves;
+    private final Queue<Board> deletions;
+    private final int minNumOfMoves;
+    private boolean isSolvable;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         if (initial == null) throw new IllegalArgumentException();
-        mainPQ = new MinPQ<>();
+
+        isSolvable = false;
+        MinPQ<SearchNode> mainPQ = new MinPQ<>();
         deletions = new Queue<>();
+        MinPQ<SearchNode> twinPQ = new MinPQ<>();
+
         mainPQ.insert(new SearchNode(initial, 0, null));
+        twinPQ.insert(new SearchNode(initial.twin(), 0, null));
+
         SearchNode curSearchNode = mainPQ.delMin();
+        SearchNode curSearchNodeOfTwin = twinPQ.delMin();
+
         deletions.enqueue(curSearchNode.board);
-        while (!curSearchNode.board.isGoal()) {
+
+        while (!(isSolvable = curSearchNode.board.isGoal())) {
+            if (curSearchNodeOfTwin.board.isGoal()) break;
+
             for (Board nb : curSearchNode.board.neighbors()) {
                 // Critical optimization.
                 if (curSearchNode.prevSearchNode == null ||
@@ -28,13 +39,25 @@ public class Solver {
             }
             curSearchNode = mainPQ.delMin();
             deletions.enqueue(curSearchNode.board);
+
+            if (!isSolvable) {
+                for (Board nb : curSearchNodeOfTwin.board.neighbors()) {
+                    // Critical optimization.
+                    if (curSearchNodeOfTwin.prevSearchNode == null ||
+                            !curSearchNodeOfTwin.prevSearchNode.board.equals(nb)) {
+                        twinPQ.insert(new SearchNode(nb, curSearchNodeOfTwin.moves + 1,
+                                curSearchNodeOfTwin));
+                    }
+                }
+                curSearchNodeOfTwin = twinPQ.delMin();
+            }
         }
         minNumOfMoves = curSearchNode.moves;
     }
 
     // is the initial board solvable? (see below)
     public boolean isSolvable() {
-        return true;
+        return isSolvable;
     }
 
     // min number of moves to solve initial board
@@ -49,11 +72,11 @@ public class Solver {
         return deletions;
     }
 
-    private class SearchNode implements Comparable {
+    private static class SearchNode implements Comparable<SearchNode> {
         Board board;
         int moves;
         SearchNode prevSearchNode;
-        private int cachedDistance;
+        private final int cachedDistance;
         public SearchNode(Board board, int moves, SearchNode prevSearchNode) {
             this.board = board;
             this.moves = moves;
@@ -63,8 +86,7 @@ public class Solver {
         }
 
         @Override
-        public int compareTo(Object o) {
-            SearchNode that = (SearchNode)o;
+        public int compareTo(SearchNode that) {
             return this.cachedDistance + this.moves
                     - (that.cachedDistance + that.moves);
         }
@@ -93,5 +115,4 @@ public class Solver {
                 StdOut.println(board);
         }
     }
-
 }
