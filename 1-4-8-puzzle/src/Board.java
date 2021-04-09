@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Board {
     private final int n;
-    private int[][] copyOfTiles;
+    private final int[][] copyOfTiles;
 
     private final Map<PairOfIndices, Integer> board;
     private PairOfIndices blank;
@@ -12,44 +12,6 @@ public class Board {
 
     private final List<Board> lNeighbors;
 
-    private class PairOfIndices {
-        private final int x;
-        private final int y;
-        public PairOfIndices(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public int getRow() {
-            return x;
-        }
-
-        public int getCol() {
-            return y;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            PairOfIndices that = (PairOfIndices) o;
-            return x == that.x && y == that.y;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(x, y);
-        }
-
-        @Override
-        public String toString() {
-            return "PairOfIndices{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    '}';
-        }
-    }
-
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
@@ -57,11 +19,8 @@ public class Board {
         copyOfTiles = new int[n][];
         for (int i = 0; i < n; i++) {
             copyOfTiles[i] = new int[n];
-            for (int j = 0; j < n; j++) {
-                copyOfTiles[i][j] = tiles[i][j];
-            }
+            System.arraycopy(tiles[i], 0, copyOfTiles[i], 0, n);
         }
-
         board = new LinkedHashMap<>(n*n);
         goalBoard = new LinkedHashMap<>(n*n);
         reversedGoalBoard = new HashMap<>(n*n);
@@ -126,10 +85,10 @@ public class Board {
                 PairOfIndices pIndicesOfReversedGoalBoard = reversedGoalBoard
                         .get(valOfBoard);
                 if (valOfBoard != 0) {
-                    sumOfDist += Math.abs(pIndicesOfBoard.getRow() -
-                            pIndicesOfReversedGoalBoard.getRow()) +
-                            Math.abs(pIndicesOfBoard.getCol() -
-                                    pIndicesOfReversedGoalBoard.getCol());
+                    sumOfDist += Math.abs(pIndicesOfBoard.x -
+                            pIndicesOfReversedGoalBoard.x) +
+                            Math.abs(pIndicesOfBoard.y -
+                                    pIndicesOfReversedGoalBoard.y);
                 }
             }
         }
@@ -151,8 +110,8 @@ public class Board {
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
-        int blankRow = blank.getRow();
-        int blankCol = blank.getCol();
+        int blankRow = blank.x;
+        int blankCol = blank.y;
         if (blankCol != 0) {
             swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol-1);
             lNeighbors.add(new Board(copyOfTiles));
@@ -198,6 +157,36 @@ public class Board {
         Board twin = new Board(copyOfTiles);
         swap(copyOfTiles, p1, q1, p2, q2);
         return twin;
+    }
+
+    private static class PairOfIndices {
+        final int x;
+        final int y;
+        public PairOfIndices(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PairOfIndices that = (PairOfIndices) o;
+            return x == that.x && y == that.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
+        }
+
+        @Override
+        public String toString() {
+            return "PairOfIndices{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    '}';
+        }
     }
 
     // unit testing (not graded)

@@ -15,16 +15,21 @@ public class Solver {
         mainPQ = new MinPQ<>();
         deletions = new Queue<>();
         mainPQ.insert(new SearchNode(initial, 0, null));
-        SearchNode curNode = mainPQ.delMin();
-        deletions.enqueue(curNode.board);
-        while (!curNode.board.isGoal()) {
-            for (Board nb : curNode.board.neighbors()) {
-                mainPQ.insert(new SearchNode(nb, curNode.moves + 1, curNode));
+        SearchNode curSearchNode = mainPQ.delMin();
+        deletions.enqueue(curSearchNode.board);
+        while (!curSearchNode.board.isGoal()) {
+            for (Board nb : curSearchNode.board.neighbors()) {
+                // Critical optimization.
+                if (curSearchNode.prevSearchNode == null ||
+                        !curSearchNode.prevSearchNode.board.equals(nb)) {
+                    mainPQ.insert(new SearchNode(nb, curSearchNode.moves + 1,
+                                curSearchNode));
+                }
             }
-            curNode = mainPQ.delMin();
-            deletions.enqueue(curNode.board);
+            curSearchNode = mainPQ.delMin();
+            deletions.enqueue(curSearchNode.board);
         }
-        minNumOfMoves = curNode.moves;
+        minNumOfMoves = curSearchNode.moves;
     }
 
     // is the initial board solvable? (see below)
@@ -48,17 +53,20 @@ public class Solver {
         Board board;
         int moves;
         SearchNode prevSearchNode;
+        private int cachedDistance;
         public SearchNode(Board board, int moves, SearchNode prevSearchNode) {
             this.board = board;
             this.moves = moves;
             this.prevSearchNode = prevSearchNode;
+            // Caching the Hamming and Manhattan priorities
+            this.cachedDistance = board.manhattan();
         }
 
         @Override
         public int compareTo(Object o) {
             SearchNode that = (SearchNode)o;
-            return this.board.manhattan() + this.moves
-                    - (that.board.manhattan() + that.moves);
+            return this.cachedDistance + this.moves
+                    - (that.cachedDistance + that.moves);
         }
     }
 
