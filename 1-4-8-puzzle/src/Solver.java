@@ -1,58 +1,52 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.MinPQ;
-import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Stack;
+import java.util.Iterator;
 
 public class Solver {
-
-    private final Queue<Board> deletions;
-    private final int minNumOfMoves;
+    private SearchNode searchNode;
     private boolean isSolvable;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         if (initial == null) throw new IllegalArgumentException();
 
-        isSolvable = false;
         MinPQ<SearchNode> mainPQ = new MinPQ<>();
-        deletions = new Queue<>();
         MinPQ<SearchNode> twinPQ = new MinPQ<>();
-
         mainPQ.insert(new SearchNode(initial, 0, null));
         twinPQ.insert(new SearchNode(initial.twin(), 0, null));
 
-        SearchNode curSearchNode = mainPQ.delMin();
-        SearchNode curSearchNodeOfTwin = twinPQ.delMin();
+        searchNode = mainPQ.delMin();
+        SearchNode searchNodeOfTwin = twinPQ.delMin();
 
-        deletions.enqueue(curSearchNode.board);
+        isSolvable = searchNode.board.isGoal();
+        while (!isSolvable) {
+            if (searchNodeOfTwin.board.isGoal()) break;
 
-        while (!(isSolvable = curSearchNode.board.isGoal())) {
-            if (curSearchNodeOfTwin.board.isGoal()) break;
-
-            for (Board nb : curSearchNode.board.neighbors()) {
+            for (Board nb : searchNode.board.neighbors()) {
                 // Critical optimization.
-                if (curSearchNode.prevSearchNode == null ||
-                        !curSearchNode.prevSearchNode.board.equals(nb)) {
-                    mainPQ.insert(new SearchNode(nb, curSearchNode.moves + 1,
-                                curSearchNode));
+                if (searchNode.prevSearchNode == null ||
+                        !searchNode.prevSearchNode.board.equals(nb)) {
+                    mainPQ.insert(new SearchNode(nb, searchNode.moves + 1,
+                                searchNode));
                 }
             }
-            curSearchNode = mainPQ.delMin();
-            deletions.enqueue(curSearchNode.board);
+            searchNode = mainPQ.delMin();
 
-            if (!isSolvable) {
-                for (Board nb : curSearchNodeOfTwin.board.neighbors()) {
-                    // Critical optimization.
-                    if (curSearchNodeOfTwin.prevSearchNode == null ||
-                            !curSearchNodeOfTwin.prevSearchNode.board.equals(nb)) {
-                        twinPQ.insert(new SearchNode(nb, curSearchNodeOfTwin.moves + 1,
-                                curSearchNodeOfTwin));
-                    }
+            for (Board nb : searchNodeOfTwin.board.neighbors()) {
+                // Critical optimization.
+                if (searchNodeOfTwin.prevSearchNode == null ||
+                        !searchNodeOfTwin.prevSearchNode.board.equals(nb)) {
+                    twinPQ.insert(new SearchNode(nb, searchNodeOfTwin.moves + 1,
+                            searchNodeOfTwin));
                 }
-                curSearchNodeOfTwin = twinPQ.delMin();
             }
+            searchNodeOfTwin = twinPQ.delMin();
+            isSolvable = searchNode.board.isGoal();
         }
-        minNumOfMoves = curSearchNode.moves;
+
+        if (!isSolvable) searchNode = null;
     }
 
     // is the initial board solvable? (see below)
@@ -62,21 +56,34 @@ public class Solver {
 
     // min number of moves to solve initial board
     public int moves() {
-        if (!isSolvable()) return -1;
-        return minNumOfMoves;
+        if (!isSolvable) return -1;
+        return searchNode.moves;
     }
 
     // sequence of boards in a shortest solution
     public Iterable<Board> solution() {
-        if (!isSolvable()) return null;
-        return deletions;
+        if (!isSolvable) return null;
+        return new Iterable<>() {
+            private final Stack<Board> sSolution;
+            {
+                sSolution = new Stack<>();
+                for (SearchNode sn = searchNode; sn != null; sn = sn.prevSearchNode) {
+                    sSolution.push(sn.board);
+                }
+            }
+            @Override
+            public Iterator<Board> iterator() {
+                return sSolution.iterator();
+            }
+        };
     }
 
     private static class SearchNode implements Comparable<SearchNode> {
-        Board board;
-        int moves;
-        SearchNode prevSearchNode;
+        private final Board board;
+        private final int moves;
+        private final SearchNode prevSearchNode;
         private final int cachedDistance;
+
         public SearchNode(Board board, int moves, SearchNode prevSearchNode) {
             this.board = board;
             this.moves = moves;

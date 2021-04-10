@@ -30,7 +30,7 @@ A Java program which recognizes line patterns in a given set of points.
 
 A Java program to solve the 8-puzzle problem (and its natural generalizations) using the A* search algorithm.
 
-**Score**: ?/100.
+**Score**: 100/100.
 
 ## exercises-from-algorithms-4ed
 

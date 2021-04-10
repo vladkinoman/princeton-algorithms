@@ -1,38 +1,32 @@
-import java.lang.Math;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
 public class Board {
-    private final int n;
     private final int[][] board;
-    private final int[] goalBoard;
     private int blankX;
     private int blankY;
-    private final List<Board> lNeighbors = new ArrayList<>();
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
-        n = tiles.length;
+        int n = tiles.length;
         board = new int[n][];
-        goalBoard = new int[n*n];
-
         for (int i = 0; i < n; i++) {
             board[i] = new int[n];
             for (int j = 0; j < n; j++) {
                 if (tiles[i][j] == 0) {
-                    blankX = i; blankY = j;
+                    blankX = i;
+                    blankY = j;
                 }
                 board[i][j] = tiles[i][j];
-                int defaultValue = j + i * n + 1;
-                if (i == n - 1 && j == n - 1) defaultValue = 0;
-                goalBoard[j + i * n] = defaultValue;
             }
         }
     }
 
     // string representation of this board
     public String toString() {
+        int n = this.dimension();
         StringBuilder s = new StringBuilder();
         s.append(n).append("\n");
         for (int i = 0; i < n; i++) {
@@ -46,15 +40,16 @@ public class Board {
 
     // board dimension n
     public int dimension() {
-        return n;
+        return board.length;
     }
 
     // number of tiles out of place
     public int hamming() {
         int distance = 0;
+        int n = this.dimension();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if ((i != n-1 || j != n-1) && board[i][j] != goalBoard[j + i * n]) {
+                if ((i != n-1 || j != n-1) && board[i][j] != j + i * n + 1) {
                     distance++;
                 }
             }
@@ -65,14 +60,14 @@ public class Board {
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
         int sumOfDistances = 0;
+        int n = this.dimension();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 int p = 0, q = 0;
                 for (int k = 0; k < n * n; k++) {
-                    if (goalBoard[k] == board[i][j]) {
-                        p = k / n; q = k % n;
-                        break;
-                    }
+                    p = k / n;
+                    q = k % n;
+                    if (k + 1 == board[i][j]) break;
                 }
                 if (board[i][j] != 0) {
                     sumOfDistances += Math.abs(p - i) + Math.abs(q - j);
@@ -93,6 +88,9 @@ public class Board {
         if (this == y) return true;
         if (y == null || getClass() != y.getClass()) return false;
         Board that = (Board) y;
+
+        int n = this.dimension();
+        if (n != that.dimension()) return false;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (this.board[i][j] != that.board[i][j]) {
@@ -105,35 +103,33 @@ public class Board {
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
-        int blankRow = blankX;
-        int blankCol = blankY;
-        if (blankCol != 0) {
-            swap(board, blankRow, blankCol, blankRow, blankCol-1);
-            lNeighbors.add(new Board(board));
-            swap(board, blankRow, blankCol, blankRow, blankCol-1);
-        }
-        if (blankRow != 0) {
-            swap(board, blankRow, blankCol, blankRow-1, blankCol);
-            lNeighbors.add(new Board(board));
-            swap(board, blankRow, blankCol, blankRow-1, blankCol);
-        }
-        if (blankCol != n-1) {
-            swap(board, blankRow, blankCol, blankRow, blankCol+1);
-            lNeighbors.add(new Board(board));
-            swap(board, blankRow, blankCol, blankRow, blankCol+1);
-        }
-        if (blankRow != n-1) {
-            swap(board, blankRow, blankCol, blankRow+1, blankCol);
-            lNeighbors.add(new Board(board));
-            swap(board, blankRow, blankCol, blankRow+1, blankCol);
-        }
-        return lNeighbors;
+        return new Iterable<>() {
+            private final List<Board> lNeighbors = new ArrayList<>();
+            {
+                int n = Board.this.dimension();
+                if (blankY != 0)   createNeighborByMovingBlankSquare(blankX,   blankY-1);
+                if (blankX != 0)   createNeighborByMovingBlankSquare(blankX-1, blankY);
+                if (blankY != n-1) createNeighborByMovingBlankSquare(blankX,   blankY+1);
+                if (blankX != n-1) createNeighborByMovingBlankSquare(blankX+1, blankY);
+            }
+            private void createNeighborByMovingBlankSquare(int newBlankX, int newBlankY) {
+                swap(board, blankX, blankY, newBlankX, newBlankY);
+                lNeighbors.add(new Board(board));
+                // Return to the original state of the board.
+                swap(board, blankX, blankY, newBlankX, newBlankY);
+            }
+            @Override
+            public Iterator<Board> iterator() {
+                return lNeighbors.iterator();
+            }
+        };
     }
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
         int count = 0;
-        int p1=0, q1=0, p2=0, q2=0;
+        int p1 = 0, q1 = 0, p2 = 0, q2 = 0;
+        int n = this.dimension();
         for (int i = 0; i < n && count < 2; i++) {
             for (int j = 0; j < n && count < 2; j++) {
                 if (board[i][j] != 0) {
@@ -182,8 +178,22 @@ public class Board {
         System.out.println("Are those matrices equal?");
         if (board.equals(boardCopy)) System.out.println("Yes.");
         else                         System.out.println("No.");
-    }
 
+        int [][] tiles3 = new int[][]{
+                {0, 1},
+                {3, 2}
+        };
+        Board board3 = new Board(tiles3);
+        int [][] tiles4 = new int[][]{
+                {0, 1, 7},
+                {3, 2, 6},
+                {5, 8, 4}
+        };
+        Board board4 = new Board(tiles4);
+        if (board3.equals(board4)) System.out.println("They are equal.");
+        else System.out.println("They aren't equal.");
+    }
+    
     private void swap(int[][] arr, int i, int j, int p, int q) {
         int tmp = arr[i][j];
         arr[i][j] = arr[p][q];
