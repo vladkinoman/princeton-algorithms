@@ -1,52 +1,43 @@
 import java.lang.Math;
-import java.util.*;
-
-import edu.princeton.cs.algs4.LinearProbingHashST;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Board {
     private final int n;
-    private final int[][] copyOfTiles;
-
-    private PairOfIndices blank;
-    private final LinearProbingHashST<PairOfIndices, Integer> board;
-    private final LinearProbingHashST<PairOfIndices, Integer> goalBoard;
-    private final LinearProbingHashST<Integer, PairOfIndices> reversedGoalBoard;
-
-    private final List<Board> lNeighbors;
+    private final int[][] board;
+    private final int[] goalBoard;
+    private int blankX;
+    private int blankY;
+    private final List<Board> lNeighbors = new ArrayList<>();
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
         n = tiles.length;
-        copyOfTiles = new int[n][];
+        board = new int[n][];
+        goalBoard = new int[n*n];
+
         for (int i = 0; i < n; i++) {
-            copyOfTiles[i] = new int[n];
-            System.arraycopy(tiles[i], 0, copyOfTiles[i], 0, n);
-        }
-        board = new LinearProbingHashST<>(n*n);
-        goalBoard = new LinearProbingHashST<>(n*n);
-        reversedGoalBoard = new LinearProbingHashST<>(n*n);
-        for (int i = 0; i < n; i++) {
+            board[i] = new int[n];
             for (int j = 0; j < n; j++) {
-                if (tiles[i][j] == 0) blank = new PairOfIndices(i, j);
-                board.put(new PairOfIndices(i, j), tiles[i][j]);
-                int defaultValue = j + i*n + 1;
+                if (tiles[i][j] == 0) {
+                    blankX = i; blankY = j;
+                }
+                board[i][j] = tiles[i][j];
+                int defaultValue = j + i * n + 1;
                 if (i == n - 1 && j == n - 1) defaultValue = 0;
-                goalBoard.put(new PairOfIndices(i, j), defaultValue);
-                reversedGoalBoard.put(defaultValue, new PairOfIndices(i, j));
+                goalBoard[j + i * n] = defaultValue;
             }
         }
-        lNeighbors = new ArrayList<>();
     }
 
     // string representation of this board
     public String toString() {
-        Iterator<PairOfIndices> it = board.keys().iterator();
         StringBuilder s = new StringBuilder();
         s.append(n).append("\n");
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                s.append(String.format("%2d ", board.get(it.next())));
+                s.append(String.format("%2d ", board[i][j]));
             }
             s.append("\n");
         }
@@ -60,39 +51,36 @@ public class Board {
 
     // number of tiles out of place
     public int hamming() {
-        int dist = 0;
-        Iterator<PairOfIndices> itBoard = board.keys().iterator();
-        Iterator<PairOfIndices> itGoalBoard = goalBoard.keys().iterator();
+        int distance = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if ((i != n-1 || j != n-1) && !board.get(itBoard.next())
-                        .equals(goalBoard.get(itGoalBoard.next()))) {
-                    dist++;
+                if ((i != n-1 || j != n-1) && board[i][j] != goalBoard[j + i * n]) {
+                    distance++;
                 }
             }
         }
-        return dist;
+        return distance;
     }
 
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
-        int sumOfDist = 0;
-        Iterator<PairOfIndices> itIndicesOfBoard = board.keys().iterator();
+        int sumOfDistances = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                int valOfBoard = board.get(itIndicesOfBoard.next());
-                PairOfIndices pIndicesOfBoard = itIndicesOfBoard.next();
-                PairOfIndices pIndicesOfReversedGoalBoard = reversedGoalBoard
-                        .get(valOfBoard);
-                if (valOfBoard != 0) {
-                    sumOfDist += Math.abs(pIndicesOfBoard.x -
-                            pIndicesOfReversedGoalBoard.x) +
-                            Math.abs(pIndicesOfBoard.y -
-                                    pIndicesOfReversedGoalBoard.y);
+                int p = 0, q = 0;
+                for (int k = 0; k < n * n; k++) {
+                    if (goalBoard[k] == board[i][j]) {
+                        p = k / n; q = k % n;
+                        break;
+                    }
+                }
+                if (board[i][j] != 0) {
+                    sumOfDistances += Math.abs(p - i) + Math.abs(q - j);
                 }
             }
         }
-        return sumOfDist;
+
+        return sumOfDistances;
     }
 
     // is this board the goal board?
@@ -105,32 +93,39 @@ public class Board {
         if (this == y) return true;
         if (y == null || getClass() != y.getClass()) return false;
         Board that = (Board) y;
-        return this.board.equals(that.board);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (this.board[i][j] != that.board[i][j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
-        int blankRow = blank.x;
-        int blankCol = blank.y;
+        int blankRow = blankX;
+        int blankCol = blankY;
         if (blankCol != 0) {
-            swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol-1);
-            lNeighbors.add(new Board(copyOfTiles));
-            swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol-1);
+            swap(board, blankRow, blankCol, blankRow, blankCol-1);
+            lNeighbors.add(new Board(board));
+            swap(board, blankRow, blankCol, blankRow, blankCol-1);
         }
         if (blankRow != 0) {
-            swap(copyOfTiles, blankRow, blankCol, blankRow-1, blankCol);
-            lNeighbors.add(new Board(copyOfTiles));
-            swap(copyOfTiles, blankRow, blankCol, blankRow-1, blankCol);
+            swap(board, blankRow, blankCol, blankRow-1, blankCol);
+            lNeighbors.add(new Board(board));
+            swap(board, blankRow, blankCol, blankRow-1, blankCol);
         }
         if (blankCol != n-1) {
-            swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol+1);
-            lNeighbors.add(new Board(copyOfTiles));
-            swap(copyOfTiles, blankRow, blankCol, blankRow, blankCol+1);
+            swap(board, blankRow, blankCol, blankRow, blankCol+1);
+            lNeighbors.add(new Board(board));
+            swap(board, blankRow, blankCol, blankRow, blankCol+1);
         }
         if (blankRow != n-1) {
-            swap(copyOfTiles, blankRow, blankCol, blankRow+1, blankCol);
-            lNeighbors.add(new Board(copyOfTiles));
-            swap(copyOfTiles, blankRow, blankCol, blankRow+1, blankCol);
+            swap(board, blankRow, blankCol, blankRow+1, blankCol);
+            lNeighbors.add(new Board(board));
+            swap(board, blankRow, blankCol, blankRow+1, blankCol);
         }
         return lNeighbors;
     }
@@ -141,7 +136,7 @@ public class Board {
         int p1=0, q1=0, p2=0, q2=0;
         for (int i = 0; i < n && count < 2; i++) {
             for (int j = 0; j < n && count < 2; j++) {
-                if (copyOfTiles[i][j] != 0) {
+                if (board[i][j] != 0) {
                     if (count == 0) {
                         p1 = i;
                         q1 = j;
@@ -153,40 +148,10 @@ public class Board {
                 }
             }
         }
-        swap(copyOfTiles, p1, q1, p2, q2);
-        Board twin = new Board(copyOfTiles);
-        swap(copyOfTiles, p1, q1, p2, q2);
+        swap(board, p1, q1, p2, q2);
+        Board twin = new Board(board);
+        swap(board, p1, q1, p2, q2);
         return twin;
-    }
-
-    private static class PairOfIndices {
-        final int x;
-        final int y;
-        public PairOfIndices(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            PairOfIndices that = (PairOfIndices) o;
-            return x == that.x && y == that.y;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(x, y);
-        }
-
-        @Override
-        public String toString() {
-            return "PairOfIndices{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    '}';
-        }
     }
 
     // unit testing (not graded)
