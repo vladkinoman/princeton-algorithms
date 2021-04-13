@@ -1,22 +1,33 @@
 # Interview Questions: Priority Queues
 
-## Dynamic median
+## Java autoboxing and equals()
 
-**Question**. Design a data type that supports *insert* in logarithmic time, *find-the-median* in constant time, and *remove-the-median* in logarithmic time. If the number of keys in the data type is even, find/remove the *lower median*.
+**Question**. Consider two **double** values **a** and **b** and their corresponding **Double** values **x** and **y**.
 
-**Answer**.
-
-## Randomized priority queue
-
-**Question**. Describe how to add the methods **sample()** and **delRandom()** to our binary heap implementation. The two methods return a key that is chosen uniformly at random among the remaining keys, with the latter  method also removing that key. The **sample()** method should take constant time; the **delRandom()** method should take logarithmic time. Do not worry about resizing the underlying array.
+- Find values such that (**a** == **b**) is **true** but **x.equals**(**y**) is **false**.
+- Find values such that (**a** == **b**) is **false** but **x.equals**(**y**) is **true**.
 
 **Answer**.
 
-## Taxicab numbers
+## Check if a binary tree is a BST
 
-**Question**. A *taxicab* number is an integer that can be expressed as the sum of two cubes of positive integers in two different ways: a^3+b^3=c^3+d^3. For example, 1729 is the smallest taxicab number: 9^3+10^3=1^3+12^3. Design an algorithm to find all  taxicab numbers with a, b, c, and d less than n.
+**Question**. Given a binary tree where each Node contains a key, determine whether it is a binary search tree. Use extra space proportional to the height of the tree.
 
-- Version 1: Use time proportional to n^2log⁡n and space proportional to n^2.
-- Version 2: Use time proportional to n^2log⁡n and space proportional to n.
+**Answer**.
+
+## Inorder traversal with constant extra space
+
+**Question**. Design an algorithm to perform an inorder traversal of a binary search tree using only a constant amount of extra space.
+
+**Answer**.
+
+## Web tracking
+
+**Question**. Suppose that you are tracking *n* web sites and *m* users and you want to support the following API:
+
+- User visits a website.
+- How many times has a given user visited a given site?
+
+What data structure or data structures would you use?
 
 **Answer**.
