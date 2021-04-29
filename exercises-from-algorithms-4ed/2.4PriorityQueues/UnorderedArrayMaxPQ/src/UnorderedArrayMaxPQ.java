@@ -4,13 +4,9 @@
  *
  *  Priority queue implementation with an unsorted array.
  *
- *  Limitations
- *  -----------
- *   - no array resizing
- *   - no iterating
- *
  ******************************************************************************/
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -23,12 +19,16 @@ import java.util.NoSuchElementException;
  * This implementation uses a resizing array, which double the underlying array
  * when it is full and halves the underlying array when it is one-quarter full.
  * The <em>delMax</em> operation takes linear time.
- * The <em>insert</em>, <em>max</em>, <em>size</em>, and <em>is-empty</em>
- * operations takes constant time in the worst case.
+ * The <em>insert</em> operation takes constant amortized time.
+ * The <em>max</em>, <em>size</em>, and <em>is-empty</em> operations
+ * take constant time in the worst case.
  * <p>
  * @author Vlad Beklenyshchev aka vladkinoman
  */
-public class UnorderedArrayMaxPQ<Key extends Comparable<Key>> {
+public class UnorderedArrayMaxPQ<Key extends Comparable<Key>>
+        implements Iterable<Key>{
+    // initial capacity of underlying resizing array
+    private static final int INIT_CAPACITY = 8;
     private int n;     // number of elements
     private Key[] pq;  // elements
 
@@ -37,7 +37,7 @@ public class UnorderedArrayMaxPQ<Key extends Comparable<Key>> {
      */
     UnorderedArrayMaxPQ() {
         n = 0;
-        pq = (Key[]) new Comparable[1];
+        pq = (Key[]) new Comparable[INIT_CAPACITY];
     }
 
     /**
@@ -57,9 +57,17 @@ public class UnorderedArrayMaxPQ<Key extends Comparable<Key>> {
     UnorderedArrayMaxPQ(Key[] a) {
         n = a.length;
         pq = (Key[]) new Comparable[n];
+        System.arraycopy(a, 0, pq, 0, n);
+    }
+
+    // resize the underlying array
+    private void resize(int capacity) {
+        assert capacity >= n;
+        Key[] copy = (Key[]) new Comparable[capacity];
         for (int i = 0; i < n; i++) {
-            pq[i] = a[i];
+            copy[i] = pq[i];
         }
+        pq = copy;
     }
 
     /**
@@ -67,6 +75,7 @@ public class UnorderedArrayMaxPQ<Key extends Comparable<Key>> {
      * @param key the key to insert
      */
     public void insert(Key key) {
+        if (n == pq.length) resize(2*pq.length);   // double size of array if necessary
         pq[n++] = key;
     }
 
@@ -100,6 +109,8 @@ public class UnorderedArrayMaxPQ<Key extends Comparable<Key>> {
         pq[max] = pq[n-1];
         pq[--n] = null;
 
+        // shrink size of array if necessary
+        if (n > 0 && n == pq.length/4) resize(pq.length/2);
         return tmp;
     }
 
@@ -130,9 +141,13 @@ public class UnorderedArrayMaxPQ<Key extends Comparable<Key>> {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        UnorderedArrayMaxPQ<String> pq = new UnorderedArrayMaxPQ<String>(
-                new String[]{"to", "be", "or", "not", "to", "be"}
-        );
+        UnorderedArrayMaxPQ<String> pq = new UnorderedArrayMaxPQ<>();
+        pq.insert("to");
+        pq.insert("be");
+        pq.insert("or");
+        pq.insert("not");
+        pq.insert("to");
+        pq.insert("be");
         String s1 = pq.delMax();
         String s2 = pq.delMax();
         String s3Peeked = pq.max();
@@ -140,5 +155,30 @@ public class UnorderedArrayMaxPQ<Key extends Comparable<Key>> {
         pq.insert("why");
         String s4Why = pq.delMax();
         System.out.println(s4Why);
+        pq.insert("thyself");
+        System.out.println("Current state of the priority queue:");
+        for (Object key: pq) {
+            System.out.print(key + " ");
+        }
+        System.out.println();
+    }
+
+    @Override
+    public Iterator<Key> iterator() {
+        return new ArrayIterator();
+    }
+
+    private class ArrayIterator implements Iterator<Key> {
+        private int i = 0;
+
+        @Override
+        public boolean hasNext() {
+            return i < n;
+        }
+
+        @Override
+        public Key next() {
+            return pq[i++];
+        }
     }
 }
