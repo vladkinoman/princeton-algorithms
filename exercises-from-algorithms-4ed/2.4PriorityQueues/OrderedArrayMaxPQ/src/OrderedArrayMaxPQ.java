@@ -1,6 +1,6 @@
 /******************************************************************************
- *  Compilation:  javac UnorderedArrayMaxPQ.java
- *  Execution:    java UnorderedArrayMaxPQs
+ *  Compilation:  javac OrderedArrayMaxPQ.java
+ *  Execution:    java OrderedArrayMaxPQ
  *
  *  Priority queue implementation with an unsorted array.
  *
@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * The {@code UnorderedArrayMaxPQ} class represents a max priority queue
+ * The {@code OrderedArrayMaxPQ} class represents a max priority queue
  * of generic items.
  * It supports the usual <em>insert</em> and <em>deleteMax</em>
  * operations, along with methods for peeking the max item,
@@ -18,10 +18,11 @@ import java.util.NoSuchElementException;
  * <p>
  * This implementation uses a resizing array, which double the underlying array
  * when it is full and halves the underlying array when it is one-quarter full.
- * The <em>delMax</em> operation takes linear time.
- * The <em>insert</em> operation takes constant amortized time.
- * The <em>max</em>, <em>size</em>, and <em>is-empty</em> operations
- * take constant time in the worst case.
+ * The  operation takes linear time.
+ * The <em>insert</em> operation takes linear time in the worst case.
+ * The <em>delMax</em> operation takes constant amortized time.
+ * The <em>max</em>, <em>size</em>, and <em>is-empty</em>
+ * operations take constant time in the worst case.
  * <p>
  * @author Vlad Beklenyshchev aka vladkinoman
  */
@@ -76,15 +77,16 @@ public class OrderedArrayMaxPQ<Key extends Comparable<Key>>
      */
     public void insert(Key key) {
         if (n == pq.length) resize(2*pq.length);   // double size of array if necessary
-        for (int i = n-1; i >= 0; --i) {
-            if (pq[i].compareTo(key) < 0) {
-                pq[i+1] = key;
+        for (int i = n; i >= 0; --i) {
+            pq[i] = key;
+            if (i == 0 || pq[i - 1].compareTo(pq[i]) < 0) {
                 break;
             } else {
-                pq[i+1] = pq[i];
+                Key tmp = pq[i - 1];
+                pq[i - 1] = pq[i];
+                pq[i] = tmp;
             }
         }
-        if (n == 0) pq[n] = key;
         n++;
     }
 
