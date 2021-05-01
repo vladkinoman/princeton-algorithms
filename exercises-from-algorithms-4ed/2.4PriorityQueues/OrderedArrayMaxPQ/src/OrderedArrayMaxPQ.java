@@ -13,12 +13,11 @@ import java.util.NoSuchElementException;
  * The {@code OrderedArrayMaxPQ} class represents a max priority queue
  * of generic items.
  * It supports the usual <em>insert</em> and <em>deleteMax</em>
- * operations, along with methods for peeking the max item,
+ * operations, along with methods for peeking the max item and
  * testing if the queue is empty.
  * <p>
  * This implementation uses a resizing array, which double the underlying array
  * when it is full and halves the underlying array when it is one-quarter full.
- * The  operation takes linear time.
  * The <em>insert</em> operation takes linear time in the worst case.
  * The <em>delMax</em> operation takes constant amortized time.
  * The <em>max</em>, <em>size</em>, and <em>is-empty</em>

@@ -1,6 +1,6 @@
 /******************************************************************************
  *  Compilation:  javac UnorderedArrayMaxPQ.java
- *  Execution:    java UnorderedArrayMaxPQs
+ *  Execution:    java UnorderedArrayMaxPQ
  *
  *  Priority queue implementation with an unsorted array.
  *
@@ -13,14 +13,14 @@ import java.util.NoSuchElementException;
  * The {@code UnorderedArrayMaxPQ} class represents a max priority queue
  * of generic items.
  * It supports the usual <em>insert</em> and <em>deleteMax</em>
- * operations, along with methods for peeking the max item,
+ * operations, along with methods for peeking the max item and
  * testing if the queue is empty.
  * <p>
  * This implementation uses a resizing array, which double the underlying array
  * when it is full and halves the underlying array when it is one-quarter full.
- * The <em>delMax</em> operation takes linear time.
+ * The <em>delMax</em> and <em>max</em> operations take linear time.
  * The <em>insert</em> operation takes constant amortized time.
- * The <em>max</em>, <em>size</em>, and <em>is-empty</em> operations
+ * The <em>size</em> and <em>is-empty</em> operations
  * take constant time in the worst case.
  * <p>
  * @author Vlad Beklenyshchev aka vladkinoman
