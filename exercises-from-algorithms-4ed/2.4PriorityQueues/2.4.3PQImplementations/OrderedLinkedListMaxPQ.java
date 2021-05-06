@@ -10,14 +10,14 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * The {@code UnorderedLinkedListMaxPQ} class represents a max priority queue
+ * The {@code OrderedLinkedListMaxPQ} class represents a max priority queue
  * of generic items.
  * It supports the usual <em>insert</em> and <em>deleteMax</em>
  * operations, along with methods for peeking the max item and
  * testing if the queue is empty.
  * <p>
  * This implementation uses a doubly linked list.
- * The <em>insert</em> operation takes linear time.
+ * The <em>insert</em> operation takes linear time in the worst case.
  * The <em>delMax</em>, <em>max</em>, <em>size</em>, and <em>is-empty</em>
  * operations take constant time in the worst case.
  * <p>
@@ -25,18 +25,8 @@ import java.util.NoSuchElementException;
  */
 public class OrderedLinkedListMaxPQ<Key extends Comparable<Key>>
         implements Iterable<Key> {
-    private int n;
-    private Node last;
-    private Node first;
-
-    /**
-     * Initializes an empty priority queue.
-     */
-    public OrderedLinkedListMaxPQ() {
-        n = 0;
-        last = new Node();
-        first = last;
-    }
+    private int n;     // number of items
+    private Node last; // points to the last inserted item
 
     private class Node {
         Key info;
@@ -49,7 +39,8 @@ public class OrderedLinkedListMaxPQ<Key extends Comparable<Key>>
      * @param key the key to insert
      */
     public void insert(Key key) {
-        Node curr = last.prev;
+        Node curr = last;
+        Node prevCurr = null;
         while (n > 0 && curr != null) {
             if (curr.info.compareTo(key) < 0) {
                 Node aux = curr.next;
@@ -57,25 +48,23 @@ public class OrderedLinkedListMaxPQ<Key extends Comparable<Key>>
                 curr.next.info = key;
                 curr.next.prev = curr;
                 curr.next.next = aux;
-                aux.prev = curr.next;
+                if (aux != null) aux.prev = curr.next;
                 break;
             }
-
+            prevCurr = curr;
             curr = curr.prev;
         }
 
         if (curr == null) {
             curr = new Node();
             curr.info = key;
-            curr.next = first;
-            if (first.prev != null) first.prev = curr;
-            if (last == first) {
-                last = new Node();
+            if (prevCurr != null) {
+                curr.next = prevCurr;
+                prevCurr.prev = curr;
             }
-            first = curr;
-        } else if (curr == last) {
-            last = curr.next;
         }
+        if (n == 0)            last = curr;
+        else if (curr == last) last = curr.next;
         n++;
     }
 
@@ -88,7 +77,7 @@ public class OrderedLinkedListMaxPQ<Key extends Comparable<Key>>
         if (isEmpty()) {
             throw new NoSuchElementException("Priority Queue underflow.");
         }
-        return last.prev.info;
+        return last.info;
     }
 
     /**
@@ -100,10 +89,11 @@ public class OrderedLinkedListMaxPQ<Key extends Comparable<Key>>
         if (isEmpty()) {
             throw new NoSuchElementException("Priority Queue underflow.");
         }
+        Key max = last.info;
         last = last.prev;
         last.next = null;
         n--;
-        return last.info;
+        return max;
     }
 
     /**
@@ -123,7 +113,7 @@ public class OrderedLinkedListMaxPQ<Key extends Comparable<Key>>
     }
 
     private class LinkedListIterator implements Iterator<Key> {
-        private Node curr = last.prev;
+        private Node curr = last;
         public boolean hasNext() {
             return curr != null;
         }
@@ -154,6 +144,7 @@ public class OrderedLinkedListMaxPQ<Key extends Comparable<Key>>
         pq.insert("be");
         pq.insert("thyself");
         pq.delMax();
+        pq.insert("who");
         System.out.println("Current state of the priority queue:");
         for (Object key: pq) {
             System.out.print(key + " ");
