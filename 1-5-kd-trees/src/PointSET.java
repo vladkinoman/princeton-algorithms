@@ -107,6 +107,10 @@ public class PointSET {
      * @param args
      */
     public static void main(String[] args) {
-      // TODO document why this method is empty
+        PointSET ps = new PointSET();
+        ps.insert(new Point2D(0.1, 0.1));
+        ps.insert(new Point2D(0.2, 0.5));
+        ps.insert(new Point2D(0.8, 0.9));
+        System.out.print(ps.nearest(new Point2D(0.5, 0.8)).toString());
     }
 }
