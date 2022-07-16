@@ -4,21 +4,20 @@ import java.util.List;
 
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.SET;
-import edu.princeton.cs.algs4.ST;
 import edu.princeton.cs.algs4.StdDraw;
+
 
 public class KdTree {
 
     private static class Node {
-    
-        public Node(Point2D newp) {
-            p = newp;
-        }
         private Point2D p;
         private Node lb;
         private Node rt;
         private RectHV rect;
+        public Node(Point2D p, RectHV rect) {
+            this.p = p;
+            this.rect = rect;
+        }
     }
 
     private Node root;
@@ -45,32 +44,6 @@ public class KdTree {
     private int size(Node curr) {
         if (curr == null) return 0;
         return 1 + size(curr.lb) + size(curr.rt);
-    }
-
-    /** Add the point to the set (if it is not already in the set)
-     *  Running time: log N
-     */
-    public void insert(Point2D p) {
-        if (p == null) throw new IllegalArgumentException();
-        root = insert(root, p, true);
-    }
-
-    private Node insert(Node curr, Point2D newp, boolean doWeUseXAsKey) {
-        if (curr == null) return new Node(newp);
-        
-        int cmp = 0;
-        if (doWeUseXAsKey) {
-            // | x is fixed
-            cmp = Double.compare(newp.x(), curr.p.x());
-        } else {
-            // — y is fixed
-            cmp = Double.compare(newp.y(), curr.p.y());
-        }
-
-        if (cmp == 0) curr.p  = newp;
-        if (cmp < 0)  curr.lb = insert(curr.lb, newp, !doWeUseXAsKey);
-        if (cmp > 0)  curr.rt = insert(curr.rt, newp, !doWeUseXAsKey);
-        return curr;
     }
 
     /** Does the set contain point p?
@@ -100,12 +73,52 @@ public class KdTree {
         return false;
     }
 
-    /** Draw all points to standard draw
-     * 
+    /** 
+     *  Add the point to the set (if it is not already in the set)
+     *  Running time: log N
+     */
+    public void insert(Point2D p) {
+        if (p == null) throw new IllegalArgumentException();
+        root = insert(root, p, new RectHV(.0, .0, 1.0, 1.0), true);
+    }
+
+    private Node insert(Node curr, Point2D newp, RectHV rect, 
+     boolean doWeUseXAsKey) {
+        if (curr == null) return new Node(newp, rect);
+        
+        int cmp = 0;
+        RectHV newRect = null;
+        if (doWeUseXAsKey) {
+            // | x is fixed
+            cmp = Double.compare(newp.x(), curr.p.x());
+            if   (cmp  < 0)  {
+                newRect = new RectHV(rect.xmin(), rect.ymin(),  curr.p.x(), rect.ymax());
+            } else if (cmp  > 0) {
+                newRect = new RectHV( curr.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
+            }
+        } else {
+            // — y is fixed
+            cmp = Double.compare(newp.y(), curr.p.y());
+            if   (cmp  < 0) {
+                newRect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(),  curr.p.y());
+            } else if (cmp  > 0) {
+                newRect = new RectHV(rect.xmin(),  curr.p.y(), rect.xmax(), rect.ymax());
+            }
+                
+        }
+        if (cmp == 0)  curr.p  = newp;
+        if (cmp  < 0)  curr.lb = insert(curr.lb, newp, newRect, !doWeUseXAsKey);
+        if (cmp  > 0)  curr.rt = insert(curr.rt, newp, newRect, !doWeUseXAsKey);
+        
+        return curr;
+    }
+
+
+    /** 
+     * Draw all points to standard draw
      */
     public void draw() {
-        draw(root, new Point2D(0.0, 0.0), 
-                   new Point2D(1.0, 1.0), true);
+        draw(root, true);
     }
 
     /**
@@ -115,52 +128,47 @@ public class KdTree {
      * @param trp top right point of the partition
      * @param doWeUseXAsKey
      */
-    private void draw(Node curr, Point2D blp, Point2D trp, boolean doWeUseXAsKey) {
+    private void draw(Node curr, boolean doWeUseXAsKey) {
         if (curr == null) return;
-        
-        double x = curr.p.x();
-        double y = curr.p.y();
 
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(0.0205);
-        StdDraw.point(x, y);
+        StdDraw.point(curr.p.x(), curr.p.y());
         StdDraw.setPenRadius();
         if (doWeUseXAsKey) {
             // | x is fixed
-            StdDraw.setPenColor(StdDraw.RED);
-            StdDraw.line(x, blp.y(), x, trp.y());
-            draw(curr.lb, new Point2D(blp.x(), blp.y()),
-                          new Point2D(      x, trp.y()), !doWeUseXAsKey);
-            draw(curr.rt, new Point2D(      x, blp.y()),
-                          new Point2D(trp.x(), trp.y()), !doWeUseXAsKey);
+            StdDraw.setPenColor(StdDraw.RED);            
+            StdDraw.line(      curr.p.x(), curr.rect.ymin(), 
+                               curr.p.x(), curr.rect.ymax());
         } else {
             // — y is fixed
             StdDraw.setPenColor(StdDraw.BLUE);
-            StdDraw.line(blp.x(), y, trp.x(), y);
-            draw(curr.lb, new Point2D(blp.x(), blp.y()),
-                          new Point2D(trp.x(),       y), !doWeUseXAsKey);
-            draw(curr.rt, new Point2D(blp.x(),       y),
-                          new Point2D(trp.x(), trp.y()), !doWeUseXAsKey);
+            StdDraw.line(curr.rect.xmin(),       curr.p.y(), 
+                         curr.rect.xmax(),       curr.p.y());
         }
+        draw(curr.lb, !doWeUseXAsKey);
+        draw(curr.rt, !doWeUseXAsKey);
     }
 
     private class PointsInRange implements Iterable<Point2D> {
 
         private final List<Point2D> lPointsInRange = new ArrayList<>();
 
-        public PointsInRange(RectHV rect) {
-            // inner constructor
-            /*for (Point2D p : rbBST) {
-                if (rect.contains(p)) lPointsInRange.add(p);    
-            }*/
-            throw new UnsupportedOperationException();
+        public PointsInRange(RectHV that) {
+            buildList(root, that);
+        }
+
+        private void buildList(Node curr, RectHV that) {
+            if (curr == null || !curr.rect.intersects(that)) return;
+            buildList(curr.lb, that);
+            if (that.contains(curr.p)) lPointsInRange.add(curr.p);
+            buildList(curr.rt, that);
         }
 
         @Override
         public Iterator<Point2D> iterator() {
             return lPointsInRange.iterator();
         }
-
     }
 
     /** All points that are inside the rectangle (or on the boundary)
@@ -209,6 +217,9 @@ public class KdTree {
         StdDraw.setYscale(0.0, 1.0); 
         ps.draw();
         StdDraw.show();
+        for (Point2D p : ps.range(new RectHV(0.1, 0.1, 0.6, 0.8))) {
+            System.out.println(p.toString());            
+        }
         //System.out.print(ps.nearest(new Point2D(0.5, 0.8)).toString());
     }
 }
