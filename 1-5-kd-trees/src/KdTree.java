@@ -1,12 +1,30 @@
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.StdOut;
 
-
+/**
+ * The {@code KdTree} represents a data type to represent a set of points in
+ *  the unit square (all points have x- and y-coordinates between 0 and 1) 
+ *  It supports:
+ *  <ul>
+ *   <li>an eﬃcient range search to ﬁnd all of the points contained in a query rectangle.
+ *   <li>a nearest-neighbor search to ﬁnd a closest point to a query point.
+ *  </ul>
+ * <p>
+   This implementation uses a 2d-tree with a static nested class for
+ *  tree nodes.
+ * <p>
+ * 2d-trees have numerous applications, ranging from classifying astronomical
+ *  objects to computer animation to speeding up neural networks to mining data
+ *  to image retrieval.
+ * 
+ * @author Vlad Beklenyshchev aka vladkinoman
+ 
+ */
 public class KdTree {
 
     private static class Node {
@@ -21,21 +39,24 @@ public class KdTree {
     }
 
     private Node root;
-    /** Construct an empty set of points.
+    
+    /** 
+     * Construct an empty set of points.
      */
     public KdTree() {
         root = null;
     }
 
     /** Is the set empty?
-     * @return
+     * @return {@code true}  if the tree is empty,
+     *         {@code false} otherwise
      */
     public boolean isEmpty() {
         return size() == 0;
     }
     
     /** Number of points in the set
-     * @return
+     * @return number of points in the set
      */
     public int size() {
         return size(root);
@@ -47,8 +68,10 @@ public class KdTree {
     }
 
     /** Does the set contain point p?
-     *  Running time: log N
-     * @return
+     *  <p>Running time: log N
+     * @param p the point that we want to know if it is in the tree
+     * @return {@code true}  if the tree contains point p,
+     *         {@code false} otherwise
      */
     public boolean contains(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
@@ -75,7 +98,8 @@ public class KdTree {
 
     /** 
      *  Add the point to the set (if it is not already in the set)
-     *  Running time: log N
+     *  <p>Running time: log N
+     *  @param p the point we want to insert 
      */
     public void insert(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
@@ -122,11 +146,10 @@ public class KdTree {
     }
 
     /**
-     * 
-     * @param curr
-     * @param blp bottom left point of the partition
-     * @param trp top right point of the partition
-     * @param doWeUseXAsKey
+     * Recursively draw points that divide our space.
+     * @param curr current node that is being checked
+     * @param doWeUseXAsKey true => | we are using x as a key (it's fixed)
+     *                   <p>false=> — we are using y as a key (it's fixed)
      */
     private void draw(Node curr, boolean doWeUseXAsKey) {
         if (curr == null) return;
@@ -172,37 +195,59 @@ public class KdTree {
     }
 
     /** All points that are inside the rectangle (or on the boundary)
-     *  Running time: N
-     * @param rect
-     * @return
+     *  <p>Running time: R + log N, where R is the number of intersections
+     * @param rect the rectangle (or range) which might have some points from the tree
+     * @return the points from the given range
      */
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
         return new PointsInRange(rect);
     }
 
-    /** A nearest neighbor in the set to point p; null if the set is empty 
-     *  Running time: N
-     * @param p
+    /**
+     * Pruning rule: 
+     *  if the closest point discovered so far is closer than the distance
+     *  between the query point and the rectangle corresponding to a node,
+     *  there is no need to explore that node (or its subtrees).
+     * That is,
+     *  search a node only only if it might contain a point that is closer than
+     *  the best one found so far. 
+     * 
+     * @param curr current node that is being checked
+     * @param queryp the point to which we are looking for the closest point
+     * @param closest the current best point which is close to queryp
      * @return
      */
-    public Point2D nearest(Point2D to) {
-        /*if (to == null) throw new IllegalArgumentException();
-        if (size() == 0) return null;
+    private Point2D nearest(Node curr, Point2D queryp, Point2D closest) {
+        // the pruning rule:
+        if (curr == null || curr.rect.distanceTo(queryp) > queryp.distanceTo(closest))
+            return closest;
+
+        if (curr.p.distanceTo(queryp) < curr.p.distanceTo(closest)) 
+            closest = curr.p;
         
-        Point2D pMinDist = rbBST.iterator().next();
-        for (Point2D curr : rbBST) {
-            if (curr.distanceTo(to) < pMinDist.distanceTo(to)) {
-                pMinDist = curr;
-            }
-        }
-        return pMinDist;
-        */
-        throw new UnsupportedOperationException();
+        Point2D closestInLB = nearest(curr.lb, queryp, closest);
+        if (closestInLB.distanceTo(queryp) < closest.distanceTo(queryp))
+            closest = closestInLB;
+        Point2D closestInRT = nearest(curr.rt, queryp, closest);
+        if (closestInRT.distanceTo(queryp) < closest.distanceTo(queryp))
+            closest = closestInRT;
+        
+        return closest;
+    }
+
+    /** A nearest neighbor in the set to point p; null if the set is empty 
+     *  <p>Running time: log N in the best case
+     * @param to the point to which we are looking for the closest one
+     * @return the point which is the nearest to to
+     */
+    public Point2D nearest(Point2D to) {
+        if (to == null) throw new IllegalArgumentException();
+        return root != null ? nearest(root, to, root.p) : null;
     }
 
     /** Unit testing of the methods (optional)
-     * @param args
+     * @param args the arguments that are passed to the program
      */
     public static void main(String[] args) {
         KdTree ps = new KdTree();
@@ -217,9 +262,19 @@ public class KdTree {
         StdDraw.setYscale(0.0, 1.0); 
         ps.draw();
         StdDraw.show();
-        for (Point2D p : ps.range(new RectHV(0.1, 0.1, 0.6, 0.8))) {
-            System.out.println(p.toString());            
+        RectHV queryRange = new RectHV(0.1, 0.1, 0.6, 0.8);
+        StdOut.printf("Points in range " + queryRange.toString() + ":\n");
+        for (Point2D p : ps.range(queryRange)) {
+            StdOut.printf(p.toString() + "\n");
         }
-        //System.out.print(ps.nearest(new Point2D(0.5, 0.8)).toString());
+        Point2D to = new Point2D(0.3, 0.9);
+        StdOut.printf(ps.nearest(to).toString() + " is close to " +
+         to.toString() + "\n");
+        to         = new Point2D(0.91, 0.8);
+        StdOut.printf(ps.nearest(to).toString() + " is close to " +
+         to.toString() + "\n");
+        to         = new Point2D(0.93, 0.18);
+        StdOut.printf(ps.nearest(to).toString() + " is close to " +
+          to.toString() + "\n");
     }
 }
