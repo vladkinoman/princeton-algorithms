@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
@@ -27,11 +26,13 @@ import edu.princeton.cs.algs4.StdOut;
  */
 public class KdTree {
 
+    private static final float POINT_PEN_RADIUS = 0.0205f;
+
     private static class Node {
         private Point2D p;
         private Node lb;
         private Node rt;
-        private RectHV rect;
+        private final RectHV rect;
         public Node(Point2D p, RectHV rect) {
             this.p = p;
             this.rect = rect;
@@ -103,7 +104,7 @@ public class KdTree {
      */
     public void insert(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
-        root = insert(root, p, new RectHV(.0, .0, 1.0, 1.0), true);
+        root = insert(root, p, new RectHV(0.0, 0.0, 1.0, 1.0), true);
     }
 
     private Node insert(Node curr, Point2D newp, RectHV rect, 
@@ -118,7 +119,7 @@ public class KdTree {
             if   (cmp  < 0)  {
                 newRect = new RectHV(rect.xmin(), rect.ymin(),  curr.p.x(), rect.ymax());
             } else if (cmp  > 0) {
-                newRect = new RectHV( curr.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
+                newRect = new RectHV(curr.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
             }
         } else {
             // — y is fixed
@@ -155,14 +156,14 @@ public class KdTree {
         if (curr == null) return;
 
         StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.setPenRadius(0.0205);
+        StdDraw.setPenRadius(POINT_PEN_RADIUS);
         StdDraw.point(curr.p.x(), curr.p.y());
         StdDraw.setPenRadius();
         if (doWeUseXAsKey) {
             // | x is fixed
             StdDraw.setPenColor(StdDraw.RED);            
-            StdDraw.line(      curr.p.x(), curr.rect.ymin(), 
-                               curr.p.x(), curr.rect.ymax());
+            StdDraw.line(curr.p.x(), curr.rect.ymin(), 
+                         curr.p.x(), curr.rect.ymax());
         } else {
             // — y is fixed
             StdDraw.setPenColor(StdDraw.BLUE);
@@ -173,25 +174,11 @@ public class KdTree {
         draw(curr.rt, !doWeUseXAsKey);
     }
 
-    private class PointsInRange implements Iterable<Point2D> {
-
-        private final List<Point2D> lPointsInRange = new ArrayList<>();
-
-        public PointsInRange(RectHV that) {
-            buildList(root, that);
-        }
-
-        private void buildList(Node curr, RectHV that) {
-            if (curr == null || !curr.rect.intersects(that)) return;
-            buildList(curr.lb, that);
-            if (that.contains(curr.p)) lPointsInRange.add(curr.p);
-            buildList(curr.rt, that);
-        }
-
-        @Override
-        public Iterator<Point2D> iterator() {
-            return lPointsInRange.iterator();
-        }
+    private void buildList(Node curr, RectHV that, List<Point2D> lPointsInRange) {
+        if (curr == null || !curr.rect.intersects(that)) return;
+        buildList(curr.lb, that, lPointsInRange);
+        if (that.contains(curr.p)) lPointsInRange.add(curr.p);
+        buildList(curr.rt, that, lPointsInRange);
     }
 
     /** All points that are inside the rectangle (or on the boundary)
@@ -201,7 +188,9 @@ public class KdTree {
      */
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
-        return new PointsInRange(rect);
+        List<Point2D> lPointsInRange = new ArrayList<>();
+        buildList(root, rect, lPointsInRange);
+        return lPointsInRange;
     }
 
     /**
@@ -220,17 +209,21 @@ public class KdTree {
      */
     private Point2D nearest(Node curr, Point2D queryp, Point2D closest) {
         // the pruning rule:
-        if (curr == null || curr.rect.distanceTo(queryp) > queryp.distanceTo(closest))
+        if (curr == null || curr.rect.distanceSquaredTo(queryp) 
+                             > queryp.distanceSquaredTo(closest))
             return closest;
 
-        if (curr.p.distanceTo(queryp) < curr.p.distanceTo(closest)) 
+        if (curr.p.distanceSquaredTo(queryp) 
+          < curr.p.distanceSquaredTo(closest)) 
             closest = curr.p;
         
         Point2D closestInLB = nearest(curr.lb, queryp, closest);
-        if (closestInLB.distanceTo(queryp) < closest.distanceTo(queryp))
+        if (closestInLB.distanceSquaredTo(queryp) 
+              < closest.distanceSquaredTo(queryp))
             closest = closestInLB;
         Point2D closestInRT = nearest(curr.rt, queryp, closest);
-        if (closestInRT.distanceTo(queryp) < closest.distanceTo(queryp))
+        if (closestInRT.distanceSquaredTo(queryp) 
+              < closest.distanceSquaredTo(queryp))
             closest = closestInRT;
         
         return closest;

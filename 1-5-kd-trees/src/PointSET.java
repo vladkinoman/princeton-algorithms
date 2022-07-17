@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import edu.princeton.cs.algs4.Point2D;
@@ -9,7 +8,7 @@ import edu.princeton.cs.algs4.StdDraw;
 
 public class PointSET {
 
-    private SET<Point2D> rbBST;
+    private final SET<Point2D> rbBST;
 
     /** Construct an empty set of points.
      */
@@ -57,24 +56,6 @@ public class PointSET {
         return rbBST.contains(p);
     }
 
-    private class PointsInRange implements Iterable<Point2D> {
-
-        private final List<Point2D> lPointsInRange = new ArrayList<>();
-
-        public PointsInRange(RectHV rect) {
-            // inner constructor
-            for (Point2D p : rbBST) {
-                if (rect.contains(p)) lPointsInRange.add(p);    
-            }
-        }
-
-        @Override
-        public Iterator<Point2D> iterator() {
-            return lPointsInRange.iterator();
-        }
-
-    }
-
     /** All points that are inside the rectangle (or on the boundary)
      *  Running time: N
      * @param rect
@@ -82,10 +63,15 @@ public class PointSET {
      */
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
-        return new PointsInRange(rect);
+        List<Point2D> lPointsInRange = new ArrayList<>();
+        // inner constructor
+        for (Point2D p : rbBST) {
+            if (rect.contains(p)) lPointsInRange.add(p);    
+        }
+        return lPointsInRange;
     }
-
     /** A nearest neighbor in the set to point p; null if the set is empty 
+
      *  Running time: N
      * @param p
      * @return
@@ -96,7 +82,7 @@ public class PointSET {
         
         Point2D pMinDist = rbBST.iterator().next();
         for (Point2D curr : rbBST) {
-            if (curr.distanceTo(to) < pMinDist.distanceTo(to)) {
+            if (curr.distanceSquaredTo(to) < pMinDist.distanceSquaredTo(to)) {
                 pMinDist = curr;
             }
         }
