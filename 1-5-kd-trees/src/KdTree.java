@@ -98,12 +98,9 @@ public class KdTree {
                 // — y is fixed
                 cmp = Double.compare(p.y(), x.p.y());
             }
-            if      (cmp < 0)
-                x = x.lb;
-            else if (cmp == 0 && x.p.equals(p))
-                return true;
-            else 
-                x = x.rt;
+            if      (cmp < 0)                   x = x.lb;
+            else if (cmp == 0 && x.p.equals(p)) return true;
+            else                                x = x.rt;
 
             doWeUseXAsKey = !doWeUseXAsKey;
         }
@@ -118,42 +115,52 @@ public class KdTree {
      * @param p the point we want to insert
      */
     public void insert(Point2D p) {
-        if (p == null)
-            throw new IllegalArgumentException();
-        root = insert(root, p, new RectHV(0.0, 0.0, 1.0, 1.0), true);
+        if (p == null) throw new IllegalArgumentException();
+        
+        if (root == null) root = new Node(p, new RectHV(0.0, 0.0, 1.0, 1.0), 1);
+        else              root = insert(root, p, root.rect, true);
     }
 
     private Node insert(Node curr, Point2D p, RectHV rect,
             boolean doWeUseXAsKey) {
-        if (curr == null)
-            return new Node(p, rect, 1);
-            
+        if (curr == null) return new Node(p, rect, 1);
+    
         int cmp = 0;
-        RectHV newRect = null;
         if (doWeUseXAsKey) {
             // | x is fixed
-            cmp = Double.compare(p.x(), curr.p.x());
-            if (cmp < 0) {
-                newRect = new RectHV(rect.xmin(), rect.ymin(), curr.p.x(), rect.ymax());
+            double x = curr.p.x();
+            cmp = Double.compare(p.x(), x);
+            if        (cmp <  0 && curr.lb == null) {
+                rect = new RectHV(rect.xmin(), rect.ymin(), x, rect.ymax());    
+            } else if (cmp >= 0 && curr.rt == null) {
+                rect = new RectHV(x, rect.ymin(), rect.xmax(), rect.ymax());
+            } else if (cmp <  0) {
+                rect = curr.lb.rect;
             } else {
-                newRect = new RectHV(curr.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
+                rect = curr.rt.rect;
             }
         } else {
             // — y is fixed
-            cmp = Double.compare(p.y(), curr.p.y());
-            if (cmp < 0) {
-                newRect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), curr.p.y());
+            double y = curr.p.y();
+            cmp = Double.compare(p.y(), y);
+            if        (cmp <  0 && curr.lb == null) {
+                rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), y);
+            } else if (cmp >= 0 && curr.rt == null) {
+                rect = new RectHV(rect.xmin(), y, rect.xmax(), rect.ymax());
+            } else if (cmp <  0) {
+                rect = curr.lb.rect;
             } else {
-                newRect = new RectHV(rect.xmin(), curr.p.y(), rect.xmax(), rect.ymax());
+                rect = curr.rt.rect;
             }
         }
 
-        if      (cmp < 0)
-            curr.lb = insert(curr.lb, p, newRect, !doWeUseXAsKey);
-        else if (cmp == 0 && curr.p.equals(p))
+        if        (cmp < 0) {
+            curr.lb = insert(curr.lb, p, rect, !doWeUseXAsKey);
+        } else if (cmp == 0 && curr.p.equals(p)) {
             curr.p = p;
-        else
-            curr.rt = insert(curr.rt, p, newRect, !doWeUseXAsKey);
+        } else {
+            curr.rt = insert(curr.rt, p, rect, !doWeUseXAsKey);
+        }
 
         curr.count = 1 + size(curr.lb) + size(curr.rt);
         return curr;
@@ -208,19 +215,16 @@ public class KdTree {
      */
     public Iterable<Point2D> range(RectHV rect) {
         // inorder traversal
-        if (rect == null)
-            throw new IllegalArgumentException();
+        if (rect == null) throw new IllegalArgumentException();
         Queue<Point2D> qPointsInRange = new Queue<>();
         buildQueue(root, rect, qPointsInRange);
         return qPointsInRange;
     }
 
     private void buildQueue(Node curr, RectHV that, Queue<Point2D> q) {
-        if (curr == null || !curr.rect.intersects(that))
-            return;
+        if (curr == null || !curr.rect.intersects(that)) return;
         buildQueue(curr.lb, that, q);
-        if (that.contains(curr.p))
-            q.enqueue(curr.p);
+        if (that.contains(curr.p)) q.enqueue(curr.p);
         buildQueue(curr.rt, that, q);
     }
 
@@ -233,8 +237,7 @@ public class KdTree {
      * @return the point which is the nearest to p
      */
     public Point2D nearest(Point2D p) {
-        if (p == null)
-            throw new IllegalArgumentException();
+        if (p == null) throw new IllegalArgumentException();
         return root != null ? nearest(root, p, root.p, true) : null;
     }
 

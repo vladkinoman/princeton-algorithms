@@ -32,6 +32,17 @@ A Java program to solve the 8-puzzle problem (and its natural generalizations) u
 
 **Score**: 100/100.
 
+##  1-5-kd-trees
+
+A Java program which has two data types to represent a set of points in the unit square (all points have x- and y-coordinates between 0 and 1):
+
+- PointSet - brute-force implementation which uses an ordered set data type
+- KdTree which uses a 2d-tree to support efficient range search and nearest-neighbor search.
+
+2d-trees have numerous applications, ranging from classifying astronomical objects to computer animation to speeding up neural networks to mining data to image retrieval.
+
+**Score**: 100/100.
+
 ## exercises-from-algorithms-4ed
 
 Solutions to the most interesting exercises from the book "Algorithms: 4 edition".
