@@ -6,6 +6,21 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch KdTree",
+            "request": "launch",
+            "mainClass": "KdTree",
+            "projectName": "1-5-kd-trees_be730f8d",
+            "args": ["${workspaceFolder}/sample-data-files/input1M.txt"]
+        },
+        {
+            "type": "java",
+            "name": "Launch PointSET",
+            "request": "launch",
+            "mainClass": "PointSET",
+            "projectName": "1-5-kd-trees_be730f8d"
+        },
+        {
+            "type": "java",
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}"
