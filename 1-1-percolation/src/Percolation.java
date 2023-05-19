@@ -1,5 +1,6 @@
 
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
+import edu.princeton.cs.algs4.In;
 
 /**
  * The {@code PercolationStats} class provides methods
@@ -166,7 +167,14 @@ public class Percolation {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        Percolation newSystem = new Percolation(1);
-        System.out.println(newSystem.percolates());
+        String filename = args[0];
+        In in = new In(filename);
+        Percolation per = new Percolation(in.readInt());
+        while (!in.isEmpty()) {
+            int row = in.readInt();
+            int col = in.readInt();
+            per.open(row, col);
+        }
+        System.out.println(per.percolates());
     }
 }
