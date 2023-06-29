@@ -1,0 +1,44 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Outcast",
+            "request": "launch",
+            "mainClass": "Outcast",
+            "projectName": "2-1-wordnet_dd85fb04",
+            "args": [
+                "${workspaceFolder}/sample-data-files/synsets.txt",
+                "${workspaceFolder}/sample-data-files/hypernyms.txt",
+                "${workspaceFolder}/sample-data-files/outcast5.txt", 
+                "${workspaceFolder}/sample-data-files/outcast8.txt",
+                "${workspaceFolder}/sample-data-files/outcast11.txt"]
+        },
+        {
+            "type": "java",
+            "name": "SAP",
+            "request": "launch",
+            "mainClass": "SAP",
+            "projectName": "2-1-wordnet_dd85fb04",
+            "args": ["${workspaceFolder}/sample-data-files/digraphMY1.txt"]
+        },
+        {
+            "type": "java",
+            "name": "WordNet",
+            "request": "launch",
+            "mainClass": "WordNet",
+            "projectName": "2-1-wordnet_dd85fb04",
+            "args": ["${workspaceFolder}/sample-data-files/synsets6.txt", "${workspaceFolder}/sample-data-files/hypernyms6TwoAncestors.txt"]
+        }
+    ]
+}

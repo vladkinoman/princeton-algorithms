@@ -1,0 +1,43 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "InteractivePercolationVisualizer",
+            "request": "launch",
+            "mainClass": "InteractivePercolationVisualizer",
+            "projectName": "1-1-percolation_456faf82"
+        },
+        {
+            "type": "java",
+            "name": "Percolation",
+            "request": "launch",
+            "mainClass": "Percolation",
+            "projectName": "1-1-percolation_456faf82",
+            "args": ["${workspaceFolder}/sample-data-files/input10.txt"]
+        },
+        {
+            "type": "java",
+            "name": "PercolationStats",
+            "request": "launch",
+            "mainClass": "PercolationStats",
+            "projectName": "1-1-percolation_456faf82"
+        },
+        {
+            "type": "java",
+            "name": "PercolationVisualizer",
+            "request": "launch",
+            "mainClass": "PercolationVisualizer",
+            "projectName": "1-1-percolation_456faf82"
+        }
+    ]
+}
