@@ -31,7 +31,6 @@ public class SAP {
     }
 
     private LAStructure getLengthAndAncestor(int v, int w) {
-        // V+E
         BreadthFirstDirectedPaths bfsOfV = new BreadthFirstDirectedPaths(g, v);
         BreadthFirstDirectedPaths bfsOfW = new BreadthFirstDirectedPaths(g, w);
 
@@ -45,15 +44,15 @@ public class SAP {
             result.length = bfsOfW.distTo(result.ancestor);
         } else {
             int root = 0;
-            int V = g.V();
-            for (int i = 0; i < V; i++) {
+            int n = g.V();
+            for (int i = 0; i < n; i++) {
                 if (g.outdegree(i) == 0) {
                     root = i;
                     break;
                 }
             }
-            for(int x: bfsOfV.pathTo(root)) {
-                if (bfsOfW.hasPathTo(x) ) {
+            for (int x: bfsOfV.pathTo(root)) {
+                if (bfsOfW.hasPathTo(x)) {
                     result.ancestor = x;
                     result.length = bfsOfV.distTo(x) + bfsOfW.distTo(x);
                     break;
@@ -65,20 +64,16 @@ public class SAP {
     }
 
     private void validateVertex(int v) {
-        int V = g.V();
-        if (v < 0 || v >= V)
-            throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V-1));
+        if (v < 0 || v >= g.V())
+            throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (g.V()-1));
     }
 
     private void validateVertices(Iterable<Integer> vertices) {
         if (vertices == null) {
             throw new IllegalArgumentException("argument is null");
         }
-        int V = g.V();
         for (int v : vertices) {
-            if (v < 0 || v >= V) {
-                throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V-1));
-            }
+            validateVertex(v);
         }
     }
 

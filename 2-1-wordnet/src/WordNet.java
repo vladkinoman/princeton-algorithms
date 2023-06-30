@@ -76,9 +76,10 @@ public class WordNet {
         if (!top.hasOrder())
             throw new IllegalArgumentException("Not a rooted DAG");
         int rootCounter = 0;
-        int V = g.V();
-        for (int i = 0; i < V; i++) {
-            if (g.outdegree(i) == 0 && ++rootCounter > 1)
+        n = g.V();
+        for (int i = 0; i < n; i++) {
+            if (g.outdegree(i) == 0 ) rootCounter++;
+            if (rootCounter > 1)    
                 throw new IllegalArgumentException("Not a rooted DAG");
         }
     }
@@ -104,7 +105,7 @@ public class WordNet {
             throw new IllegalArgumentException("argument is null");
         
         for (String noun: nouns()) {
-            if (noun.compareTo(noun) == 0) return true;
+            if (noun.compareTo(word) == 0) return true;
         }
         return false;
     }
