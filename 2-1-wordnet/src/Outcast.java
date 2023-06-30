@@ -1,15 +1,31 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 
+/**
+ * The {@code Outcast} class provides the method {@code outcast}
+ * which computes the least related noun to the given array of nouns
+ * in the WordNet digraph.
+ *
+ * @author Vlad Beklenyshchev aka vladkinoman
+ */
 public class Outcast {
-    
     private final WordNet wordnet;
-    // constructor takes a WordNet object
+
+    /**
+     * Initializes {@code Outcast} with the {@code WordNet} object.
+     * 
+     * @param wordnet the WordNet digraph
+     */
     public Outcast(WordNet wordnet) {   
         this.wordnet = wordnet;
     }
 
-    // given an array of WordNet nouns, return an outcast
+    /**
+     * Computes an outcast for a given array of WordNet nouns.
+     * 
+     * @param nouns an array of nouns
+     * @return a String value which represents the outcast
+     */
     public String outcast(String[] nouns) {
         int indexOfALeastRelated = 0;
         int di = 0;
@@ -28,6 +44,11 @@ public class Outcast {
         return nouns[indexOfALeastRelated];
     }
 
+    /**
+     * Test client for Outcast.
+     * 
+     * @param args the command-line arguments
+     */
     public static void main(String[] args) {
         WordNet wordnet = new WordNet(args[0], args[1]);
         Outcast outcast = new Outcast(wordnet);

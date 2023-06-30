@@ -4,11 +4,21 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
+/**
+ * The {@code SAP} class provides methods
+ * for finding a shortest ancestral path between two vertices,
+ * or two vertices from two different subsets.
+ *
+ * @author Vlad Beklenyshchev aka vladkinoman
+ */
 public class SAP {
 
     private final Digraph g;
-    // constructor takes a digraph (not necessarily a DAG)
-    // E + V
+
+    /**
+     * Initializes {@code SAP} with a digraph (not necessarily a DAG).
+     * @param G digraph
+     */
     public SAP(Digraph G) {
         if (G == null) 
             throw new IllegalArgumentException("argument is null");
@@ -16,8 +26,8 @@ public class SAP {
     }
 
     private class LAStructure {
-        public int ancestor = -1;
         public int length = -1;
+        public int ancestor = -1;
     }
 
     private LAStructure getLengthAndAncestor(int v, int w) {
@@ -54,14 +64,12 @@ public class SAP {
         return result;
     }
 
-    // throw an IllegalArgumentException unless {@code 0 <= v < V}
     private void validateVertex(int v) {
         int V = g.V();
         if (v < 0 || v >= V)
             throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V-1));
     }
 
-    // throw an IllegalArgumentException unless {@code 0 <= v < V}
     private void validateVertices(Iterable<Integer> vertices) {
         if (vertices == null) {
             throw new IllegalArgumentException("argument is null");
@@ -74,24 +82,45 @@ public class SAP {
         }
     }
 
-    // length of shortest ancestral path between v and w; -1 if no such path
-    // E + V
+    /**
+     * Returns length of shortest ancestral path between vertices v and w;
+     *  -1 if no such path.
+     * @param v vertex
+     * @param w vertex
+     * @return length of sap between v and w; -1 if no such path
+     * @throws IllegalArgumentException unless {@code 0 <= v < V}
+     */
     public int length(int v, int w) {
         validateVertex(v);
         validateVertex(w);
         return getLengthAndAncestor(v, w).length;
     }
  
-    // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
-    // E + V
+    /** 
+     * Returns a common ancestor of v and w that participates in a shortest
+     *  ancestral path; -1 if no such path.
+     * @param v vertex
+     * @param w vertex
+     * @return a common ancestor of v and w that participates in a sap;
+     *  -1 if no such path
+     * @throws IllegalArgumentException unless {@code 0 <= v < V}
+     */
     public int ancestor(int v, int w) {
         validateVertex(v);
         validateVertex(w);
         return getLengthAndAncestor(v, w).ancestor;
     }
  
-    // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
-    // E + V
+    
+    /**
+     * Returns length of shortest ancestral path between any vertex in v and
+     *  any vertex in w; -1 if no such path.
+     * @param v subset of vertices you can iterate through
+     * @param w subset of vertices you can iterate through
+     * @return length of sap between any v and w; -1 if no such path
+     * @throws IllegalArgumentException unless {@code v != null} or
+     *  {@code 0 <= v < V}
+     */
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
         validateVertices(v);
         validateVertices(w);
@@ -107,8 +136,16 @@ public class SAP {
         return length;
     }
  
-    // a common ancestor that participates in shortest ancestral path; -1 if no such path
-    // E + V
+    /**
+     * Returns a common ancestor that participates in shortest ancestral path; 
+     * -1 if no such path
+     * @param v subset of vertices you can iterate through
+     * @param w subset of vertices you can iterate through
+     * @return a common ancestor of v and w that participates in a sap;
+     *  -1 if no such path
+     * @throws IllegalArgumentException unless {@code v != null} or
+     *  {@code 0 <= v < V}
+     */
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
         validateVertices(v);
         validateVertices(w);
@@ -126,9 +163,10 @@ public class SAP {
         return ancestor;
     }
  
-    // do unit testing of this class
     /**
-     * @param args
+     * Test client for WordNet.
+     * 
+     * @param args the command-line arguments
      */
     public static void main(String[] args) {
         In in = new In(args[0]);

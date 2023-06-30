@@ -5,17 +5,34 @@ import edu.princeton.cs.algs4.Topological;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.In;
 
+/**
+ * The {@code WordNet} class provides methods
+ * for creating and analysing a digraph where each vertex v is an integer 
+ * that represents a synset, and each directed edge v→w 
+ * represents that w is a hypernym of v. 
+ 
+ * The {@code WordNet} digraph is a rooted DAG: it is acyclic and has one
+ *  vertex—the root—that is an ancestor of every other vertex. 
+ * However, it is not necessarily a tree because a synset can have more
+ *  than one hypernym.
+ *
+ * @author Vlad Beklenyshchev aka vladkinoman
+ */
 public class WordNet {
-    // Your data type should use space linear in the
-    // input size (size of synsets and hypernyms files).
     private final Digraph g;
     private final String[] aSynsets;
-
     private final List<Integer> lSynsetsIDs;
     private final List<String> lNouns;
 
-    // constructor takes the name of the two input files, n lg n
-    // I think n lg n means: (synsets + hypernyms) * lg (synsets + hypernyms)
+    /**
+     * Constructs a rooted DAG based on the input data from two files,
+     *  synsets and hypernyms.
+     * @param synsets path to the input file which contains synsets
+     * @param hypernyms path the input file which contains the hypernym
+     * relationships
+     * @throws IllegalArgumentException if one of the arguments is null, or
+     * the input to the constructor does not correspond to a rooted DAG
+     */
     public WordNet(String synsets, String hypernyms) {
         if (synsets == null || hypernyms == null) 
             throw new IllegalArgumentException("argument is null");
@@ -55,23 +72,33 @@ public class WordNet {
             }
         }
 
-        Topological top = new Topological(g); // V + E in the worst case
-        if (!top.hasOrder()) // const
+        Topological top = new Topological(g);
+        if (!top.hasOrder())
             throw new IllegalArgumentException("Not a rooted DAG");
         int rootCounter = 0;
         int V = g.V();
-        for (int i = 0; i < V; i++) { // V in the worst case
+        for (int i = 0; i < V; i++) {
             if (g.outdegree(i) == 0 && ++rootCounter > 1)
                 throw new IllegalArgumentException("Not a rooted DAG");
         }
     }
  
-    // returns all WordNet nouns
+    /**
+     * Returns all the nouns of the {@code WordNet}.
+     * 
+     * @return all the nouns (as an interable)
+     */
     public Iterable<String> nouns() {
         return lNouns;
     }
  
-    // is the word a WordNet noun? log in the number of nouns
+    /**
+     * Returns a boolean value which is true if the word a {@code WordNet} noun.
+     * 
+     * @param word word
+     * @return {@code true} if the word is a noun, {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code word != null}
+     */
     public boolean isNoun(String word) {
         if (word == null) 
             throw new IllegalArgumentException("argument is null");
@@ -86,9 +113,16 @@ public class WordNet {
         if (!isNoun(nounA) || !isNoun(nounB))
             throw new IllegalArgumentException("argument is not a noun");
     }
- 
-    // distance between nounA and nounB
-    // linear in the size of the WordNet digraph
+
+    /**
+     * Returns an integer value which corresponds to the distance between
+     *  nounA and nounB.
+     * @param nounA noun from the {@code WordNet} digraph
+     * @param nounB noun from the {@code WordNet} digraph
+     * @return distance between nounA and nounB in a sap
+     * @throws IllegalArgumentException unless all of the input values
+     *  are nouns from the {@code WordNet} digraph
+     */
     public int distance(String nounA, String nounB) {
         validateNouns(nounA, nounB);
         List<Integer> indicesOfA = new ArrayList<>();
@@ -106,9 +140,15 @@ public class WordNet {
         return new SAP(g).length(indicesOfA, indicesOfB);
     }
  
-    // a synset (second field of synsets.txt) that is the common
-    // ancestor of nounA and nounB in a shortest ancestral path
-    // linear in the size of the WordNet digraph
+    /**
+     * Returns a synset (second field of synsets.txt) that is the common
+     * ancestor of nounA and nounB in a shortest ancestral path.
+     * @param nounA from the {@code WordNet} digraph
+     * @param nounB from the {@code WordNet} digraph
+     * @return synset that is the common ancestor of nounA and nounB in a sap
+     * @throws IllegalArgumentException unless all of the input values
+     *  are nouns from the {@code WordNet} digraph
+     */
     public String sap(String nounA, String nounB) {
         validateNouns(nounA, nounB);
         List<Integer> indicesOfA = new ArrayList<>();
@@ -126,7 +166,11 @@ public class WordNet {
         return aSynsets[new SAP(g).ancestor(indicesOfA, indicesOfB)];
     }
  
-    // do unit testing of this class
+    /**
+     * Test client for WordNet.
+     * 
+     * @param args the command-line arguments
+     */
     public static void main(String[] args) {
         WordNet wordnet = new WordNet(args[0], args[1]);
         for (String noun : wordnet.nouns()) {
