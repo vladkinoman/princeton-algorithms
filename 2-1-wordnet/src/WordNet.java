@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Iterator;
+
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.Topological;
 import edu.princeton.cs.algs4.StdOut;
@@ -22,11 +23,11 @@ import edu.princeton.cs.algs4.In;
  * @author Vlad Beklenyshchev aka vladkinoman
  */
 public class WordNet {
-    private final Digraph g;
     private final String[] aSynsets;
     private final List<Integer> lSynsetsIDs;
     private final List<String> lNouns;
     private final Set<String> setOfNouns;
+    private final SAP sap;
 
     /**
      * Constructs a rooted DAG based on the input data from two files,
@@ -61,7 +62,7 @@ public class WordNet {
 
         setOfNouns = new TreeSet<>(lNouns);
   
-        g = new Digraph(n);
+        Digraph g = new Digraph(n);
         in = new In(hypernyms);
         lines = in.readAllLines();
         n = lines.length;
@@ -88,6 +89,7 @@ public class WordNet {
             if (rootCounter > 1)    
                 throw new IllegalArgumentException("Not a rooted DAG");
         }
+        sap = new SAP(g);
     }
  
     /**
@@ -109,11 +111,8 @@ public class WordNet {
     public boolean isNoun(String word) {
         if (word == null) 
             throw new IllegalArgumentException("argument is null");
-        
-        for (String noun: nouns()) {
-            if (noun.compareTo(word) == 0) return true;
-        }
-        return false;
+
+        return setOfNouns.contains(word);
     }
 
     private void validateNouns(String nounA, String nounB) {
@@ -145,7 +144,7 @@ public class WordNet {
             }
         }
 
-        return new SAP(g).length(indicesOfA, indicesOfB);
+        return sap.length(indicesOfA, indicesOfB);
     }
  
     /**
@@ -172,7 +171,7 @@ public class WordNet {
             }
         }
         
-        return aSynsets[new SAP(g).ancestor(indicesOfA, indicesOfB)];
+        return aSynsets[sap.ancestor(indicesOfA, indicesOfB)];
     }
  
     /**
@@ -189,8 +188,8 @@ public class WordNet {
             numberOfNouns++;
         }
         StdOut.printf("number of nouns = %d\n", numberOfNouns);
-        int distance   = wordnet.distance("zymosis", "zymosis");
-        String synsetWithCA = wordnet.sap("zymosis", "zymosis");
+        int distance   = wordnet.distance("parabolic_reflector", "Bronte");
+        String synsetWithCA = wordnet.sap("parabolic_reflector", "Bronte");
         StdOut.printf("distance = %d, synset = %s\n", distance, synsetWithCA);
     }
  }

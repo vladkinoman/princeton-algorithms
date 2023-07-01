@@ -14,6 +14,7 @@ import edu.princeton.cs.algs4.StdOut;
 public class SAP {
 
     private final Digraph g;
+    private final int n;
 
     /**
      * Initializes {@code SAP} with a digraph (not necessarily a DAG).
@@ -22,7 +23,8 @@ public class SAP {
     public SAP(Digraph G) {
         if (G == null) 
             throw new IllegalArgumentException("argument is null");
-        g = G;
+        g = new Digraph(G);
+        n = g.V();
     }
 
     private class LAStructure {
@@ -39,7 +41,6 @@ public class SAP {
         }
 
         int root = -1;
-        int n = g.V();
         int rountCounter = 0;
         for (int i = 0; i < n; i++) {
             if (g.outdegree(i) == 0) {
@@ -66,8 +67,7 @@ public class SAP {
                 }
             }
         } else {
-            // There are more than 1 root or there are no roots at all 
-            // (not a rooted DAG). Don't know what to do with this situation yet.
+            // Not a rooted DAG. Don't know what to do with this situation yet.
             for (int i = 0; i < n; i++) {
                 if (!bfsOfV.hasPathTo(i)) continue;
                 Iterable<Integer> it = bfsOfV.pathTo(i);
@@ -89,8 +89,6 @@ public class SAP {
     private LAStructure getLengthAndAncestorForEachPair(Iterable<Integer> v,
      Iterable<Integer> w) {
         LAStructure result = new LAStructure();
-        result.ancestor = -1;
-        result.length = -1;
         for (int vv : v) {
             for (int ww : w) {
                 LAStructure curr = getLengthAndAncestor(vv, ww);
@@ -104,8 +102,9 @@ public class SAP {
     }
 
     private void validateVertex(int v) {
-        if (v < 0 || v >= g.V())
-            throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (g.V()-1));
+        if (v < 0 || v >= n)
+            throw new IllegalArgumentException("vertex " + v +
+             " is not between 0 and " + (n-1));
     }
 
     private void validateVertices(Iterable<Integer> vertices) {
