@@ -30,7 +30,7 @@
             "request": "launch",
             "mainClass": "SAP",
             "projectName": "2-1-wordnet_dd85fb04",
-            "args": ["${workspaceFolder}/sample-data-files/digraphMY1.txt"]
+            "args": ["${workspaceFolder}/sample-data-files/digraph3.txt"]
         },
         {
             "type": "java",
@@ -38,7 +38,7 @@
             "request": "launch",
             "mainClass": "WordNet",
             "projectName": "2-1-wordnet_dd85fb04",
-            "args": ["${workspaceFolder}/sample-data-files/synsets6.txt", "${workspaceFolder}/sample-data-files/hypernyms6TwoAncestors.txt"]
+            "args": ["${workspaceFolder}/sample-data-files/synsets100-subgraph.txt", "${workspaceFolder}/sample-data-files/hypernyms100-subgraph.txt"]
         }
     ]
 }

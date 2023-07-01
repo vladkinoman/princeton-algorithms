@@ -78,7 +78,7 @@ public class WordNet {
         int rootCounter = 0;
         n = g.V();
         for (int i = 0; i < n; i++) {
-            if (g.outdegree(i) == 0 ) rootCounter++;
+            if (g.outdegree(i) == 0) rootCounter++;
             if (rootCounter > 1)    
                 throw new IllegalArgumentException("Not a rooted DAG");
         }
@@ -131,9 +131,10 @@ public class WordNet {
         
         int n = lNouns.size();
         for (int i = 0; i < n; i++) {
-            if        (lNouns.get(i).compareTo(nounA) == 0) {
+            if (lNouns.get(i).compareTo(nounA) == 0) {
                 indicesOfA.add(lSynsetsIDs.get(i));
-            } else if (lNouns.get(i).compareTo(nounB) == 0) {
+            }
+            if (lNouns.get(i).compareTo(nounB) == 0) {
                 indicesOfB.add(lSynsetsIDs.get(i));
             }
         }
@@ -157,9 +158,10 @@ public class WordNet {
         
         int n = lNouns.size();
         for (int i = 0; i < n; i++) {
-            if        (lNouns.get(i).compareTo(nounA) == 0) {
+            if (lNouns.get(i).compareTo(nounA) == 0) {
                 indicesOfA.add(lSynsetsIDs.get(i));
-            } else if (lNouns.get(i).compareTo(nounB) == 0) {
+            }
+            if (lNouns.get(i).compareTo(nounB) == 0) {
                 indicesOfB.add(lSynsetsIDs.get(i));
             }
         }
@@ -178,8 +180,8 @@ public class WordNet {
             System.out.print(noun + " ");
         }   
         System.out.println();
-        int distance   = wordnet.distance("d", "f");
-        String synsetWithCA = wordnet.sap("d", "f");
+        int distance   = wordnet.distance("transferrin", "transferrin");
+        String synsetWithCA = wordnet.sap("transferrin", "transferrin");
         StdOut.printf("distance = %d, synset = %s\n", distance, synsetWithCA);
     }
  }

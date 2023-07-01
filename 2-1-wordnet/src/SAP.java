@@ -31,35 +31,75 @@ public class SAP {
     }
 
     private LAStructure getLengthAndAncestor(int v, int w) {
-        BreadthFirstDirectedPaths bfsOfV = new BreadthFirstDirectedPaths(g, v);
-        BreadthFirstDirectedPaths bfsOfW = new BreadthFirstDirectedPaths(g, w);
-
         LAStructure result = new LAStructure();
-        
-        if (bfsOfV.hasPathTo(w) && g.adj(w).iterator().hasNext()) {
-            result.ancestor = g.adj(w).iterator().next();
-            result.length = bfsOfV.distTo(result.ancestor);
-        } else if (bfsOfW.hasPathTo(v) && g.adj(v).iterator().hasNext()) {
-            result.ancestor = g.adj(v).iterator().next();
-            result.length = bfsOfW.distTo(result.ancestor);
-        } else {
-            int root = 0;
-            int n = g.V();
-            for (int i = 0; i < n; i++) {
-                if (g.outdegree(i) == 0) {
-                    root = i;
-                    break;
-                }
+        if (v == w) {
+            result.length = 0;
+            result.ancestor = v;
+            return result;
+        }
+
+        int root = -1;
+        int n = g.V();
+        int rountCounter = 0;
+        for (int i = 0; i < n; i++) {
+            if (g.outdegree(i) == 0) {
+                root = i;
+                rountCounter++;
             }
-            for (int x: bfsOfV.pathTo(root)) {
-                if (bfsOfW.hasPathTo(x)) {
-                    result.ancestor = x;
-                    result.length = bfsOfV.distTo(x) + bfsOfW.distTo(x);
-                    break;
-                }
+            if (rountCounter > 1) {
+                root = -1;
+                break;
             }
         }
 
+        BreadthFirstDirectedPaths bfsOfV = new BreadthFirstDirectedPaths(g, v);
+        BreadthFirstDirectedPaths bfsOfW = new BreadthFirstDirectedPaths(g, w);
+        
+        if (root != -1) {
+            for (int x: bfsOfV.pathTo(root)) {
+                if (bfsOfW.hasPathTo(x)) {
+                    int currlength = bfsOfV.distTo(x) + bfsOfW.distTo(x); 
+                    if (result.length == -1 || result.length > currlength) {
+                        result.ancestor = x;
+                        result.length = currlength;
+                    }
+                }
+            }
+        } else {
+            // There are more than 1 root or there are no roots at all 
+            // (not a rooted DAG). Don't know what to do with this situation yet.
+            for (int i = 0; i < n; i++) {
+                if (!bfsOfV.hasPathTo(i)) continue;
+                Iterable<Integer> it = bfsOfV.pathTo(i);
+                for (int x: it) {
+                    if (bfsOfW.hasPathTo(x)) {
+                        int currlength = bfsOfV.distTo(x) + bfsOfW.distTo(x); 
+                        if (result.length == -1 || result.length > currlength) {
+                            result.ancestor = x;
+                            result.length = currlength;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    private LAStructure getLengthAndAncestorForEachPair(Iterable<Integer> v,
+     Iterable<Integer> w) {
+        LAStructure result = new LAStructure();
+        result.ancestor = -1;
+        result.length = -1;
+        for (int vv : v) {
+            for (int ww : w) {
+                LAStructure curr = getLengthAndAncestor(vv, ww);
+                if (result.length == -1 || result.length > curr.length) {
+                    result.length = curr.length;
+                    result.ancestor = curr.ancestor;
+                }
+            }
+        }
         return result;
     }
 
@@ -105,7 +145,6 @@ public class SAP {
         validateVertex(w);
         return getLengthAndAncestor(v, w).ancestor;
     }
- 
     
     /**
      * Returns length of shortest ancestral path between any vertex in v and
@@ -119,16 +158,7 @@ public class SAP {
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
         validateVertices(v);
         validateVertices(w);
-        int length = -1;
-        for (int vv : v) {
-            for (int ww : w) {
-                LAStructure la = getLengthAndAncestor(vv, ww);
-                if (length == -1 || length > la.length) {
-                    length = la.length;
-                }
-            }
-        }
-        return length;
+        return getLengthAndAncestorForEachPair(v, w).length;
     }
  
     /**
@@ -144,18 +174,7 @@ public class SAP {
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
         validateVertices(v);
         validateVertices(w);
-        int ancestor = -1;
-        int length = -1;
-        for (int vv : v) {
-            for (int ww : w) {
-                LAStructure la = getLengthAndAncestor(vv, ww);
-                if (length == -1 || length > la.length) {
-                    length = la.length;
-                    ancestor = la.ancestor;
-                }
-            }
-        }
-        return ancestor;
+        return getLengthAndAncestorForEachPair(v, w).ancestor;
     }
  
     /**
