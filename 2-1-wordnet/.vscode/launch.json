@@ -38,7 +38,7 @@
             "request": "launch",
             "mainClass": "WordNet",
             "projectName": "2-1-wordnet_dd85fb04",
-            "args": ["${workspaceFolder}/sample-data-files/synsets100-subgraph.txt", "${workspaceFolder}/sample-data-files/hypernyms100-subgraph.txt"]
+            "args": ["${workspaceFolder}/sample-data-files/synsets.txt", "${workspaceFolder}/sample-data-files/hypernyms.txt"]
         }
     ]
 }

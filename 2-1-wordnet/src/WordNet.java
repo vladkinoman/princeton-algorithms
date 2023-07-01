@@ -1,5 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Iterator;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.Topological;
 import edu.princeton.cs.algs4.StdOut;
@@ -23,6 +26,7 @@ public class WordNet {
     private final String[] aSynsets;
     private final List<Integer> lSynsetsIDs;
     private final List<String> lNouns;
+    private final Set<String> setOfNouns;
 
     /**
      * Constructs a rooted DAG based on the input data from two files,
@@ -54,6 +58,8 @@ public class WordNet {
             }
             aSynsets[i] = parts[1];
         }
+
+        setOfNouns = new TreeSet<>(lNouns);
   
         g = new Digraph(n);
         in = new In(hypernyms);
@@ -90,7 +96,7 @@ public class WordNet {
      * @return all the nouns (as an interable)
      */
     public Iterable<String> nouns() {
-        return lNouns;
+        return setOfNouns;
     }
  
     /**
@@ -176,12 +182,15 @@ public class WordNet {
      */
     public static void main(String[] args) {
         WordNet wordnet = new WordNet(args[0], args[1]);
-        for (String noun : wordnet.nouns()) {
-            System.out.print(noun + " ");
-        }   
-        System.out.println();
-        int distance   = wordnet.distance("transferrin", "transferrin");
-        String synsetWithCA = wordnet.sap("transferrin", "transferrin");
+        long numberOfNouns = 0;
+        Iterator<String> it = wordnet.nouns().iterator();
+        while (it.hasNext()) {
+            it.next();
+            numberOfNouns++;
+        }
+        StdOut.printf("number of nouns = %d\n", numberOfNouns);
+        int distance   = wordnet.distance("zymosis", "zymosis");
+        String synsetWithCA = wordnet.sap("zymosis", "zymosis");
         StdOut.printf("distance = %d, synset = %s\n", distance, synsetWithCA);
     }
  }
