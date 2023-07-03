@@ -1,3 +1,7 @@
+import java.util.Iterator;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
 import edu.princeton.cs.algs4.In;
@@ -32,6 +36,14 @@ public class SAP {
         public int ancestor = -1;
     }
 
+    private void compareLengthsAndSetNewResultIfNeeded(LAStructure result, 
+     LAStructure curr) {
+        if (result.length == -1 || result.length > curr.length) {
+            result.ancestor = curr.ancestor;
+            result.length = curr.length;
+        }
+    }
+
     private LAStructure getLengthAndAncestor(int v, int w) {
         LAStructure result = new LAStructure();
         if (v == w) {
@@ -53,34 +65,41 @@ public class SAP {
             }
         }
 
-        BreadthFirstDirectedPaths bfsOfV = new BreadthFirstDirectedPaths(g, v);
-        BreadthFirstDirectedPaths bfsOfW = new BreadthFirstDirectedPaths(g, w);
+        BreadthFirstDirectedPaths bfsfromv = new BreadthFirstDirectedPaths(g, v);
+        BreadthFirstDirectedPaths bfsfromw = new BreadthFirstDirectedPaths(g, w);
         
+        LAStructure curr = new LAStructure();
+        if (bfsfromv.hasPathTo(w)) {
+            curr.ancestor = w;
+            curr.length = bfsfromv.distTo(w);
+            compareLengthsAndSetNewResultIfNeeded(result, curr);
+        }
+        if (bfsfromw.hasPathTo(v)) {
+            curr.ancestor = v;
+            curr.length = bfsfromw.distTo(v);
+            compareLengthsAndSetNewResultIfNeeded(result, curr);
+        }
+        // note that if there is a direct path btw v and w, it doesn't mean
+        // that it's the shortest one
+        Iterable<Integer> vertices;
         if (root != -1) {
-            for (int x: bfsOfV.pathTo(root)) {
-                if (bfsOfW.hasPathTo(x)) {
-                    int currlength = bfsOfV.distTo(x) + bfsOfW.distTo(x); 
-                    if (result.length == -1 || result.length > currlength) {
-                        result.ancestor = x;
-                        result.length = currlength;
-                    }
-                }
-            }
+            vertices = bfsfromv.pathTo(root);
         } else {
-            // Not a rooted DAG. Don't know what to do with this situation yet.
-            for (int i = 0; i < n; i++) {
-                if (!bfsOfV.hasPathTo(i)) continue;
-                Iterable<Integer> it = bfsOfV.pathTo(i);
-                for (int x: it) {
-                    if (bfsOfW.hasPathTo(x)) {
-                        int currlength = bfsOfV.distTo(x) + bfsOfW.distTo(x); 
-                        if (result.length == -1 || result.length > currlength) {
-                            result.ancestor = x;
-                            result.length = currlength;
-                        }
-                    }
-                }
+            // not a rooted DAG
+            vertices = IntStream.rangeClosed(0, n-1).boxed()
+                .collect(Collectors.toSet());
+        }
+        for (int i: vertices) {
+            if (i == v || i == w) continue;
+            // a slightly more complicated condition for the first option,
+            // but it is better to achieve a general look
+            if (bfsfromv.hasPathTo(i) && bfsfromw.hasPathTo(i)) {
+                curr.ancestor = i;
+                curr.length = bfsfromv.distTo(i) + bfsfromw.distTo(i); 
+                compareLengthsAndSetNewResultIfNeeded(result, curr);
             }
+            // there will be no one less
+            if (result.length == 2) break;
         }
         
         return result;
@@ -92,10 +111,7 @@ public class SAP {
         for (int vv : v) {
             for (int ww : w) {
                 LAStructure curr = getLengthAndAncestor(vv, ww);
-                if (result.length == -1 || result.length > curr.length) {
-                    result.length = curr.length;
-                    result.ancestor = curr.ancestor;
-                }
+                compareLengthsAndSetNewResultIfNeeded(result, curr);
             }
         }
         return result;
@@ -111,8 +127,12 @@ public class SAP {
         if (vertices == null) {
             throw new IllegalArgumentException("argument is null");
         }
-        for (int v : vertices) {
-            validateVertex(v);
+        Iterator<Integer> it = vertices.iterator();
+        while (it.hasNext()) {
+            Integer value = it.next();
+            if (value == null)
+                throw new IllegalArgumentException("argument is null");
+            validateVertex(value);
         }
     }
 

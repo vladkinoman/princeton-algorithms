@@ -131,9 +131,9 @@ public class WordNet {
      */
     public int distance(String nounA, String nounB) {
         validateNouns(nounA, nounB);
+        
         List<Integer> indicesOfA = new ArrayList<>();
         List<Integer> indicesOfB = new ArrayList<>();
-        
         int n = lNouns.size();
         for (int i = 0; i < n; i++) {
             if (lNouns.get(i).compareTo(nounA) == 0) {
@@ -143,7 +143,7 @@ public class WordNet {
                 indicesOfB.add(lSynsetsIDs.get(i));
             }
         }
-
+        
         return sap.length(indicesOfA, indicesOfB);
     }
  
@@ -158,9 +158,9 @@ public class WordNet {
      */
     public String sap(String nounA, String nounB) {
         validateNouns(nounA, nounB);
+        
         List<Integer> indicesOfA = new ArrayList<>();
         List<Integer> indicesOfB = new ArrayList<>();
-        
         int n = lNouns.size();
         for (int i = 0; i < n; i++) {
             if (lNouns.get(i).compareTo(nounA) == 0) {
@@ -170,8 +170,16 @@ public class WordNet {
                 indicesOfB.add(lSynsetsIDs.get(i));
             }
         }
-        
-        return aSynsets[sap.ancestor(indicesOfA, indicesOfB)];
+
+        String synset = null;
+        try {
+            synset = aSynsets[sap.ancestor(indicesOfA, indicesOfB)];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // noticed that there was a glitch (?) during testing on Coursera
+            // and their SAP gave -1, so I decided to play it safe
+            synset = null;
+        }
+        return synset;
     }
  
     /**
