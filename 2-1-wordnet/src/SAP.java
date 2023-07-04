@@ -1,6 +1,4 @@
 import java.util.Iterator;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
@@ -52,19 +50,6 @@ public class SAP {
             return result;
         }
 
-        int root = -1;
-        int rountCounter = 0;
-        for (int i = 0; i < n; i++) {
-            if (g.outdegree(i) == 0) {
-                root = i;
-                rountCounter++;
-            }
-            if (rountCounter > 1) {
-                root = -1;
-                break;
-            }
-        }
-
         BreadthFirstDirectedPaths bfsfromv = new BreadthFirstDirectedPaths(g, v);
         BreadthFirstDirectedPaths bfsfromw = new BreadthFirstDirectedPaths(g, w);
         
@@ -81,18 +66,9 @@ public class SAP {
         }
         // note that if there is a direct path btw v and w, it doesn't mean
         // that it's the shortest one
-        Iterable<Integer> vertices;
-        if (root != -1) {
-            vertices = bfsfromv.pathTo(root);
-        } else {
-            // not a rooted DAG
-            vertices = IntStream.rangeClosed(0, n-1).boxed()
-                .collect(Collectors.toSet());
-        }
-        for (int i: vertices) {
+
+        for (int i = 0; i < n; i++) {
             if (i == v || i == w) continue;
-            // a slightly more complicated condition for the first option,
-            // but it is better to achieve a general look
             if (bfsfromv.hasPathTo(i) && bfsfromw.hasPathTo(i)) {
                 curr.ancestor = i;
                 curr.length = bfsfromv.distTo(i) + bfsfromw.distTo(i); 
@@ -208,6 +184,8 @@ public class SAP {
         while (!StdIn.isEmpty()) {
             int v = StdIn.readInt();
             int w = StdIn.readInt();
+            // For digraph-wordnet.txt, try 2147 81510
+            // length = 15 and ancestor = 58166
             int length   = sap.length(v, w);
             int ancestor = sap.ancestor(v, w);
             StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);

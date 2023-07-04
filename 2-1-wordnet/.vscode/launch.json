@@ -30,7 +30,7 @@
             "request": "launch",
             "mainClass": "SAP",
             "projectName": "2-1-wordnet_dd85fb04",
-            "args": ["${workspaceFolder}/sample-data-files/digraph3.txt"]
+            "args": ["${workspaceFolder}/sample-data-files/digraph-wordnet.txt"]
         },
         {
             "type": "java",

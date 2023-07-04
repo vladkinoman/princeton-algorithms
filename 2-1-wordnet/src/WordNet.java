@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -24,10 +26,25 @@ import edu.princeton.cs.algs4.In;
  */
 public class WordNet {
     private final String[] aSynsets;
-    private final List<Integer> lSynsetsIDs;
-    private final List<String> lNouns;
+    private final List<SynsetIDAndNoun> lSynsetIDsAndNouns;
     private final Set<String> setOfNouns;
     private final SAP sap;
+
+    private final class SynsetIDAndNoun {
+        public int synsetID;
+        public String noun;
+        public SynsetIDAndNoun(int synsetID, String noun) {
+            this.synsetID = synsetID;
+            this.noun = noun;
+        }
+    }
+    
+    private static final class ByNoun implements Comparator<SynsetIDAndNoun> {
+        @Override
+        public int compare(SynsetIDAndNoun o1, SynsetIDAndNoun o2) {
+            return o1.noun.compareTo(o2.noun);
+        }
+    }
 
     /**
      * Constructs a rooted DAG based on the input data from two files,
@@ -47,18 +64,20 @@ public class WordNet {
         
         int n = lines.length;
         aSynsets = new String[n];
-        lSynsetsIDs = new ArrayList<>(n);
-        lNouns = new ArrayList<>(n);
+        List<String> lNouns = new ArrayList<>(n);
+        lSynsetIDsAndNouns = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             String[] parts = lines[i].split(",");
             int synsetID = Integer.parseInt(parts[0]);
             String[] nouns = parts[1].split(" ");
             for (String noun: nouns) {
-                lSynsetsIDs.add(synsetID);
+                lSynsetIDsAndNouns.add(new SynsetIDAndNoun(synsetID, noun));
                 lNouns.add(noun);
             }
             aSynsets[i] = parts[1];
         }
+        
+        Collections.sort(lSynsetIDsAndNouns, new ByNoun());
 
         setOfNouns = new TreeSet<>(lNouns);
   
@@ -120,6 +139,20 @@ public class WordNet {
             throw new IllegalArgumentException("argument is not a noun");
     }
 
+    private int leftmostBinarySearch(List<SynsetIDAndNoun> listSIDNouns,
+        String target) {
+        int lo = 0, hi = listSIDNouns.size();
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (listSIDNouns.get(mid).noun.compareTo(target) < 0) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        return lo;
+    }
+
     /**
      * Returns an integer value which corresponds to the distance between
      *  nounA and nounB.
@@ -134,16 +167,20 @@ public class WordNet {
         
         List<Integer> indicesOfA = new ArrayList<>();
         List<Integer> indicesOfB = new ArrayList<>();
-        int n = lNouns.size();
-        for (int i = 0; i < n; i++) {
-            if (lNouns.get(i).compareTo(nounA) == 0) {
-                indicesOfA.add(lSynsetsIDs.get(i));
-            }
-            if (lNouns.get(i).compareTo(nounB) == 0) {
-                indicesOfB.add(lSynsetsIDs.get(i));
-            }
-        }
         
+        int n = lSynsetIDsAndNouns.size();
+        int i = leftmostBinarySearch(lSynsetIDsAndNouns, nounA);
+        while (i < n && lSynsetIDsAndNouns.get(i).noun.compareTo(nounA) == 0) {
+            indicesOfA.add(lSynsetIDsAndNouns.get(i).synsetID);
+            i++;
+        }
+
+        i = leftmostBinarySearch(lSynsetIDsAndNouns, nounB);
+        while (i < n && lSynsetIDsAndNouns.get(i).noun.compareTo(nounB) == 0) {
+            indicesOfB.add(lSynsetIDsAndNouns.get(i).synsetID);
+            i++;
+        }
+
         return sap.length(indicesOfA, indicesOfB);
     }
  
@@ -161,14 +198,18 @@ public class WordNet {
         
         List<Integer> indicesOfA = new ArrayList<>();
         List<Integer> indicesOfB = new ArrayList<>();
-        int n = lNouns.size();
-        for (int i = 0; i < n; i++) {
-            if (lNouns.get(i).compareTo(nounA) == 0) {
-                indicesOfA.add(lSynsetsIDs.get(i));
-            }
-            if (lNouns.get(i).compareTo(nounB) == 0) {
-                indicesOfB.add(lSynsetsIDs.get(i));
-            }
+
+        int n = lSynsetIDsAndNouns.size();
+        int i = leftmostBinarySearch(lSynsetIDsAndNouns, nounA);
+        while (i < n && lSynsetIDsAndNouns.get(i).noun.compareTo(nounA) == 0) {
+            indicesOfA.add(lSynsetIDsAndNouns.get(i).synsetID);
+            i++;
+        }
+
+        i = leftmostBinarySearch(lSynsetIDsAndNouns, nounB);
+        while (i < n && lSynsetIDsAndNouns.get(i).noun.compareTo(nounB) == 0) {
+            indicesOfB.add(lSynsetIDsAndNouns.get(i).synsetID);
+            i++;
         }
 
         String synset = null;
