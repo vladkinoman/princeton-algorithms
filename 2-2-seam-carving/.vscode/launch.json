@@ -36,7 +36,8 @@
             "name": "SeamCarver",
             "request": "launch",
             "mainClass": "SeamCarver",
-            "projectName": "2-2-seam-carving_309aa83f"
+            "projectName": "2-2-seam-carving_309aa83f",
+            "args": "${workspaceFolder}/sample-data-files/3x4.png"
         },
         {
             "type": "java",
