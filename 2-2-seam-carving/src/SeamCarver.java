@@ -1,4 +1,3 @@
-import java.util.Comparator;
 import java.awt.Color;
 
 import edu.princeton.cs.algs4.Picture;
@@ -9,36 +8,8 @@ public class SeamCarver {
     private double[][] aEnergy;
     private double[][] distTo;
     private int[][] vertexTo;
-    private MinPQ<TotalEnergyAndIndexPair> pqLastRow;
-
-    private class TotalEnergyAndIndexPair {
-        private double totalEnergy;
-        private int index;
-        public TotalEnergyAndIndexPair(double totalEnergy, int index) {
-            this.totalEnergy = totalEnergy;
-            this.index = index;
-        }
-        public double getTotalEnergy() {
-            return totalEnergy;
-        }
-        public int getIndex() {
-            return index;
-        }
-    }
-
-    private class ByTotalEnergy implements Comparator<TotalEnergyAndIndexPair> {
-
-        @Override
-        public int compare(SeamCarver.TotalEnergyAndIndexPair o1, 
-        SeamCarver.TotalEnergyAndIndexPair o2) {
-            double totalE1 = o1.getTotalEnergy();
-            double totalE2 = o2.getTotalEnergy();
-            if      (totalE1 < totalE2) return -1;
-            else if (totalE1 > totalE2) return 1;
-            return 0;
-        }
-
-    }
+    private boolean isPictureTransposed;
+    private boolean isVerticalCalledFromHorizontal;
 
     // create a seam carver object based on the given picture
     public SeamCarver(final Picture picture) {
@@ -82,9 +53,12 @@ public class SeamCarver {
                 }
             }
         }
-
-        pqLastRow = new MinPQ<>(wid, new ByTotalEnergy());
         
+        extracted(wid, hei);
+        
+    }
+
+    private void extracted(int wid, int hei) {
         distTo = new double[hei][];
         vertexTo = new int[hei][];
         for (int i = 0; i < hei; i++) {
@@ -137,11 +111,6 @@ public class SeamCarver {
             }
 
         }
-        for (int i = 0; i < wid; i++) {
-            pqLastRow.insert(new TotalEnergyAndIndexPair(
-                                distTo[hei-1][i], i));
-        }
-        
     }
 
     private void validateForNull(Object obj) {
@@ -151,8 +120,8 @@ public class SeamCarver {
         }
     }
 
-    private void validateCoordinate(final int x) {
-        if (x < 0 || x > picture.width() - 1) {
+    private void validateCoordinate(final int x, final int upperbound) {
+        if (x < 0 || x > upperbound - 1) {
             throw new IllegalArgumentException(
                 "the coordinate is outside its prescribed range.");
         }
@@ -201,7 +170,13 @@ public class SeamCarver {
      * @return width of current picture
      */
     public final int width() {
-        return picture.width();
+        int result = 0;
+        if (isPictureTransposed) {
+            result = picture.height();
+        } else {
+            result = picture.width();
+        }
+        return result;
     }
  
     /**
@@ -210,7 +185,13 @@ public class SeamCarver {
      * @return height of current picture
      */
     public final int height() {
-        return picture.height();
+        int result = 0;
+        if (isPictureTransposed) {
+            result = picture.width();
+        } else {
+            result = picture.height();
+        }
+        return result;
     }
 
     /**
@@ -220,45 +201,79 @@ public class SeamCarver {
      * @return energy of pixel at column x and row y
      */
     public final double energy(final int x, final int y) {
-        validateCoordinate(x);
-        validateCoordinate(y);
-        return aEnergy[y][x];
+        double result = 0.0;
+        if (isPictureTransposed) {
+            validateCoordinate(x, aEnergy.length);
+            validateCoordinate(y, aEnergy[0].length);
+            result = aEnergy[x][y];
+        } else {
+            validateCoordinate(x, aEnergy[0].length);
+            validateCoordinate(y, aEnergy.length);
+            result = aEnergy[y][x];
+        }
+        
+        return result;
     }
  
     // sequence of indices for horizontal seam
     public final int[] findHorizontalSeam() {
-        return null;
+        if (!isPictureTransposed) {
+            // transpose here
+            isPictureTransposed = true;
+        }
+        isVerticalCalledFromHorizontal = true;
+        return findVerticalSeam();
     }
  
     // sequence of indices for vertical seam
     public final int[] findVerticalSeam() {
+        if (isPictureTransposed && !isVerticalCalledFromHorizontal) {
+            // transpose back here
+            isPictureTransposed = false;
+        }
         int hei = height();
+        int wid = width();
         int[] seam = new int[hei];
-        int id = pqLastRow.min().index;
+        
+        int id = -1;
+        double minEnergy = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < wid; i++) {
+            if (distTo[hei-1][i] < minEnergy) {
+                minEnergy = distTo[hei-1][i];
+                id = i;
+            }
+        }
+
         for (int i = hei-1; i >= 0 ; i--) {
             seam[i] = id;
             id = vertexTo[i][id];
         }
+        isVerticalCalledFromHorizontal = false;
         return seam;
     }
  
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(final int[] seam) {
-        int hei = height();
-        int wid = width();
-        validateForNull(seam);
-        validateSeam(seam, wid, hei);
-        validatePicture();
+        if (!isPictureTransposed) {
+            // transpose here
+            isPictureTransposed = true;
+        }
+        isVerticalCalledFromHorizontal = true;
+        removeVerticalSeam(seam);
     }
  
     // remove vertical seam from current picture
     public void removeVerticalSeam(final int[] seam) {
+        validateForNull(seam);
+        validatePicture();
+        if (isPictureTransposed && !isVerticalCalledFromHorizontal) {
+            // transpose back here
+            isPictureTransposed = false;
+        }
         int hei = height();
         int wid = width();
-        validateForNull(seam);
         validateSeam(seam, hei, wid);
-        validatePicture();
-
+        
         Picture newp = new Picture(wid-1, hei);
         for (int i = 0; i < hei; i++) {
             int j = 0;
@@ -274,18 +289,26 @@ public class SeamCarver {
                 j++; k++;
             }
         }
-
+        
         picture = newp;
+
+        double[][] newAEnergy = new double[hei][];
+        for (int i = 0; i < hei; i++) {
+            newAEnergy[i] = new double[wid-1];
+            System.arraycopy(aEnergy[i], 0, newAEnergy[i], 0, seam[i]);
+            System.arraycopy(aEnergy[i], seam[i]+1, newAEnergy[i], seam[i], wid-seam[i]-1);
+        }
+        aEnergy = newAEnergy;
+        extracted(wid-1, hei);
+        isVerticalCalledFromHorizontal = false;
     }
 
-
- 
     //  unit testing (optional)
     public static void main(final String[] args) {
         SeamCarver sc = new SeamCarver(new Picture(args[0]));
         System.out.println(sc.energy(1, 2));
         System.out.println(java.util.Arrays.toString(sc.findVerticalSeam()));
-        sc.removeVerticalSeam(new int[]{3, 4, 3, 2, 1});
+        sc.removeVerticalSeam(sc.findVerticalSeam());
         sc.picture().show();
     }
  }
