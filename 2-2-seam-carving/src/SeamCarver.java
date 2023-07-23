@@ -1,7 +1,6 @@
 import java.awt.Color;
 
 import edu.princeton.cs.algs4.Picture;
-import edu.princeton.cs.algs4.MinPQ;
 
 public class SeamCarver {
     private Picture picture;
@@ -17,6 +16,13 @@ public class SeamCarver {
         this.picture = new Picture(picture);
         int wid = picture.width();
         int hei = picture.height();
+        calculateEnergy(picture, wid, hei);
+        
+        extracted(wid, hei);
+        
+    }
+
+    private void calculateEnergy(final Picture picture, int wid, int hei) {
         aEnergy = new double[hei][];
         for (int i = 0; i < hei; i++) {
             aEnergy[i] = new double[wid];
@@ -53,9 +59,30 @@ public class SeamCarver {
                 }
             }
         }
-        
-        extracted(wid, hei);
-        
+    }
+
+    private void transpose() {
+        int wid = height();
+        int hei = width();
+        double[][] newAEnergy = new double[hei][];
+        double[][] newDistTo  = new double[hei][];
+        int[][] newVertexTo   = new int[hei][];
+        Picture newp = new Picture(wid, hei);
+        for (int i = 0; i < hei; i++) {
+            newAEnergy[i]  = new double[wid];
+            newDistTo[i]   = new double[wid];
+            newVertexTo[i] = new int[wid];
+            for (int j = 0; j < wid; j++) {
+                newAEnergy[i][j]  = aEnergy[j][i];
+                newDistTo[i][j]   = distTo[j][i];
+                newVertexTo[i][j] = vertexTo[j][i];
+                newp.set(j, i, picture.get(i, j));
+            }
+        }
+        aEnergy = newAEnergy;
+        distTo = newDistTo;
+        vertexTo = newVertexTo;
+        picture = newp;
     }
 
     private void extracted(int wid, int hei) {
@@ -74,6 +101,7 @@ public class SeamCarver {
             
             for (int i = 0; i < hei; i++) {
                 for (int j = 0; j < wid; j++) {
+                    // doesn't work for wid=2
                     if (i == hei-1)
                     {
                         if (distTo[i][j] != Double.POSITIVE_INFINITY) {
@@ -170,13 +198,7 @@ public class SeamCarver {
      * @return width of current picture
      */
     public final int width() {
-        int result = 0;
-        if (isPictureTransposed) {
-            result = picture.height();
-        } else {
-            result = picture.width();
-        }
-        return result;
+        return picture.width();
     }
  
     /**
@@ -185,13 +207,7 @@ public class SeamCarver {
      * @return height of current picture
      */
     public final int height() {
-        int result = 0;
-        if (isPictureTransposed) {
-            result = picture.width();
-        } else {
-            result = picture.height();
-        }
-        return result;
+        return picture.height();
     }
 
     /**
@@ -201,35 +217,40 @@ public class SeamCarver {
      * @return energy of pixel at column x and row y
      */
     public final double energy(final int x, final int y) {
-        double result = 0.0;
-        if (isPictureTransposed) {
-            validateCoordinate(x, aEnergy.length);
-            validateCoordinate(y, aEnergy[0].length);
-            result = aEnergy[x][y];
-        } else {
-            validateCoordinate(x, aEnergy[0].length);
-            validateCoordinate(y, aEnergy.length);
-            result = aEnergy[y][x];
-        }
-        
-        return result;
+        validateCoordinate(x, aEnergy[0].length);
+        validateCoordinate(y, aEnergy.length);
+        return aEnergy[y][x];
     }
  
     // sequence of indices for horizontal seam
     public final int[] findHorizontalSeam() {
         if (!isPictureTransposed) {
-            // transpose here
+            transpose();
             isPictureTransposed = true;
+            calculateEnergy(picture, picture.width(), picture.height());
+            extracted(picture.width(), picture.height());
         }
         isVerticalCalledFromHorizontal = true;
-        return findVerticalSeam();
+        int[] result = findVerticalSeam();
+        // still don't know how to make 2 transposes per 50 
+        // consequtive horizontal seam removals
+        if (isPictureTransposed) {
+            transpose();
+            isPictureTransposed = false;
+            calculateEnergy(picture, picture.width(), picture.height());
+            extracted(picture.width(), picture.height());
+        }
+        isVerticalCalledFromHorizontal = false;
+        return result;
     }
  
     // sequence of indices for vertical seam
     public final int[] findVerticalSeam() {
         if (isPictureTransposed && !isVerticalCalledFromHorizontal) {
-            // transpose back here
+            transpose();
             isPictureTransposed = false;
+            calculateEnergy(picture, picture.width(), picture.height());
+            extracted(picture.width(), picture.height());
         }
         int hei = height();
         int wid = width();
@@ -248,18 +269,29 @@ public class SeamCarver {
             seam[i] = id;
             id = vertexTo[i][id];
         }
-        isVerticalCalledFromHorizontal = false;
+
         return seam;
     }
  
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(final int[] seam) {
         if (!isPictureTransposed) {
-            // transpose here
+            transpose();
             isPictureTransposed = true;
+            calculateEnergy(picture, picture.width(), picture.height());
+            extracted(picture.width(), picture.height());
         }
         isVerticalCalledFromHorizontal = true;
         removeVerticalSeam(seam);
+        // still don't know how to make 2 transposes per 50 
+        // consequtive horizontal seam removals
+        if (isPictureTransposed) {
+            transpose();
+            isPictureTransposed = false;
+            calculateEnergy(picture, picture.width(), picture.height());
+            extracted(picture.width(), picture.height());
+        }
+        isVerticalCalledFromHorizontal = false;
     }
  
     // remove vertical seam from current picture
@@ -267,8 +299,10 @@ public class SeamCarver {
         validateForNull(seam);
         validatePicture();
         if (isPictureTransposed && !isVerticalCalledFromHorizontal) {
-            // transpose back here
+            transpose();
             isPictureTransposed = false;
+            calculateEnergy(picture, picture.width(), picture.height());
+            extracted(picture.width(), picture.height());
         }
         int hei = height();
         int wid = width();
@@ -295,10 +329,11 @@ public class SeamCarver {
         double[][] newAEnergy = new double[hei][];
         for (int i = 0; i < hei; i++) {
             newAEnergy[i] = new double[wid-1];
-            System.arraycopy(aEnergy[i], 0, newAEnergy[i], 0, seam[i]);
-            System.arraycopy(aEnergy[i], seam[i]+1, newAEnergy[i], seam[i], wid-seam[i]-1);
+            //System.arraycopy(aEnergy[i], 0, newAEnergy[i], 0, seam[i]);
+            //System.arraycopy(aEnergy[i], seam[i]+1, newAEnergy[i], seam[i], wid-seam[i]-1);
         }
         aEnergy = newAEnergy;
+        calculateEnergy(picture, wid-1, hei);
         extracted(wid-1, hei);
         isVerticalCalledFromHorizontal = false;
     }
