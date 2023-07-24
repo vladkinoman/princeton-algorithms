@@ -15,21 +15,28 @@
             "name": "PrintEnergy",
             "request": "launch",
             "mainClass": "PrintEnergy",
-            "projectName": "2-2-seam-carving_309aa83f"
+            "projectName": "2-2-seam-carving_309aa83f",
+            "args": "${workspaceFolder}/sample-data-files/2x4.png"
         },
         {
             "type": "java",
             "name": "PrintSeams",
             "request": "launch",
             "mainClass": "PrintSeams",
-            "projectName": "2-2-seam-carving_309aa83f"
+            "projectName": "2-2-seam-carving_309aa83f",
+            "args": "${workspaceFolder}/sample-data-files/diagonals.png"
         },
         {
             "type": "java",
             "name": "ResizeDemo",
             "request": "launch",
             "mainClass": "ResizeDemo",
-            "projectName": "2-2-seam-carving_309aa83f"
+            "projectName": "2-2-seam-carving_309aa83f",
+            "args": [
+                "${workspaceFolder}/sample-data-files/HJocean_568by432.png",
+                "20",
+                "100"
+            ]
         },
         {
             "type": "java",
@@ -37,7 +44,7 @@
             "request": "launch",
             "mainClass": "SeamCarver",
             "projectName": "2-2-seam-carving_309aa83f",
-            "args": "${workspaceFolder}/sample-data-files/6x5.png"
+            "args": "${workspaceFolder}/sample-data-files/2x3.png"
         },
         {
             "type": "java",
