@@ -31,7 +31,7 @@ public class SeamCarver {
      * @param picture given picture
      * @throws IllegalArgumentException unless the argument is not a null
      */
-    public SeamCarver(final Picture picture) {
+    public SeamCarver(Picture picture) {
         validateForNull(picture);
         this.picture = new Picture(picture);
         calculateEnergy();
@@ -56,36 +56,37 @@ public class SeamCarver {
                 if (i == 0 || i == hei-1 || j == 0 || j == wid-1) {
                     aEnergy[i][j] = 1000;
                 } else {
-                    int iRGB = 0;
-                    iRGB = aRGB[i-1][j];
-                    int iRxLeft = (iRGB >> 16) & 0xFF;
-                    int iGxLeft = (iRGB >> 8) & 0xFF;
-                    int iBxLeft = (iRGB >> 0) & 0xFF;
-                    iRGB = aRGB[i+1][j];
-                    int iRxRight = (iRGB >> 16) & 0xFF;
-                    int iGxRight = (iRGB >> 8) & 0xFF;
-                    int iBxRight = (iRGB >> 0) & 0xFF;
-
-                    iRGB = aRGB[i][j-1];
-                    int iRyUp = (iRGB >> 16) & 0xFF;
-                    int iGyUp = (iRGB >> 8) & 0xFF;
-                    int iByUp = (iRGB >> 0) & 0xFF;
-                    iRGB = aRGB[i][j+1];
-                    int iRyDown = (iRGB >> 16) & 0xFF;
-                    int iGyDown = (iRGB >> 8) & 0xFF;
-                    int iByDown = (iRGB >> 0) & 0xFF;
-
-                    aEnergy[i][j] = Math.sqrt(
-                        (iRxRight-iRxLeft)*(iRxRight-iRxLeft)
-                      + (iGxRight-iGxLeft)*(iGxRight-iGxLeft) 
-                      + (iBxRight-iBxLeft)*(iBxRight-iBxLeft)
-                      + (iRyDown-iRyUp)*(iRyDown-iRyUp)
-                      + (iGyDown-iGyUp)*(iGyDown-iGyUp)
-                      + (iByDown-iByUp)*(iByDown-iByUp)
+                    calculateEnergyOfInnerPixel(
+                        aRGB[i-1][j], aRGB[i+1][j], aRGB[i][j-1], aRGB[i][j+1],
+                        i, j
                     );
                 }
             }
         }
+    }
+
+    private void calculateEnergyOfInnerPixel(int left, int right, int up, int down,
+        int i, int j) {
+        int iRxLeft  = (left >> 16) & 0xFF;
+        int iGxLeft  = (left >> 8) & 0xFF;
+        int iBxLeft  = (left >> 0) & 0xFF;
+        int iRxRight = (right >> 16) & 0xFF;
+        int iGxRight = (right >> 8) & 0xFF;
+        int iBxRight = (right >> 0) & 0xFF;
+        int iRyUp    = (up >> 16) & 0xFF;
+        int iGyUp    = (up >> 8) & 0xFF;
+        int iByUp    = (up >> 0) & 0xFF;
+        int iRyDown  = (down >> 16) & 0xFF;
+        int iGyDown  = (down >> 8) & 0xFF;
+        int iByDown  = (down >> 0) & 0xFF;
+        aEnergy[i][j] = Math.sqrt(
+            (iRxRight-iRxLeft)*(iRxRight-iRxLeft)
+          + (iGxRight-iGxLeft)*(iGxRight-iGxLeft) 
+          + (iBxRight-iBxLeft)*(iBxRight-iBxLeft)
+          + (iRyDown-iRyUp)*(iRyDown-iRyUp)
+          + (iGyDown-iGyUp)*(iGyDown-iGyUp)
+          + (iByDown-iByUp)*(iByDown-iByUp)
+        );
     }
 
     private void transpose() {
@@ -107,12 +108,7 @@ public class SeamCarver {
     private void allPairsSP(double[][] distTo, int[][] vertexTo) {
         int wid = picture.width();
         int hei = picture.height();
-        if (hei <= 2 || wid <= 2) {
-            // this is the case when each energy equals 1000,
-            // b/c we don't have inner part, just border
-            // the code will return first row/col, see findVerticalSeam()
-            return;
-        }
+        
         for (int s = 0; s < wid; s++) {
             distTo[0][s] = 0.0;
             for (int i = 0; i < hei; i++) {
@@ -278,6 +274,18 @@ public class SeamCarver {
         }
         int hei = picture.height();
         int wid = picture.width();
+
+        int[] seam = new int[hei];
+
+        if (hei <= 2 || wid <= 2) {
+            // this is the case when each energy equals 1000,
+            // b/c we don't have inner part, just border
+            // it's all we need if we want to remove first col/row
+            // array is initialized explicitly in order to remove the warning
+            Arrays.fill(seam, 0);
+            return seam;
+        }
+
         double[][] distTo = new double[hei][];
         int[][] vertexTo = new int[hei][];
         for (int i = 0; i < hei; i++) {
@@ -285,19 +293,11 @@ public class SeamCarver {
             vertexTo[i] = new int[wid];
             for (int j = 0; j < wid; j++) {
                 distTo[i][j] = Double.POSITIVE_INFINITY;
-                vertexTo[i][j] = -1;
+                vertexTo[i][j] = -1; // placeholder value since we don't use it
             }
         }
         allPairsSP(distTo, vertexTo);
-        
-        int[] seam = new int[hei];
-        
-        if (hei <= 2 || wid <= 2) {
-            // array is initialized explicitly in order to remove the warning
-            // it's all we need if we want to remove first col/row
-            Arrays.fill(seam, 0);
-            return seam;
-        }
+
         int id = -1;
         double minEnergy = Double.POSITIVE_INFINITY;
         for (int i = 0; i < wid; i++) {
@@ -306,12 +306,10 @@ public class SeamCarver {
                 id = i;
             }
         }
-
         for (int i = hei-1; i >= 0; i--) {
             seam[i] = id;
             id = vertexTo[i][id];
         }
-
         return seam;
     }
  
@@ -365,29 +363,126 @@ public class SeamCarver {
                 k++;
             }
         }
-        
         picture = newp;
-        wid--;
-        double[][] newAEnergy = new double[hei][];
+        
         for (int i = 0; i < hei; i++) {
-            newAEnergy[i] = new double[wid];
+            System.arraycopy(aEnergy[i], seam[i]+1, aEnergy[i], seam[i],
+             wid-seam[i]-1);
         }
-        aEnergy = newAEnergy;
-        calculateEnergy();
+        --wid;
+        for (int i = 0; i < hei; i++) {
+            int j = seam[i];
+            if (j == wid) --j;
+            if (i == 0 || i == hei-1 || j == 0 || j == wid-1) {
+                aEnergy[i][j] = 1000;
+                if (j-1 > 0 && i != 0 && i != hei-1) {
+                    calculateEnergyOfInnerPixel(
+                        picture.get(j-2, i).getRGB(),
+                        picture.get(j, i).getRGB(),
+                        picture.get(j-1, i-1).getRGB(),
+                        picture.get(j-1, i+1).getRGB(),
+                        i, j-1
+                    );
+                }
+            } else {
+                calculateEnergyOfInnerPixel(
+                    picture.get(j-1, i).getRGB(),
+                    picture.get(j+1, i).getRGB(),
+                    picture.get(j, i-1).getRGB(),
+                    picture.get(j, i+1).getRGB(),
+                    i, j
+                );
+                
+                if (j-1 > 0) {
+                    calculateEnergyOfInnerPixel(
+                        picture.get(j-2, i).getRGB(),
+                        picture.get(j, i).getRGB(),
+                        picture.get(j-1, i-1).getRGB(),
+                        picture.get(j-1, i+1).getRGB(),
+                        i, j-1
+                    );
+                }
+                if (i-1 > 0) {
+                    calculateEnergyOfInnerPixel(
+                        picture.get(j-1, i-1).getRGB(),
+                        picture.get(j+1, i-1).getRGB(),
+                        picture.get(j, i-2).getRGB(),
+                        picture.get(j, i).getRGB(),
+                        i-1, j
+                    );
+                }
+                if (i+1 < hei-1) {
+                    calculateEnergyOfInnerPixel(
+                        picture.get(j-1, i+1).getRGB(),
+                        picture.get(j+1, i+1).getRGB(),
+                        picture.get(j, i).getRGB(),
+                        picture.get(j, i+2).getRGB(),
+                        i+1, j
+                    );
+                }
+            }
+        }
     }
 
     /**
      * Test client for SeamCarver.
      * @param args the command-line arguments
      */
-    public static void main(final String[] args) {
-        SeamCarver sc = new SeamCarver(new Picture(args[0]));
-        int[] seam = sc.findHorizontalSeam();
+    public static void main(final String[] args) {        
+        SeamCarver carver = new SeamCarver(new Picture(args[0]));
+        // carver.removeVerticalSeam(new int[]{ 4, 5, 6, 5, 6, 6, 5, 5, 6, 6 }); // 7x10
+        int[] seam = carver.findHorizontalSeam();
         System.out.println(Arrays.toString(seam));
-        sc.removeHorizontalSeam(seam);
-        seam = sc.findVerticalSeam();
+        carver.removeHorizontalSeam(seam);
+        seam = carver.findVerticalSeam();
         System.out.println(Arrays.toString(seam));
-        sc.removeVerticalSeam(seam);
-        sc.picture().show();
+        carver.removeVerticalSeam(seam);
+        carver.picture().show();
+        // just a random picture from one of the tests
+        // Picture picture = new Picture(6, 6);
+        
+        // picture.set(0, 0, new java.awt.Color(0x050803));
+        // picture.set(1, 0, new java.awt.Color(0x090008));
+        // picture.set(2, 0, new java.awt.Color(0x080302));
+        // picture.set(3, 0, new java.awt.Color(0x090505));
+        // picture.set(4, 0, new java.awt.Color(0x040100));
+        // picture.set(5, 0, new java.awt.Color(0x010407));
+        
+        // picture.set(0, 1, new java.awt.Color(0x060204));
+        // picture.set(1, 1, new java.awt.Color(0x090608));
+        // picture.set(2, 1, new java.awt.Color(0x050807));
+        // picture.set(3, 1, new java.awt.Color(0x000407));
+        // picture.set(4, 1, new java.awt.Color(0x040405));
+        // picture.set(5, 1, new java.awt.Color(0x050900));
+
+        // picture.set(0, 2, new java.awt.Color(0x070604));
+        // picture.set(1, 2, new java.awt.Color(0x000109));
+        // picture.set(2, 2, new java.awt.Color(0x060209));
+        // picture.set(3, 2, new java.awt.Color(0x030301));
+        // picture.set(4, 2, new java.awt.Color(0x010503));
+        // picture.set(5, 2, new java.awt.Color(0x060303));
+        
+        // picture.set(0, 3, new java.awt.Color(0x070406));
+        // picture.set(1, 3, new java.awt.Color(0x030300));
+        // picture.set(2, 3, new java.awt.Color(0x060903));
+        // picture.set(3, 3, new java.awt.Color(0x050304));
+        // picture.set(4, 3, new java.awt.Color(0x090900));
+        // picture.set(5, 3, new java.awt.Color(0x080405));
+        
+        // picture.set(0, 4, new java.awt.Color(0x000407));
+        // picture.set(1, 4, new java.awt.Color(0x030504));
+        // picture.set(2, 4, new java.awt.Color(0x040405));
+        // picture.set(3, 4, new java.awt.Color(0x070202));
+        // picture.set(4, 4, new java.awt.Color(0x010402));
+        // picture.set(5, 4, new java.awt.Color(0x080903));
+        
+        // picture.set(0, 5, new java.awt.Color(0x070607));
+        // picture.set(1, 5, new java.awt.Color(0x060209));
+        // picture.set(2, 5, new java.awt.Color(0x090502));
+        // picture.set(3, 5, new java.awt.Color(0x010409));
+        // picture.set(4, 5, new java.awt.Color(0x080705));
+        // picture.set(5, 5, new java.awt.Color(0x060604));
+        // SeamCarver carver = new SeamCarver(picture);
+        // carver.picture().show();
     }
  }

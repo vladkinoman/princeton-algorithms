@@ -16,7 +16,7 @@
             "request": "launch",
             "mainClass": "PrintEnergy",
             "projectName": "2-2-seam-carving_309aa83f",
-            "args": "${workspaceFolder}/sample-data-files/2x4.png"
+            "args": "${workspaceFolder}/sample-data-files/random_6x6.png"
         },
         {
             "type": "java",
@@ -24,7 +24,7 @@
             "request": "launch",
             "mainClass": "PrintSeams",
             "projectName": "2-2-seam-carving_309aa83f",
-            "args": "${workspaceFolder}/sample-data-files/diagonals.png"
+            "args": "${workspaceFolder}/sample-data-files/random_6x6_2.png"
         },
         {
             "type": "java",
