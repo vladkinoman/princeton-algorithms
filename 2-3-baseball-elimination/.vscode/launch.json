@@ -15,7 +15,10 @@
             "name": "BaseballElimination",
             "request": "launch",
             "mainClass": "BaseballElimination",
-            "projectName": "2-3-baseball-elimination_1d9744b5"
+            "projectName": "2-3-baseball-elimination_1d9744b5",
+            "args": [
+                "${workspaceFolder}/sample-data-files/teams4.txt"
+            ]
         }
     ]
 }
