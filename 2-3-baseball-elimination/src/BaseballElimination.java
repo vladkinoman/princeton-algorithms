@@ -4,9 +4,24 @@ import edu.princeton.cs.algs4.FlowNetwork;
 import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.ST;
+import edu.princeton.cs.algs4.SET;
 
+/**
+ * The {@code BaseballElimination} represents a data type for determining which
+ * teams have been mathematically eliminated from winning their division. It 
+ * finds those teams for given standings in a sports division at some point
+ * during the season. 
+ * 
+ * <p>
+ * This implementation runs Ford-Fulkerson's algorithm which computes maxflow
+ * and minimum cut to determine whether the team x is mathematically eliminated.
+ * Remember that the team not eliminated iff all edges pointing from s are full
+ * in maxflow. Use the {@code certificateOfElimination()} method to get
+ * the subset of teams R that eliminate the team x.
+ * 
+ * @author Vlad Beklenyshchev aka vladkinoman
+ */
 public class BaseballElimination {
-    private FlowNetwork fn;
     private ST<String, Integer[]> st;
     
     /**
@@ -34,7 +49,6 @@ public class BaseballElimination {
         }
     }
 
-    
     /**
      * Returns number of teams.
      * @return number of teams
@@ -97,7 +111,7 @@ public class BaseballElimination {
     public int against(String team1, String team2) {
         validateTeam(team1);
         validateTeam(team2);
-        return st.get(team1)[st.get(team2)[0]];
+        return st.get(team1)[4+st.get(team2)[0]];
     }
     
     /**
@@ -107,7 +121,12 @@ public class BaseballElimination {
      */
     public boolean isEliminated(String team) {
         validateTeam(team);
-        return false;
+        for (String other : teams()) {
+            if (other.equals(team)) continue;
+            if (wins(team) + remaining(team) - wins(other) < 0) return true;
+        }
+        
+        return certificateOfElimination(team) != null;
     }
     
     /**
@@ -119,7 +138,74 @@ public class BaseballElimination {
      */
     public Iterable<String> certificateOfElimination(String team) {
         validateTeam(team);
-        return null;
+        int n = st.size();
+        int s = 0;
+        int games = n*n/2 - 3*n/2 + 1;
+        int teams = n - 1;
+        int t = games + teams + 1;
+        FlowNetwork fn = new FlowNetwork(t+1);
+        
+        ST<String, Integer> otherteams = new ST<>();
+        
+        SET<String> played = new SET<>();
+        SET<String> teamConnectedToEnd = new SET<>();
+        SET<String> result = null;
+        
+        for (String other : teams()) {
+            if (other.equals(team)) continue;
+            if (wins(team) + remaining(team) - wins(other) < 0) {
+                if (result == null) result = new SET<>();
+                result.add(other);
+            }
+        }
+        
+        int i = games + 1;
+        for (String other: teams()) {
+            if (other.equals(team) || result != null 
+                && result.contains(other)) {
+                continue;
+            }
+            otherteams.put(other, i);
+            i++;
+        }
+        i = 1;
+        for (String other1 : teams()) {
+            if (other1.equals(team) || 
+                result != null && result.contains(other1)) {
+                continue;
+            } 
+            for (String other2 : teams()) {
+                if (other2.equals(team) || other2.equals(other1) 
+                    || played.contains(other2) || result != null 
+                    && result.contains(other2)) {
+                    continue;
+                }
+                if (!played.contains(other1)) {
+                    fn.addEdge(new FlowEdge(s, i, against(other1, other2)));
+                    fn.addEdge(new FlowEdge(i, otherteams.get(other1), 
+                        Double.POSITIVE_INFINITY));
+                    fn.addEdge(new FlowEdge(i, otherteams.get(other2), 
+                        Double.POSITIVE_INFINITY));
+                    i++;
+                }
+            }
+            played.add(other1);
+            if (!teamConnectedToEnd.contains(other1)) {
+                fn.addEdge(new FlowEdge(otherteams.get(other1), t,
+                    wins(team) + remaining(team) - wins(other1)));
+                teamConnectedToEnd.add(other1);
+            }
+        }
+        
+        FordFulkerson maxflow = new FordFulkerson(fn, s, t);
+        
+        for (String other : otherteams.keys()) {
+            if (maxflow.inCut(otherteams.get(other))) {
+                if (result == null) result = new SET<>();
+                result.add(other);
+            }
+        }
+        return result;
     }
     
     public static void main(String[] args) {
@@ -138,4 +224,3 @@ public class BaseballElimination {
         }
     }    
 }
-
