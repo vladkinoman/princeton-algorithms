@@ -17,7 +17,7 @@
             "mainClass": "BaseballElimination",
             "projectName": "2-3-baseball-elimination_1d9744b5",
             "args": [
-                "${workspaceFolder}/sample-data-files/teams4.txt"
+                "${workspaceFolder}/sample-data-files/teams60.txt"
             ]
         }
     ]
