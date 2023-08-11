@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "BoggleBoard",
+            "request": "launch",
+            "mainClass": "BoggleBoard",
+            "projectName": "2-4-boggle_a7513ff2"
+        },
+        {
+            "type": "java",
+            "name": "BoggleGame",
+            "request": "launch",
+            "mainClass": "BoggleGame",
+            "projectName": "2-4-boggle_a7513ff2"
+        },
+        {
+            "type": "java",
+            "name": "BoggleSolver",
+            "request": "launch",
+            "mainClass": "BoggleSolver",
+            "projectName": "2-4-boggle_a7513ff2"
+        }
+    ]
+}
