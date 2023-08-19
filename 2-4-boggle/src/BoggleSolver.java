@@ -21,6 +21,7 @@ import edu.princeton.cs.algs4.Stopwatch;
 public class BoggleSolver
 {
     private final TrieST<Integer> trieScores;
+    private final TrieSET prefixes;
     private static final int LENGTH_OF_VALID = 3;
     
     /**
@@ -29,10 +30,13 @@ public class BoggleSolver
      * @param dictionary given array of strings
      */
     public BoggleSolver(String[] dictionary) {
+        prefixes = new TrieSET();
         trieScores = new TrieST<>();
         for (String word: dictionary) {
             if (word.length() >= LENGTH_OF_VALID) {
                 trieScores.put(word, 0);
+                for (int j = word.length(); j > 0; j--)
+                    prefixes.add(word.substring(0, j));
             }
         }
     }
@@ -90,7 +94,7 @@ public class BoggleSolver
     private void matchPattern(int i, int j, boolean[][] visited, 
      String s, BoggleBoard board, TrieSET setValidWords) {
         if (i < 0 || j < 0 || i >= visited.length || j >= visited.length 
-            || !trieScores.keysWithPrefix(s).iterator().hasNext() || visited[i][j]) {
+            || !prefixes.contains(s) || !trieScores.keysWithPrefix(s).iterator().hasNext() || visited[i][j]) {
             return;
         }
         s = addLetterConsideringQu(board, i, j, s);
@@ -142,22 +146,22 @@ public class BoggleSolver
         String[] dictionary = in.readAllStrings();
         Stopwatch watch = new Stopwatch();
         BoggleSolver solver = new BoggleSolver(dictionary);
-        BoggleBoard board = new BoggleBoard(args[1]);
-        int score = 0;
-        for (String word : solver.getAllValidWords(board)) {
-            StdOut.println(word);
-            score += solver.scoreOf(word);
-        }
-        StdOut.println("Score = " + score);
-        // for (int i = 0; i < 1000; i++) {
-        //     BoggleBoard board = new BoggleBoard();
-        //     int score = 0;
-        //     for (String word : solver.getAllValidWords(board)) {
-        //         StdOut.println(word);
-        //         score += solver.scoreOf(word);
-        //     }
-        //     StdOut.println("Score = " + score);
+        // BoggleBoard board = new BoggleBoard(args[1]);
+        // int score = 0;
+        // for (String word : solver.getAllValidWords(board)) {
+        //     StdOut.println(word);
+        //     score += solver.scoreOf(word);
         // }
+        // StdOut.println("Score = " + score);
+        for (int i = 0; i < 1000; i++) {
+            BoggleBoard board = new BoggleBoard();
+            int score = 0;
+            for (String word : solver.getAllValidWords(board)) {
+                StdOut.println(word);
+                score += solver.scoreOf(word);
+            }
+            StdOut.println("Score = " + score);
+        }
         StdOut.println("Time: " + watch.elapsedTime());
     }
 }
