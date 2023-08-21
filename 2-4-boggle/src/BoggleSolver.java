@@ -1,10 +1,7 @@
-import java.util.Arrays;
-
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.TrieST;
-import edu.princeton.cs.algs4.TrieSET;
 import edu.princeton.cs.algs4.Stopwatch;
+import edu.princeton.cs.algs4.LinearProbingHashST;
 
 /**
  * The {@code BoggleSolver} represents a data type for determining valid words
@@ -20,9 +17,9 @@ import edu.princeton.cs.algs4.Stopwatch;
  */
 public class BoggleSolver
 {
-    private final TrieST<Integer> trieScores;
-    private final TrieSET prefixes;
     private static final int LENGTH_OF_VALID = 3;
+    private final EngAlphabetTrieST<Integer> trieScores;
+    private final LinearProbingHashST<String, Integer> prefixes;
     
     /**
      * Initializes the data structure using the given array of strings as the dictionary.
@@ -30,98 +27,95 @@ public class BoggleSolver
      * @param dictionary given array of strings
      */
     public BoggleSolver(String[] dictionary) {
-        prefixes = new TrieSET();
-        trieScores = new TrieST<>();
+        trieScores = new EngAlphabetTrieST<>();
+        prefixes = new LinearProbingHashST<>();
         for (String word: dictionary) {
             if (word.length() >= LENGTH_OF_VALID) {
-                trieScores.put(word, 0);
-                for (int j = word.length(); j > 0; j--)
-                    prefixes.add(word.substring(0, j));
+                switch(word.length()) {
+                    case 3: case 4:
+                        trieScores.put(word, 1);
+                        break;
+                    case 5:
+                        trieScores.put(word, 2);
+                        break;
+                    case 6:
+                        trieScores.put(word, 3);
+                        break;
+                    case 7:
+                        trieScores.put(word, 5);
+                        break;
+                    default:
+                        trieScores.put(word, 11);
+                        break;
+                }
+                for (int j = word.length(); j > 0; j--) {
+                    prefixes.put(word.substring(0, j), 0);
+                }
             }
         }
     }
+
     /**
      * Returns the set of all valid words in the given Boggle board, as an Iterable.
      * @param board given Boggle board
      * @return set of all valid words in the given Boggle board, as an Iterable
      */
     public Iterable<String> getAllValidWords(BoggleBoard board) {
-        TrieSET validWords = new TrieSET();
-        int n = board.rows();
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                String s = "";
-                s = addLetterConsideringQu(board, i, j, s);
-                boolean[][] visited = new boolean[n][n];
-                visited[i][j] = true;
-                searchNeighbours(i, j, visited, s, board, validWords);
+        EngAlphabetTrieSET validWords = new EngAlphabetTrieSET();
+        int rows = board.rows();
+        int cols = board.cols();
+        boolean[][] marked = new boolean[rows][cols];
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                recurFunc(i, j, marked, sb, board, validWords);
             }
         }
         return validWords;
     }
-    private String addLetterConsideringQu(BoggleBoard board, int i, int j, 
-     String s) {
-        char letter = board.getLetter(i, j);
-        if (letter == 'Q') {
-            s += "QU";
-        } else {
-            s += letter;
-        }
-        return s;
-    }
-    
-    // board and validWords are shared objects
-    private void searchNeighbours(int i, int j, boolean[][] visited,
-     String s, BoggleBoard board, TrieSET validWords) {
-        matchPattern(i-1, j-1, Arrays.stream(visited).map(boolean[]::clone)
-        .toArray(boolean[][]::new), s, board, validWords);
-        matchPattern(i-1, j,   Arrays.stream(visited).map(boolean[]::clone)
-        .toArray(boolean[][]::new), s, board, validWords);
-        matchPattern(i-1, j+1, Arrays.stream(visited).map(boolean[]::clone)
-        .toArray(boolean[][]::new), s, board, validWords);
-        matchPattern(i,   j-1, Arrays.stream(visited).map(boolean[]::clone)
-        .toArray(boolean[][]::new), s, board, validWords);
-        matchPattern(i,   j+1, Arrays.stream(visited).map(boolean[]::clone)
-        .toArray(boolean[][]::new), s, board, validWords);
-        matchPattern(i+1, j-1, Arrays.stream(visited).map(boolean[]::clone)
-        .toArray(boolean[][]::new), s, board, validWords);
-        matchPattern(i+1, j,   Arrays.stream(visited).map(boolean[]::clone)
-        .toArray(boolean[][]::new), s, board, validWords);
-        matchPattern(i+1, j+1, Arrays.stream(visited).map(boolean[]::clone)
-        .toArray(boolean[][]::new), s, board, validWords);
-    }
 
-    private void matchPattern(int i, int j, boolean[][] visited, 
-     String s, BoggleBoard board, TrieSET setValidWords) {
-        if (i < 0 || j < 0 || i >= visited.length || j >= visited.length 
-            || !prefixes.contains(s) || !trieScores.keysWithPrefix(s).iterator().hasNext() || visited[i][j]) {
+    private void recurFunc(int i, int j, boolean[][] marked, 
+     StringBuilder sb, BoggleBoard board, EngAlphabetTrieSET validWords) {
+        String s = sb.toString();
+        if (i < 0 || j < 0 || i >= board.rows() || j >= board.cols() 
+            || marked[i][j]
+            || s.length() > 0 && !prefixes.contains(s)
+            ) {
             return;
         }
-        s = addLetterConsideringQu(board, i, j, s);
-        visited[i][j] = true;
-        int n = s.length();
-        if (n >= LENGTH_OF_VALID && !setValidWords.contains(s) 
-            && trieScores.contains(s)) {
-            switch(n) {
-                case 3: case 4:
-                    trieScores.put(s, 1);
-                    break;
-                case 5:
-                    trieScores.put(s, 2);
-                    break;
-                case 6:
-                    trieScores.put(s, 3);
-                    break;
-                case 7:
-                    trieScores.put(s, 5);
-                    break;
-                default:
-                    trieScores.put(s, 11);
-                    break;
-            }
-            setValidWords.add(s);
+
+        char c = board.getLetter(i, j);
+        if (c == 'Q') {
+            sb.append("QU");
+        } else {
+            sb.append(c);
         }
-        searchNeighbours(i, j, visited, s, board, setValidWords);
+
+        s = null;
+        int n = sb.length();
+        if (n >= LENGTH_OF_VALID) {
+            s = sb.toString();
+        }
+        if (s != null && !validWords.contains(s) && trieScores.contains(s)) {
+            validWords.add(s);
+        }
+        marked[i][j] = true;
+        
+        recurFunc(i-1, j-1, marked, sb, board, validWords);
+        recurFunc(i-1, j,   marked, sb, board, validWords);
+        recurFunc(i-1, j+1, marked, sb, board, validWords);
+        recurFunc(i,   j-1, marked, sb, board, validWords);
+        recurFunc(i,   j+1, marked, sb, board, validWords);
+        recurFunc(i+1, j-1, marked, sb, board, validWords);
+        recurFunc(i+1, j,   marked, sb, board, validWords);
+        recurFunc(i+1, j+1, marked, sb, board, validWords);
+
+        marked[i][j] = false;
+        if (c == 'Q') {
+            sb.setLength(sb.length() - 2);
+        } else {
+            sb.setLength(sb.length() - 1);
+        }
     }
 
     /**
@@ -146,21 +140,25 @@ public class BoggleSolver
         String[] dictionary = in.readAllStrings();
         Stopwatch watch = new Stopwatch();
         BoggleSolver solver = new BoggleSolver(dictionary);
-        // BoggleBoard board = new BoggleBoard(args[1]);
-        // int score = 0;
-        // for (String word : solver.getAllValidWords(board)) {
-        //     StdOut.println(word);
-        //     score += solver.scoreOf(word);
-        // }
-        // StdOut.println("Score = " + score);
-        for (int i = 0; i < 1000; i++) {
-            BoggleBoard board = new BoggleBoard();
+        BoggleBoard board = new BoggleBoard(args[1]);
+        int choice = Integer.parseInt(args[2]);
+        if (choice == 0) {
             int score = 0;
             for (String word : solver.getAllValidWords(board)) {
                 StdOut.println(word);
                 score += solver.scoreOf(word);
             }
             StdOut.println("Score = " + score);
+        } else {
+            for (int i = 0; i < 1000; i++) {
+                board = new BoggleBoard();
+                int score = 0;
+                for (String word : solver.getAllValidWords(board)) {
+                    StdOut.println(word);
+                    score += solver.scoreOf(word);
+                }
+                StdOut.println("Score = " + score);
+            }
         }
         StdOut.println("Time: " + watch.elapsedTime());
     }
