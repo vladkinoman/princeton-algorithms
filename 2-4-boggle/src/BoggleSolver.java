@@ -1,7 +1,7 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Stopwatch;
-import edu.princeton.cs.algs4.LinearProbingHashST;
+import edu.princeton.cs.algs4.SET;
 
 /**
  * The {@code BoggleSolver} represents a data type for determining valid words
@@ -18,8 +18,7 @@ import edu.princeton.cs.algs4.LinearProbingHashST;
 public class BoggleSolver
 {
     private static final int LENGTH_OF_VALID = 3;
-    private final EngAlphabetTrieST<Integer> trieScores;
-    private final LinearProbingHashST<String, Integer> prefixes;
+    private final TwentySixWayTrie trie;
     
     /**
      * Initializes the data structure using the given array of strings as the dictionary.
@@ -27,29 +26,25 @@ public class BoggleSolver
      * @param dictionary given array of strings
      */
     public BoggleSolver(String[] dictionary) {
-        trieScores = new EngAlphabetTrieST<>();
-        prefixes = new LinearProbingHashST<>();
+        trie = new TwentySixWayTrie();
         for (String word: dictionary) {
             if (word.length() >= LENGTH_OF_VALID) {
                 switch(word.length()) {
                     case 3: case 4:
-                        trieScores.put(word, 1);
+                        trie.put(word, 1);
                         break;
                     case 5:
-                        trieScores.put(word, 2);
+                        trie.put(word, 2);
                         break;
                     case 6:
-                        trieScores.put(word, 3);
+                        trie.put(word, 3);
                         break;
                     case 7:
-                        trieScores.put(word, 5);
+                        trie.put(word, 5);
                         break;
                     default:
-                        trieScores.put(word, 11);
+                        trie.put(word, 11);
                         break;
-                }
-                for (int j = word.length(); j > 0; j--) {
-                    prefixes.put(word.substring(0, j), 0);
                 }
             }
         }
@@ -61,7 +56,7 @@ public class BoggleSolver
      * @return set of all valid words in the given Boggle board, as an Iterable
      */
     public Iterable<String> getAllValidWords(BoggleBoard board) {
-        EngAlphabetTrieSET validWords = new EngAlphabetTrieSET();
+        SET<String> validWords = new SET<>();
         int rows = board.rows();
         int cols = board.cols();
         boolean[][] marked = new boolean[rows][cols];
@@ -75,11 +70,12 @@ public class BoggleSolver
     }
 
     private void recurFunc(int i, int j, boolean[][] marked, 
-     StringBuilder sb, BoggleBoard board, EngAlphabetTrieSET validWords) {
-        String s = sb.toString();
+     StringBuilder sb, BoggleBoard board, SET<String> validWords) {
+        String s = null;
+        if (sb.length() >= LENGTH_OF_VALID) s = sb.toString();
         if (i < 0 || j < 0 || i >= board.rows() || j >= board.cols() 
             || marked[i][j]
-            || s.length() > 0 && !prefixes.contains(s)
+            || s != null && !trie.hasKeyWithPrefix(s)
             ) {
             return;
         }
@@ -91,12 +87,10 @@ public class BoggleSolver
             sb.append(c);
         }
 
-        s = null;
-        int n = sb.length();
-        if (n >= LENGTH_OF_VALID) {
+        if (sb.length() >= LENGTH_OF_VALID) {
             s = sb.toString();
         }
-        if (s != null && !validWords.contains(s) && trieScores.contains(s)) {
+        if (s != null && !validWords.contains(s) && trie.contains(s)) {
             validWords.add(s);
         }
         marked[i][j] = true;
@@ -125,10 +119,7 @@ public class BoggleSolver
      * @return score of the given word if it is in the dictionary, zero otherwise
      */
     public int scoreOf(String word) {
-        if (trieScores.contains(word)) {
-            return trieScores.get(word);
-        }
-        return 0;
+        return trie.get(word);
     }
 
     /**

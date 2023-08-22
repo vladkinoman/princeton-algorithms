@@ -32,9 +32,9 @@
             "projectName": "2-4-boggle_a7513ff2",
             "args": [
                 "${workspaceFolder}/sample-data-files/dictionary-algs4.txt",
-                "${workspaceFolder}/sample-data-files/board-q.txt",
+                "${workspaceFolder}/sample-data-files/board4x4.txt",
                 0,
-                ">", "output.txt"
+                //">", "output.txt"
             ]
         }
     ]
