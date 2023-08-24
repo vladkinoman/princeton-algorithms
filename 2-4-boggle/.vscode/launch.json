@@ -31,9 +31,9 @@
             "mainClass": "BoggleSolver",
             "projectName": "2-4-boggle_a7513ff2",
             "args": [
-                "${workspaceFolder}/sample-data-files/dictionary-algs4.txt",
-                "${workspaceFolder}/sample-data-files/board4x4.txt",
-                0,
+                "${workspaceFolder}/sample-data-files/dictionary-yawl.txt",
+                "${workspaceFolder}/sample-data-files/board-q.txt",
+                1,
                 //">", "output.txt"
             ]
         }

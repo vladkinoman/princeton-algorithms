@@ -8,8 +8,8 @@ import edu.princeton.cs.algs4.SET;
  * for a given Boggle board.
  *
  * <p>
- * This implementation uses the {@code TrieST} data structure which is based on
- * 256-way trie. Construction takes time proportional to the number of keys
+ * This implementation uses the {@code TwentySixWayTrie} data structure which is based on
+ * TST and 26-way trie hybrid structure. Construction takes time proportional to the number of keys
  * times length of the key (in the worst case, when length of each word is >= 3).
  * The <em>scoreOf</em> method takes time proportional to the length of the key.
  *
@@ -17,8 +17,8 @@ import edu.princeton.cs.algs4.SET;
  */
 public class BoggleSolver
 {
-    private static final int LENGTH_OF_VALID = 3;
-    private final TwentySixWayTrie trie;
+    private static final int MIN_LENGTH_OF_VALID = 3;
+    private final TSTWithRSquareTrie trie;
     
     /**
      * Initializes the data structure using the given array of strings as the dictionary.
@@ -26,9 +26,9 @@ public class BoggleSolver
      * @param dictionary given array of strings
      */
     public BoggleSolver(String[] dictionary) {
-        trie = new TwentySixWayTrie();
+        trie = new TSTWithRSquareTrie();
         for (String word: dictionary) {
-            if (word.length() >= LENGTH_OF_VALID) {
+            if (word.length() >= MIN_LENGTH_OF_VALID) {
                 switch(word.length()) {
                     case 3: case 4:
                         trie.put(word, 1);
@@ -72,7 +72,7 @@ public class BoggleSolver
     private void recurFunc(int i, int j, boolean[][] marked, 
      StringBuilder sb, BoggleBoard board, SET<String> validWords) {
         String s = null;
-        if (sb.length() >= LENGTH_OF_VALID) s = sb.toString();
+        if (sb.length() >= MIN_LENGTH_OF_VALID) s = sb.toString();
         if (i < 0 || j < 0 || i >= board.rows() || j >= board.cols() 
             || marked[i][j]
             || s != null && !trie.hasKeyWithPrefix(s)
@@ -87,7 +87,7 @@ public class BoggleSolver
             sb.append(c);
         }
 
-        if (sb.length() >= LENGTH_OF_VALID) {
+        if (sb.length() >= MIN_LENGTH_OF_VALID) {
             s = sb.toString();
         }
         if (s != null && !validWords.contains(s) && trie.contains(s)) {
@@ -129,7 +129,6 @@ public class BoggleSolver
     public static void main(String[] args) {
         In in = new In(args[0]);
         String[] dictionary = in.readAllStrings();
-        Stopwatch watch = new Stopwatch();
         BoggleSolver solver = new BoggleSolver(dictionary);
         BoggleBoard board = new BoggleBoard(args[1]);
         int choice = Integer.parseInt(args[2]);
@@ -141,16 +140,14 @@ public class BoggleSolver
             }
             StdOut.println("Score = " + score);
         } else {
-            for (int i = 0; i < 1000; i++) {
+            double totalElapsedTime = 0.0;
+            for (int i = 0; i < 8000; i++) {
                 board = new BoggleBoard();
-                int score = 0;
-                for (String word : solver.getAllValidWords(board)) {
-                    StdOut.println(word);
-                    score += solver.scoreOf(word);
-                }
-                StdOut.println("Score = " + score);
+                Stopwatch watch = new Stopwatch();
+                solver.getAllValidWords(board);
+                totalElapsedTime += watch.elapsedTime();
             }
+            StdOut.println("Time: " + totalElapsedTime);    
         }
-        StdOut.println("Time: " + watch.elapsedTime());
     }
 }
