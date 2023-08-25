@@ -30,6 +30,35 @@ public class TwentySixWayTrie {
         return x.score;
     }
 
+    private Node get(Node x, String key, int d) {
+        if (x == null) return null;
+        if (d == key.length()) return x;
+        char c = key.charAt(d);
+        return get(x.next[c-'A'], key, d+1);
+    }
+
+    /**
+     * Returns the value associated with the given key.
+     * @param key the key
+     * @return the value associated with the given key if the key is in the symbol table
+     *     and {@code null} if the key is not in the symbol table
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public int get(char[] key, int curLen) {
+        if (key == null) throw new IllegalArgumentException("argument to get() is null");
+        if (key.length < curLen) throw new IllegalArgumentException();
+        Node x = get(root, key, curLen, 0);
+        if (x == null) return 0;
+        return x.score;
+    }
+
+    private Node get(Node x, char[] key, int curLen, int d) {
+        if (x == null) return null;
+        if (d == curLen) return x;
+        char c = key[d];
+        return get(x.next[c-'A'], key, curLen, d+1);
+    }
+
     /**
      * Does this symbol table contain the given key?
      * @param key the key
@@ -42,11 +71,17 @@ public class TwentySixWayTrie {
         return get(key) != 0;
     }
 
-    private Node get(Node x, String key, int d) {
-        if (x == null) return null;
-        if (d == key.length()) return x;
-        char c = key.charAt(d);
-        return get(x.next[c-'A'], key, d+1);
+    /**
+     * Does this symbol table contain the given key?
+     * @param key the key
+     * @return {@code true} if this symbol table contains {@code key} and
+     *     {@code false} otherwise
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public boolean contains(char[] key, int curLen) {
+        if (key == null) throw new IllegalArgumentException("argument to contains() is null");
+        if (key.length < curLen) throw new IllegalArgumentException();
+        return get(key, curLen) != 0;
     }
 
     /**
@@ -59,7 +94,7 @@ public class TwentySixWayTrie {
      */
     public void put(String key, int score) {
         if (key == null) throw new IllegalArgumentException("first argument to put() is null");
-        else root = put(root, key, score, 0);
+        root = put(root, key, score, 0);
     }
 
     private Node put(Node x, String key, int score, int d) {
@@ -71,6 +106,32 @@ public class TwentySixWayTrie {
         }
         char c = key.charAt(d);
         x.next[c-'A'] = put(x.next[c-'A'], key, score, d+1);
+        return x;
+    }
+
+    /**
+     * Inserts the key-value pair into the symbol table, overwriting the old value
+     * with the new value if the key is already in the symbol table.
+     * If the value is {@code null}, this effectively deletes the key from the symbol table.
+     * @param key the key
+     * @param score the value
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void put(char[] key, int curLen, int score) {
+        if (key == null) throw new IllegalArgumentException("first argument to put() is null");
+        if (key.length < curLen) throw new IllegalArgumentException();
+        root = put(root, key, curLen, score, 0);
+    }
+
+    private Node put(Node x, char[] key, int curLen, int score, int d) {
+        if (x == null) x = new Node();
+        if (d == curLen) {
+            if (x.score == 0) n++;
+            x.score = score;
+            return x;
+        }
+        char c = key[d];
+        x.next[c-'A'] = put(x.next[c-'A'], key, curLen, score, d+1);
         return x;
     }
 
@@ -98,5 +159,16 @@ public class TwentySixWayTrie {
      */
     public boolean hasKeyWithPrefix(String prefix) {
         return get(root, prefix, 0) != null;
+    }
+
+    /**
+     * Checks whether there is a key with the given {@code prefix }.
+     * @param prefix the prefix
+     * @return {@code true} if such key exists,
+     *     {@code false} otherwise
+     */
+    public boolean hasKeyWithPrefix(char[] prefix, int curLen) {
+        if (prefix.length < curLen) throw new IllegalArgumentException();
+        return get(root, prefix, curLen, 0) != null;
     }
 }

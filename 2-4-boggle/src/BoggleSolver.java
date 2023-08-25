@@ -9,7 +9,7 @@ import edu.princeton.cs.algs4.SET;
  *
  * <p>
  * This implementation uses the {@code TwentySixWayTrie} data structure which is based on
- * TST and 26-way trie hybrid structure. Construction takes time proportional to the number of keys
+ * 26-way trie. Construction takes time proportional to the number of keys
  * times length of the key (in the worst case, when length of each word is >= 3).
  * The <em>scoreOf</em> method takes time proportional to the length of the key.
  *
@@ -18,7 +18,7 @@ import edu.princeton.cs.algs4.SET;
 public class BoggleSolver
 {
     private static final int MIN_LENGTH_OF_VALID = 3;
-    private final TSTWithRSquareTrie trie;
+    private final TwentySixWayTrie trie;
     
     /**
      * Initializes the data structure using the given array of strings as the dictionary.
@@ -26,7 +26,7 @@ public class BoggleSolver
      * @param dictionary given array of strings
      */
     public BoggleSolver(String[] dictionary) {
-        trie = new TSTWithRSquareTrie();
+        trie = new TwentySixWayTrie();
         for (String word: dictionary) {
             if (word.length() >= MIN_LENGTH_OF_VALID) {
                 switch(word.length()) {
@@ -60,55 +60,52 @@ public class BoggleSolver
         int rows = board.rows();
         int cols = board.cols();
         boolean[][] marked = new boolean[rows][cols];
-        StringBuilder sb = new StringBuilder();
+        char[] s = new char[rows*cols*2]; // *2 is for the case when we have board of Qs
+        int curLen = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                recurFunc(i, j, marked, sb, board, validWords);
+                recurFunc(i, j, marked, s, curLen, board, validWords);
             }
         }
         return validWords;
     }
 
     private void recurFunc(int i, int j, boolean[][] marked, 
-     StringBuilder sb, BoggleBoard board, SET<String> validWords) {
-        String s = null;
-        if (sb.length() >= MIN_LENGTH_OF_VALID) s = sb.toString();
+     char[] s, int curLen, BoggleBoard board, SET<String> validWords) {
         if (i < 0 || j < 0 || i >= board.rows() || j >= board.cols() 
             || marked[i][j]
-            || s != null && !trie.hasKeyWithPrefix(s)
+            || curLen >= MIN_LENGTH_OF_VALID && !trie.hasKeyWithPrefix(s, curLen)
             ) {
             return;
         }
 
         char c = board.getLetter(i, j);
         if (c == 'Q') {
-            sb.append("QU");
+            s[curLen++] = 'Q';
+            s[curLen++] = 'U';
         } else {
-            sb.append(c);
+            s[curLen++] = c;
         }
 
-        if (sb.length() >= MIN_LENGTH_OF_VALID) {
-            s = sb.toString();
-        }
-        if (s != null && !validWords.contains(s) && trie.contains(s)) {
-            validWords.add(s);
+        if (curLen >= MIN_LENGTH_OF_VALID && trie.contains(s, curLen)) {
+            validWords.add(new String(s, 0, curLen));
         }
         marked[i][j] = true;
         
-        recurFunc(i-1, j-1, marked, sb, board, validWords);
-        recurFunc(i-1, j,   marked, sb, board, validWords);
-        recurFunc(i-1, j+1, marked, sb, board, validWords);
-        recurFunc(i,   j-1, marked, sb, board, validWords);
-        recurFunc(i,   j+1, marked, sb, board, validWords);
-        recurFunc(i+1, j-1, marked, sb, board, validWords);
-        recurFunc(i+1, j,   marked, sb, board, validWords);
-        recurFunc(i+1, j+1, marked, sb, board, validWords);
+        recurFunc(i-1, j-1, marked, s, curLen, board, validWords);
+        recurFunc(i-1, j,   marked, s, curLen, board, validWords);
+        recurFunc(i-1, j+1, marked, s, curLen, board, validWords);
+        recurFunc(i,   j-1, marked, s, curLen, board, validWords);
+        recurFunc(i,   j+1, marked, s, curLen, board, validWords);
+        recurFunc(i+1, j-1, marked, s, curLen, board, validWords);
+        recurFunc(i+1, j,   marked, s, curLen, board, validWords);
+        recurFunc(i+1, j+1, marked, s, curLen, board, validWords);
 
         marked[i][j] = false;
         if (c == 'Q') {
-            sb.setLength(sb.length() - 2);
+            curLen -= 2;
         } else {
-            sb.setLength(sb.length() - 1);
+            curLen--;
         }
     }
 
