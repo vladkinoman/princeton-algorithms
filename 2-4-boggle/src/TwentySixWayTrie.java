@@ -53,10 +53,12 @@ public class TwentySixWayTrie {
     }
 
     private Node get(Node x, char[] key, int curLen, int d) {
-        if (x == null) return null;
-        if (d == curLen) return x;
-        char c = key[d];
-        return get(x.next[c-'A'], key, curLen, d+1);
+        while (x != null) {
+            if (d == curLen) return x;
+            char c = key[d++];
+            x = x.next[c-'A'];
+        }
+        return x;
     }
 
     /**
@@ -124,14 +126,19 @@ public class TwentySixWayTrie {
     }
 
     private Node put(Node x, char[] key, int curLen, int score, int d) {
-        if (x == null) x = new Node();
-        if (d == curLen) {
-            if (x.score == 0) n++;
-            x.score = score;
-            return x;
+        while (x != null) {
+            if (d == curLen) {
+                x.score = score;
+                return x;
+            }
+            char c = key[d++];
+            x = x.next[c-'A'];
         }
-        char c = key[d];
-        x.next[c-'A'] = put(x.next[c-'A'], key, curLen, score, d+1);
+        x = new Node();
+        if (d == curLen) {
+            n++;
+            x.score = score;
+        }
         return x;
     }
 
