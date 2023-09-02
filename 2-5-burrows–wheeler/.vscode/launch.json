@@ -16,6 +16,23 @@
             "request": "launch",
             "mainClass": "BurrowsWheeler",
             "projectName": "2-5-burrows–wheeler_e4570662"
+        },
+        {
+            "type": "java",
+            "name": "CircularSuffixArray",
+            "request": "launch",
+            "mainClass": "CircularSuffixArray",
+            "projectName": "2-5-burrows–wheeler_e4570662",
+            "args": [
+                "${workspaceFolder}/sample-data-files/aesop.txt",
+            ]
+        },
+        {
+            "type": "java",
+            "name": "MoveToFront",
+            "request": "launch",
+            "mainClass": "MoveToFront",
+            "projectName": "2-5-burrows–wheeler_e4570662"
         }
     ]
 }
