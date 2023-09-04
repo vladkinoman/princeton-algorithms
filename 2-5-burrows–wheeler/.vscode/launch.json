@@ -32,7 +32,12 @@
             "name": "MoveToFront",
             "request": "launch",
             "mainClass": "MoveToFront",
-            "projectName": "2-5-burrows–wheeler_e4570662"
+            "projectName": "2-5-burrows–wheeler_e4570662",
+            "args": [
+                "-",
+                "<",
+                "${workspaceFolder}/sample-data-files/abra.txt",
+            ]
         }
     ]
 }
