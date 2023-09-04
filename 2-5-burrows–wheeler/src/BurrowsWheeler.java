@@ -17,7 +17,17 @@ public class BurrowsWheeler {
      * reading from standard input and writing to standard output
      */
     public static void transform() {
-
+        String text = BinaryStdIn.readString();
+        CircularSuffixArray suffix = new CircularSuffixArray(text);
+        int i = 0;
+        while (suffix.index(i) != 0) i++;
+        BinaryStdOut.write(i);
+        int n = text.length();
+        for (i = 0; i < n; i++) {
+            int index = suffix.index(i);
+            BinaryStdOut.write(text.charAt(index == 0 ? 0 : index-1));
+        }
+        BinaryStdOut.close();
     }
 
     /**
@@ -35,6 +45,7 @@ public class BurrowsWheeler {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-
+        if      (args[0].equals("-")) BurrowsWheeler.transform();
+        else if (args[0].equals("+")) BurrowsWheeler.inverseTransform();
     }
 }
