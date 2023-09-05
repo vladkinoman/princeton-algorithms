@@ -1,3 +1,20 @@
+/******************************************************************************
+ *
+ *  Execution (do it in the bin folder): 
+ *  - transform: java BurrowsWheeler - < ../sample-data-files/abra.txt |
+ *  java edu.princeton.cs.algs4.HexDump 16
+ *  should be:
+ *  00 00 00 03 41 52 44 41 52 43 41 41 41 41 42 42
+ *  128 bits
+ *  - inverseTransform: java BurrowsWheeler - < ../sample-data-files/abra.txt |
+ *  java BurrowsWheeler +
+ *  should be:
+ *  ABRACADABRA!
+ * 
+ ******************************************************************************/
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
 import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
 
@@ -25,7 +42,7 @@ public class BurrowsWheeler {
         int n = text.length();
         for (i = 0; i < n; i++) {
             int index = suffix.index(i);
-            BinaryStdOut.write(text.charAt(index == 0 ? 0 : index-1));
+            BinaryStdOut.write(text.charAt(index == 0 ? n-1 : index-1));
         }
         BinaryStdOut.close();
     }
@@ -35,7 +52,28 @@ public class BurrowsWheeler {
      * reading from standard input and writing to standard output
      */
     public static void inverseTransform() {
-
+        int first = BinaryStdIn.readInt();
+        char[] lastCol = BinaryStdIn.readString().toCharArray();
+        BinaryStdIn.close();
+        char[] firstCol = lastCol.clone();
+        Arrays.sort(firstCol);
+        int n = firstCol.length;
+        int[] next = new int[n];
+        boolean[] marked = new boolean[n];
+        for (int i = 0; i < n; i++) {
+            int j = 0;
+            while (j == i || marked[j] || firstCol[i] != lastCol[j]) j++;
+            next[i] = j;
+            marked[j] = true;
+        }
+        int count = 0;
+        int pos = first;
+        while (count < n) {
+            BinaryStdOut.write(firstCol[pos]);
+            pos = next[pos];
+            count++;
+        }
+        BinaryStdOut.close();
     }
 
     /**
