@@ -19,7 +19,7 @@
             "args": [
                 "+",
                 "<",
-                "${workspaceFolder}/sample-data-files/encodedSecretMessage.txt",
+                "${workspaceFolder}/sample-data-files/stars.txt.bwt"
             ]
         },
         {
@@ -29,7 +29,8 @@
             "mainClass": "CircularSuffixArray",
             "projectName": "2-5-burrows–wheeler_e4570662",
             "args": [
-                "${workspaceFolder}/sample-data-files/aesop.txt",
+                "<",
+                "${workspaceFolder}/sample-data-files/abra.txt"
             ]
         },
         {
@@ -41,7 +42,7 @@
             "args": [
                 "-",
                 "<",
-                "${workspaceFolder}/sample-data-files/abra.txt",
+                "${workspaceFolder}/sample-data-files/abra.txt"
             ]
         }
     ]

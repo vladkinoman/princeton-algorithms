@@ -1,9 +1,10 @@
 import java.util.Arrays;
-import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.StdOut;
+
+import edu.princeton.cs.algs4.BinaryStdIn;
+import edu.princeton.cs.algs4.BinaryStdOut;
 
 public class CircularSuffixArray {
-    private int[] index;
+    private final int[] index;
     /**
      * Construct circular suffix array of s.
      * @param s input string
@@ -72,13 +73,12 @@ public class CircularSuffixArray {
      * @param args
      */
     public static void main(String[] args) {
-        In in = new In(args[0]);
-        String s = in.readAll();
+        String s = BinaryStdIn.readString();
         CircularSuffixArray circularSuffix = new CircularSuffixArray(s);
         int n = circularSuffix.length();
-        StdOut.println("length of string: " + n);
+        BinaryStdOut.write("length of string: " + n + "\n");
         for (int i = 0; i < n; i++) {
-            StdOut.println("index[" + i + "] = " + circularSuffix.index(i));
+            BinaryStdOut.write("index[" + i + "] = " + circularSuffix.index(i) + "\n");
         }
     }
 }

@@ -82,7 +82,7 @@ public class MoveToFront {
                 node = node.next;
                 currIndex++;
             }
-            BinaryStdOut.write(node.c);
+            BinaryStdOut.write(node.c, 8);
             if (node != first) {
                 node.prev.next = node.next;
                 if (node.next != null) {

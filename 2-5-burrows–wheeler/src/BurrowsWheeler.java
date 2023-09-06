@@ -12,26 +12,74 @@
  *  ABRACADABRA!
  * 
  ******************************************************************************/
-import java.lang.reflect.Array;
-import java.util.Arrays;
 
 import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
 
 /**
- * The {@code BurrowsWheeler} represents a data type for compressing.
- *
+ * The {@code BurrowsWheeler} represents a data type for transforming a typical
+ * English text file into a text file in which sequences of the same character occur
+ * near each other many times. After this, move-to-front encoding and huffman compression
+ * can be applied to fully implement the Burrows-Wheeler data compression algorithm.
  * <p>
- * This implementation uses the {@code ...} data structure which is based on...
- * Construction takes time proportional to..
+ * This data type also supports inverse traformation for expansion.
  *
  * @author Vlad Beklenyshchev aka vladkinoman
  */
 public class BurrowsWheeler {
+    private static final int R = 256;
+    private static class QueueOfInts {
+        private Node first;
+        private Node last;
 
+        private static class Node {
+            private int item;
+            private Node next;
+        }
+
+        private QueueOfInts() {
+            first = null;
+            last  = null;
+        }
+
+        /**
+         * Returns true if this queue is empty.
+         *
+         * @return {@code true} if this queue is empty; {@code false} otherwise
+         */
+        private boolean isEmpty() {
+            return first == null;
+        }
+
+        /**
+         * Adds the item to this queue.
+         *
+         * @param  item the item to add
+         */
+        private void enqueue(int item) {
+            Node oldlast = last;
+            last = new Node();
+            last.item = item;
+            last.next = null;
+            if (isEmpty()) first = last;
+            else           oldlast.next = last;
+        }
+
+        /**
+         * Removes and returns the item on this queue that was least recently added.
+         *
+         * @return the item on this queue that was least recently added
+         */
+        private int dequeue() {
+            int item = first.item;
+            first = first.next;
+            if (isEmpty()) last = null;   // to avoid loitering
+            return item;
+        }
+    }
     /**
-     * apply Burrows-Wheeler transform,
-     * reading from standard input and writing to standard output
+     * Applies Burrows-Wheeler transform,
+     * reading from standard input and writing to standard output.
      */
     public static void transform() {
         String text = BinaryStdIn.readString();
@@ -48,28 +96,33 @@ public class BurrowsWheeler {
     }
 
     /**
-     * apply Burrows-Wheeler inverse transform,
-     * reading from standard input and writing to standard output
+     * Applies Burrows-Wheeler inverse transform,
+     * reading from standard input and writing to standard output.
      */
     public static void inverseTransform() {
         int first = BinaryStdIn.readInt();
-        char[] lastCol = BinaryStdIn.readString().toCharArray();
-        BinaryStdIn.close();
-        char[] firstCol = lastCol.clone();
-        Arrays.sort(firstCol);
-        int n = firstCol.length;
+        QueueOfInts[] indeces = new QueueOfInts[R];
+        int n = 0;
+        while (!BinaryStdIn.isEmpty()) {
+            char c = BinaryStdIn.readChar();
+            if (indeces[c] == null) indeces[c] = new QueueOfInts();
+            indeces[c].enqueue(n);
+            n++;
+        }
         int[] next = new int[n];
-        boolean[] marked = new boolean[n];
-        for (int i = 0; i < n; i++) {
-            int j = 0;
-            while (j == i && n > 1 || marked[j] || firstCol[i] != lastCol[j]) j++;
-            next[i] = j;
-            marked[j] = true;
+        int[] firstCol = new int[n];
+        int j = 0;
+        for (int i = 0; i < R; i++) {
+            while (indeces[i] != null && !indeces[i].isEmpty()) {
+                next[j] = indeces[i].dequeue();
+                firstCol[j] = i;
+                j++;
+            }
         }
         int count = 0;
         int pos = first;
         while (count < n) {
-            BinaryStdOut.write(firstCol[pos]);
+            BinaryStdOut.write(firstCol[pos], 8);
             pos = next[pos];
             count++;
         }
