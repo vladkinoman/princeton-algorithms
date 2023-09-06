@@ -1,4 +1,4 @@
-import edu.princeton.cs.algs4.SuffixArrayX;
+import java.util.Arrays;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 
@@ -12,11 +12,38 @@ public class CircularSuffixArray {
         if (s == null) {
             throw new IllegalArgumentException("the argument is null");
         }
-        SuffixArrayX suffix = new SuffixArrayX(s);
+        char[] doubleds = s.concat(s).toCharArray();
         int n = s.length();
+        Suffix[] suffixes = new Suffix[n];
+        for (int i = 0; i < n; i++) {
+            suffixes[i] = new Suffix(doubleds, i);
+        }
+        Arrays.sort(suffixes);
         index = new int[n];
         for (int i = 0; i < n; i++) {
-            index[i] = suffix.index(i);
+            index[i] = suffixes[i].index;
+        }
+    }
+
+    private static class Suffix implements Comparable<Suffix> {
+        private final char[] text;
+        private final int index;
+
+        private Suffix(char[] text, int index) {
+            this.text = text;
+            this.index = index;
+        }
+        private char charAt(int i) {
+            return text[index + i];
+        }
+        public int compareTo(Suffix that) {
+            if (this == that) return 0;  // optimization
+            int n = this.text.length / 2;
+            for (int i = 0; i < n; i++) {
+                if (this.charAt(i) < that.charAt(i)) return -1;
+                if (this.charAt(i) > that.charAt(i)) return +1;
+            }
+            return 0;
         }
     }
     
