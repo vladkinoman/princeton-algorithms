@@ -19,7 +19,7 @@
             "args": [
                 "+",
                 "<",
-                "${workspaceFolder}/sample-data-files/abra-transformed.txt",
+                "${workspaceFolder}/sample-data-files/encodedSecretMessage.txt",
             ]
         },
         {

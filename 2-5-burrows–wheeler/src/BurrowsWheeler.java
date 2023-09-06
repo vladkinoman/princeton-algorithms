@@ -62,7 +62,7 @@ public class BurrowsWheeler {
         boolean[] marked = new boolean[n];
         for (int i = 0; i < n; i++) {
             int j = 0;
-            while (j == i || marked[j] || firstCol[i] != lastCol[j]) j++;
+            while (j == i && n > 1 || marked[j] || firstCol[i] != lastCol[j]) j++;
             next[i] = j;
             marked[j] = true;
         }
